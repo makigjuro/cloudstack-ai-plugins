@@ -4,6 +4,12 @@ set -euo pipefail
 # Pre-commit/pre-push hook: scan staged files for leaked secrets
 # Blocks the commit/push if potential secrets are found
 
+# Require jq for parsing hook input
+if ! command -v jq &>/dev/null; then
+  echo "WARNING: jq not installed — secret scanning skipped. Install: brew install jq (macOS) or apt install jq (Linux)" >&2
+  exit 0
+fi
+
 INPUT=$(cat)
 COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // ""')
 

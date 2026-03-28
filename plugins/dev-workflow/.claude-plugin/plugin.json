@@ -5,5 +5,8 @@
   "author": {
     "name": "Marjan Gjuroski"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "homepage": "https://github.com/makigjuro/cloudstack-ai-plugins#development-workflow",
+  "repository": "https://github.com/makigjuro/cloudstack-ai-plugins",
+  "keywords": ["workflow", "git", "ci-cd", "code-review", "testing", "documentation", "github"]
 }

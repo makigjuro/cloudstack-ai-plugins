@@ -4,6 +4,12 @@ set -euo pipefail
 # Pre-commit hook: lint and format changed files
 # Called by Claude Code PreToolUse hook on git commit
 
+# Require jq for parsing hook input
+if ! command -v jq &>/dev/null; then
+  echo "WARNING: jq not installed — pre-commit lint skipped. Install: brew install jq (macOS) or apt install jq (Linux)" >&2
+  exit 0
+fi
+
 INPUT=$(cat)
 COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // ""')
 
@@ -54,7 +60,7 @@ STAGED_PY=$(git -C "$PROJECT_DIR" diff --cached --name-only --diff-filter=ACM --
 STAGED_GO=$(git -C "$PROJECT_DIR" diff --cached --name-only --diff-filter=ACM -- '*.go' 2>/dev/null || true)
 
 # 1. dotnet format on staged C# files
-if [[ -n "$STAGED_CS" ]]; then
+if [[ -n "$STAGED_CS" ]] && command -v dotnet &>/dev/null; then
   SLN=$(resolve_sln)
   if [[ -n "$SLN" ]]; then
     if ! dotnet format "$SLN" --verify-no-changes --verbosity quiet 2>/dev/null; then
@@ -68,7 +74,7 @@ if [[ -n "$STAGED_CS" ]]; then
 fi
 
 # 2. ESLint on staged JS/TS files
-if [[ -n "$STAGED_TS" ]]; then
+if [[ -n "$STAGED_TS" ]] && command -v npx &>/dev/null; then
   FE_DIR=$(resolve_frontend)
   if [[ -n "$FE_DIR" && -d "$FE_DIR" ]]; then
     if ! (cd "$FE_DIR" && npx eslint --quiet $STAGED_TS 2>/dev/null); then
@@ -82,7 +88,7 @@ if [[ -n "$STAGED_TS" ]]; then
 fi
 
 # 3. terraform fmt on staged .tf files
-if [[ -n "$STAGED_TF" ]]; then
+if [[ -n "$STAGED_TF" ]] && command -v terraform &>/dev/null; then
   INFRA_DIR="$PROJECT_DIR/infra"
   if [[ -d "$INFRA_DIR" ]]; then
     if ! terraform fmt -check -recursive "$INFRA_DIR" >/dev/null 2>&1; then
@@ -96,7 +102,7 @@ if [[ -n "$STAGED_TF" ]]; then
 fi
 
 # 4. helm lint on staged chart changes
-if [[ -n "$STAGED_HELM" ]]; then
+if [[ -n "$STAGED_HELM" ]] && command -v helm &>/dev/null; then
   CHART_DIRS=$(echo "$STAGED_HELM" | grep -oP 'deploy/charts/[^/]+' | sort -u)
   for chart_dir in $CHART_DIRS; do
     if [[ -f "$PROJECT_DIR/$chart_dir/Chart.yaml" ]]; then

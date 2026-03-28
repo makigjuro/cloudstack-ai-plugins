@@ -5,5 +5,8 @@
   "author": {
     "name": "Marjan Gjuroski"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "homepage": "https://github.com/makigjuro/cloudstack-ai-plugins#cloud-infrastructure",
+  "repository": "https://github.com/makigjuro/cloudstack-ai-plugins",
+  "keywords": ["terraform", "helm", "azure", "kubernetes", "aks", "infrastructure-as-code", "terragrunt"]
 }

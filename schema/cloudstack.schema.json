@@ -13,7 +13,7 @@
       "description": "Top-level project metadata",
       "properties": {
         "name": { "type": "string", "description": "Project display name (e.g., 'MyApp')" },
-        "namespace": { "type": "string", "description": "Root C# namespace prefix (e.g., 'MyApp'). Used in code generation." },
+        "namespace": { "type": "string", "pattern": "^[A-Z][a-zA-Z0-9.]*$", "description": "Root C# namespace prefix (e.g., 'MyApp'). Used in code generation." },
         "description": { "type": "string", "description": "One-line project description" }
       },
       "required": ["name", "namespace"]
@@ -33,7 +33,7 @@
       "properties": {
         "framework": { "type": "string", "enum": ["dotnet"], "default": "dotnet" },
         "dotnetVersion": { "type": "string", "default": "9.0", "description": "Target .NET version" },
-        "solutionPath": { "type": "string", "description": "Path to .sln file relative to project root. Auto-detected if omitted." },
+        "solutionPath": { "type": "string", "pattern": ".*\\.sln$", "description": "Path to .sln file relative to project root. Auto-detected if omitted." },
         "sharedDomainPath": { "type": "string", "description": "Path to shared Domain project (entities, value objects, events)" },
         "sharedInfraPath": { "type": "string", "description": "Path to shared Infrastructure project (Result types, auth, resilience)" },
         "services": {
@@ -42,9 +42,9 @@
           "items": {
             "type": "object",
             "properties": {
-              "name": { "type": "string", "description": "Service name in PascalCase (e.g., 'DeviceManager')" },
+              "name": { "type": "string", "pattern": "^[A-Z][a-zA-Z0-9]+$", "description": "Service name in PascalCase (e.g., 'DeviceManager')" },
               "path": { "type": "string", "description": "Path to service root directory (e.g., 'src/DeviceManager')" },
-              "projectPrefix": { "type": "string", "description": "C# project name prefix (e.g., 'MyApp.DeviceManager')" },
+              "projectPrefix": { "type": "string", "pattern": "^[A-Z]", "description": "C# project name prefix (e.g., 'MyApp.DeviceManager')" },
               "dbContext": { "type": "string", "description": "EF Core DbContext class name (e.g., 'DeviceManagerDbContext')" },
               "schema": { "type": "string", "description": "Database schema name for this service" }
             },
@@ -77,7 +77,7 @@
         "styling": { "type": "string", "enum": ["tailwind", "css-modules", "styled-components"], "default": "tailwind" },
         "router": { "type": "string", "enum": ["react-router-v6", "react-router-v7", "tanstack-router"], "default": "react-router-v6" },
         "bundler": { "type": "string", "enum": ["vite", "webpack", "next"], "default": "vite" },
-        "devPort": { "type": "integer", "default": 5173, "description": "Dev server port for Playwright navigation" }
+        "devPort": { "type": "integer", "default": 5173, "minimum": 1024, "maximum": 65535, "description": "Dev server port for Playwright navigation" }
       }
     },
     "infrastructure": {
@@ -104,8 +104,8 @@
         "orchestrator": { "type": "string", "enum": ["aspire", "docker-compose", "none"], "default": "docker-compose" },
         "appHostPath": { "type": "string", "description": "Path to .NET Aspire AppHost project (if orchestrator is aspire)" },
         "composePath": { "type": "string", "description": "Path to docker-compose.yml (if orchestrator is docker-compose)" },
-        "dashboardPort": { "type": "integer", "description": "Aspire dashboard port" },
-        "apiPort": { "type": "integer", "default": 5000, "description": "Backend API port" }
+        "dashboardPort": { "type": "integer", "minimum": 1024, "maximum": 65535, "description": "Aspire dashboard port" },
+        "apiPort": { "type": "integer", "default": 5000, "minimum": 1024, "maximum": 65535, "description": "Backend API port" }
       }
     },
     "conventions": {

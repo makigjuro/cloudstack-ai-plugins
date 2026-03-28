@@ -128,16 +128,48 @@ jobs:
           print(f'Valid: {len(schema[\"properties\"])} top-level properties')
           "
 
+      - name: Install jsonschema
+        run: pip install jsonschema
+
       - name: Validate template cloudstack.json against schema
         run: |
-          echo "=== Validating templates/cloudstack.json ==="
+          echo "=== Validating templates/cloudstack.json against schema ==="
           python3 -c "
           import json
+          from jsonschema import validate, ValidationError
+          with open('schema/cloudstack.schema.json') as f:
+              schema = json.load(f)
           with open('templates/cloudstack.json') as f:
               config = json.load(f)
-          assert 'project' in config, 'Missing project section'
-          print('Valid template config')
+          try:
+              validate(instance=config, schema=schema)
+              print('Template validates against schema')
+          except ValidationError as e:
+              print(f'Schema validation failed: {e.message}')
+              print(f'  Path: {\" > \".join(str(p) for p in e.absolute_path)}')
+              raise SystemExit(1)
           "
+
+      - name: Validate plugin.json metadata completeness
+        run: |
+          echo "=== Checking plugin.json metadata ==="
+          errors=0
+          for manifest in plugins/*/.claude-plugin/plugin.json; do
+            plugin_name=$(basename "$(dirname "$(dirname "$manifest")")")
+            python3 -c "
+          import json, sys
+          with open('$manifest') as f:
+              data = json.load(f)
+          missing = []
+          for field in ['homepage', 'repository', 'keywords']:
+              if field not in data:
+                  missing.append(field)
+          if missing:
+              print(f'  WARNING: $plugin_name missing optional fields: {\", \".join(missing)}')
+          else:
+              print(f'  OK: $plugin_name has full metadata')
+          "
+          done
 
       - name: Check file references
         run: |

@@ -4,6 +4,11 @@ set -euo pipefail
 # Post-edit hook: auto-format the file that was just edited/written
 # Runs after Edit or Write tool completes
 
+# Require jq for parsing hook input
+if ! command -v jq &>/dev/null; then
+  exit 0
+fi
+
 INPUT=$(cat)
 FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // .tool_input.file_path // ""')
 

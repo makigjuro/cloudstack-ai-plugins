@@ -5,5 +5,8 @@
   "author": {
     "name": "Marjan Gjuroski"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "homepage": "https://github.com/makigjuro/cloudstack-ai-plugins#reference-architecture",
+  "repository": "https://github.com/makigjuro/cloudstack-ai-plugins",
+  "keywords": ["dotnet", "csharp", "hexagonal-architecture", "cqrs", "ddd", "efcore", "clean-architecture"]
 }
