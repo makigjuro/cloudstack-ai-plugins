@@ -281,7 +281,7 @@ sequenceDiagram
     Repository->>DB: INSERT
     DB-->>Repository: OK
     Handler->>Events: Publish(OrderCreatedEvent)
-    Handler-->>Endpoint: Result&lt;OrderId&gt;
+    Handler-->>Endpoint: Result of OrderId
     Endpoint-->>Client: 201 Created
     end
 
@@ -293,7 +293,7 @@ sequenceDiagram
     Repository->>DB: SELECT (Dapper)
     DB-->>Repository: Row
     Repository-->>Handler: OrderDto
-    Handler-->>Endpoint: Result&lt;OrderDto&gt;
+    Handler-->>Endpoint: Result of OrderDto
     Endpoint-->>Client: 200 OK
     end
 ```
