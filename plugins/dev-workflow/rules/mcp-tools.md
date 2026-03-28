@@ -1,3 +1,8 @@
+---
+paths:
+  - "**"
+---
+
 # MCP Tool Usage
 
 When MCP tools are available, prefer them over CLI equivalents. MCP tools return structured data, handle authentication automatically, and are more reliable than parsing CLI output.

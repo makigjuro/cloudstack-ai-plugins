@@ -1,3 +1,9 @@
+---
+paths:
+  - ".claude/skills/**/*.md"
+  - "plugins/**/skills/**/*.md"
+---
+
 # Skill Writing Principles
 
 Follow these principles when creating or modifying skills.
