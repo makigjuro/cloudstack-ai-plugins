@@ -1,5 +1,19 @@
 # cloudstack-ai-plugins
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Plugins](https://img.shields.io/badge/plugins-4-purple)](plugins/)
+[![Skills](https://img.shields.io/badge/skills-29-green)](plugins/)
+[![Agents](https://img.shields.io/badge/agents-6-orange)](plugins/)
+[![.NET 10](https://img.shields.io/badge/.NET-10-512BD4)](https://dotnet.microsoft.com/)
+[![React 19](https://img.shields.io/badge/React-19-61DAFB)](https://react.dev/)
+[![Terraform](https://img.shields.io/badge/Terraform-IaC-7B42BC)](https://www.terraform.io/)
+
+> AI-powered full-stack cloud engineer for Claude Code. 29 skills, 6 agents, 14 rules across 4 plugins.
+
+```
+/plugin marketplace add makigjuro/cloudstack-ai-plugins
+```
+
 Claude Code plugin marketplace for full-stack cloud engineering. Install any combination of plugins to get an AI-powered engineering toolkit for .NET + React + Azure projects.
 
 ## Plugin Marketplace

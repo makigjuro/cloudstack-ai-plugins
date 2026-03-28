@@ -1,0 +1,48 @@
+name: Feature Request
+description: Suggest a new skill, rule, agent, or improvement
+labels: ["enhancement"]
+body:
+  - type: dropdown
+    id: type
+    attributes:
+      label: What would you like?
+      options:
+        - New skill
+        - New rule
+        - New agent
+        - Improve existing skill
+        - New plugin
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: plugin
+    attributes:
+      label: Which plugin?
+      options:
+        - dotnet-architect
+        - react-developer
+        - cloud-infra
+        - dev-workflow
+        - New plugin
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the feature
+      description: What should it do? When would you use it?
+    validations:
+      required: true
+
+  - type: textarea
+    id: example
+    attributes:
+      label: Example usage
+      description: Show how you'd invoke it or what the output should look like
+      placeholder: |
+        /dotnet-architect:add-endpoint CreateOrder OrderService
+
+        Expected: scaffolds a POST /api/orders endpoint wired to the CreateOrderCommand handler

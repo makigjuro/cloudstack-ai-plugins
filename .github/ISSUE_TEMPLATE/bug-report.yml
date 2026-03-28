@@ -1,0 +1,59 @@
+name: Bug Report
+description: Report a skill, rule, or hook that isn't working correctly
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: plugin
+    attributes:
+      label: Plugin
+      options:
+        - dotnet-architect
+        - react-developer
+        - cloud-infra
+        - dev-workflow
+    validations:
+      required: true
+
+  - type: input
+    id: skill
+    attributes:
+      label: Skill / Rule / Hook
+      description: Which specific skill, rule, or hook is affected?
+      placeholder: "e.g., add-entity, check-architecture, format-on-save"
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the bug. Include error messages if any.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+      description: What should have happened instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: cloudstack-json
+    attributes:
+      label: cloudstack.json (if applicable)
+      description: Paste your cloudstack.json (remove any secrets first)
+      render: json
+
+  - type: input
+    id: claude-code-version
+    attributes:
+      label: Claude Code version
+      placeholder: "e.g., 1.2.3"
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: "e.g., macOS 15, Ubuntu 24.04, Windows 11"
