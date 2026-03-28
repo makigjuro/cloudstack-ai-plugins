@@ -37,7 +37,7 @@ Auto-detected from `git remote -v` if omitted.
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `framework` | `dotnet` | `dotnet` | Backend framework |
-| `dotnetVersion` | string | `9.0` | Target .NET version |
+| `dotnetVersion` | string | `10.0` | Target .NET version |
 | `solutionPath` | string | auto-detect `*.sln` | Path to .sln file |
 | `sharedDomainPath` | string | auto-detect | Path to shared Domain project |
 | `sharedInfraPath` | string | auto-detect | Path to shared Infrastructure project |
@@ -80,7 +80,7 @@ Auto-detected from `git remote -v` if omitted.
 | `stateManagement.client` | `zustand` \| `redux` \| `none` | `zustand` | Client state library |
 | `uiLibrary` | `shadcn` \| `mui` \| `antd` \| `none` | `shadcn` | UI component library |
 | `styling` | `tailwind` \| `css-modules` \| `styled-components` | `tailwind` | Styling approach |
-| `router` | `react-router-v6` \| `react-router-v7` \| `tanstack-router` | `react-router-v6` | Router |
+| `router` | `react-router-v7` \| `tanstack-router` \| `react-router-v6` | `react-router-v7` | Router |
 | `bundler` | `vite` \| `webpack` \| `next` | `vite` | Build tool |
 | `devPort` | integer | `5173` | Dev server port |
 

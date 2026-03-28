@@ -32,7 +32,7 @@
       "description": "Backend configuration (.NET)",
       "properties": {
         "framework": { "type": "string", "enum": ["dotnet"], "default": "dotnet" },
-        "dotnetVersion": { "type": "string", "default": "9.0", "description": "Target .NET version" },
+        "dotnetVersion": { "type": "string", "default": "10.0", "description": "Target .NET version" },
         "solutionPath": { "type": "string", "pattern": ".*\\.sln$", "description": "Path to .sln file relative to project root. Auto-detected if omitted." },
         "sharedDomainPath": { "type": "string", "description": "Path to shared Domain project (entities, value objects, events)" },
         "sharedInfraPath": { "type": "string", "description": "Path to shared Infrastructure project (Result types, auth, resilience)" },
@@ -75,7 +75,7 @@
         },
         "uiLibrary": { "type": "string", "enum": ["shadcn", "mui", "antd", "none"], "default": "shadcn" },
         "styling": { "type": "string", "enum": ["tailwind", "css-modules", "styled-components"], "default": "tailwind" },
-        "router": { "type": "string", "enum": ["react-router-v6", "react-router-v7", "tanstack-router"], "default": "react-router-v6" },
+        "router": { "type": "string", "enum": ["react-router-v7", "tanstack-router", "react-router-v6"], "default": "react-router-v7" },
         "bundler": { "type": "string", "enum": ["vite", "webpack", "next"], "default": "vite" },
         "devPort": { "type": "integer", "default": 5173, "minimum": 1024, "maximum": 65535, "description": "Dev server port for Playwright navigation" }
       }

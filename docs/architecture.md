@@ -19,9 +19,9 @@ graph TB
     end
 
     subgraph services["Microservices"]
-        svc_a["Service A<br/>.NET 9"]
-        svc_b["Service B<br/>.NET 9"]
-        svc_c["Service C<br/>.NET 9"]
+        svc_a["Service A<br/>.NET 10"]
+        svc_b["Service B<br/>.NET 10"]
+        svc_c["Service C<br/>.NET 10"]
     end
 
     subgraph messaging["Async Messaging"]
@@ -578,7 +578,7 @@ The plugins enforce quality at multiple levels:
 
 | Concern | Choice | Why |
 |---------|--------|-----|
-| Backend framework | .NET 9 / C# 13 | Strong typing, performance, mature ecosystem |
+| Backend framework | .NET 10 / C# 14 | Strong typing, performance, mature ecosystem |
 | Architecture | Hexagonal | Testability, framework independence |
 | CQRS framework | WolverineFx | Wolverine handlers are plain classes, minimal ceremony |
 | ORM (writes) | EF Core | Change tracking, migrations, LINQ |

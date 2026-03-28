@@ -8,10 +8,10 @@ Brief description of your project.
 ## Tech Stack
 
 <!-- Update to match your actual stack -->
-- **Backend:** .NET 9, C# 13, hexagonal architecture
+- **Backend:** .NET 10, C# 14, hexagonal architecture
 - **CQRS/Messaging:** WolverineFx
 - **Data:** EF Core + PostgreSQL
-- **Frontend:** React 18+, TypeScript, shadcn/ui, TanStack Query, Zustand, Vite
+- **Frontend:** React 19, TypeScript, shadcn/ui, TanStack Query, Zustand, Vite
 - **Infra:** Terraform, Helm, GitHub Actions
 
 ## Repository Structure

@@ -556,8 +556,8 @@ Skills are designed to work with or without MCP servers:
 ## Supported Stack
 
 **Current (v0.1):**
-- Backend: .NET 9, C#, hexagonal architecture, EF Core, WolverineFx
-- Frontend: React 18+, TypeScript, TanStack Query, Zustand, shadcn/ui
+- Backend: .NET 10, C# 14, hexagonal architecture, EF Core 10, WolverineFx
+- Frontend: React 19, TypeScript, TanStack Query, Zustand, shadcn/ui
 - Infrastructure: Terraform, Helm, Azure/AKS, GitHub Actions
 - Local dev: .NET Aspire or Docker Compose
 
