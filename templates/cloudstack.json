@@ -1,0 +1,29 @@
+{
+  "$schema": "https://raw.githubusercontent.com/makigjuro/cloudstack-ai-plugins/main/schema/cloudstack.schema.json",
+  "project": {
+    "name": "MyProject",
+    "namespace": "MyProject",
+    "description": "A brief description of your project"
+  },
+  "backend": {
+    "solutionPath": "src/MyProject.sln",
+    "sharedDomainPath": "src/Shared/MyProject.Domain",
+    "sharedInfraPath": "src/Shared/MyProject.Shared.Infrastructure",
+    "services": [
+      {
+        "name": "ServiceOne",
+        "path": "src/ServiceOne",
+        "projectPrefix": "MyProject.ServiceOne",
+        "dbContext": "ServiceOneDbContext"
+      }
+    ]
+  },
+  "frontend": {
+    "path": "web",
+    "devPort": 5173
+  },
+  "infrastructure": {
+    "chartsPath": "deploy/charts",
+    "terraformPath": "infra/terraform/modules"
+  }
+}

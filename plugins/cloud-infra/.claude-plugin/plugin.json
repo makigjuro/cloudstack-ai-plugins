@@ -1,0 +1,9 @@
+{
+  "name": "cloud-infra",
+  "description": "Terraform + Helm infrastructure scaffolding, linting, and review — module scaffolding, chart templates, validation pipelines, and infrastructure-specific code review.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Marjan Gjuroski"
+  },
+  "license": "MIT"
+}

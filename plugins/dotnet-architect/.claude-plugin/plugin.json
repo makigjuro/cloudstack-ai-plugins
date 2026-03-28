@@ -1,0 +1,9 @@
+{
+  "name": "dotnet-architect",
+  "description": "Hexagonal architecture scaffolding and enforcement for .NET microservices — CQRS commands/queries, domain entities, EF Core migrations, architecture validation, and deep code review.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Marjan Gjuroski"
+  },
+  "license": "MIT"
+}

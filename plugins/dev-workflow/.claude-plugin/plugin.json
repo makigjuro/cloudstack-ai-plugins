@@ -1,0 +1,9 @@
+{
+  "name": "dev-workflow",
+  "description": "End-to-end development workflow — PRD generation, feature planning, GitHub issue creation, branch management, quality gates, parallel code review, and PR creation.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Marjan Gjuroski"
+  },
+  "license": "MIT"
+}

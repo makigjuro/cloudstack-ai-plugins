@@ -1,0 +1,58 @@
+{
+  "name": "cloudstack-ai-plugins",
+  "owner": {
+    "name": "Marjan Gjuroski",
+    "email": "makigjuro@users.noreply.github.com"
+  },
+  "metadata": {
+    "description": "Claude Code plugins for full-stack cloud engineering — .NET hexagonal architecture, React frontend, Terraform/Helm infrastructure, and end-to-end development workflow orchestration.",
+    "version": "0.1.0",
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "dotnet-architect",
+      "source": "./plugins/dotnet-architect",
+      "description": "Hexagonal architecture scaffolding and enforcement for .NET microservices — CQRS commands/queries, domain entities, EF Core migrations, architecture validation, and deep code review.",
+      "version": "0.1.0",
+      "author": { "name": "Marjan Gjuroski" },
+      "category": "productivity",
+      "tags": ["dotnet", "csharp", "hexagonal-architecture", "cqrs", "ddd", "efcore"],
+      "repository": "https://github.com/makigjuro/cloudstack-ai-plugins",
+      "license": "MIT"
+    },
+    {
+      "name": "react-developer",
+      "source": "./plugins/react-developer",
+      "description": "React + TypeScript frontend scaffolding and browser verification — feature modules, Playwright screenshots, smoke testing, and visual regression checks.",
+      "version": "0.1.0",
+      "author": { "name": "Marjan Gjuroski" },
+      "category": "productivity",
+      "tags": ["react", "typescript", "frontend", "playwright", "shadcn", "tanstack-query"],
+      "repository": "https://github.com/makigjuro/cloudstack-ai-plugins",
+      "license": "MIT"
+    },
+    {
+      "name": "cloud-infra",
+      "source": "./plugins/cloud-infra",
+      "description": "Terraform + Helm infrastructure scaffolding, linting, and review — module scaffolding, chart templates, validation pipelines, and infrastructure-specific code review.",
+      "version": "0.1.0",
+      "author": { "name": "Marjan Gjuroski" },
+      "category": "productivity",
+      "tags": ["terraform", "helm", "azure", "kubernetes", "infrastructure", "aks"],
+      "repository": "https://github.com/makigjuro/cloudstack-ai-plugins",
+      "license": "MIT"
+    },
+    {
+      "name": "dev-workflow",
+      "source": "./plugins/dev-workflow",
+      "description": "End-to-end development workflow — PRD generation, feature planning, GitHub issue creation, branch management, quality gates, parallel code review, and PR creation.",
+      "version": "0.1.0",
+      "author": { "name": "Marjan Gjuroski" },
+      "category": "productivity",
+      "tags": ["workflow", "git", "ci", "testing", "documentation", "code-review"],
+      "repository": "https://github.com/makigjuro/cloudstack-ai-plugins",
+      "license": "MIT"
+    }
+  ]
+}

@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "cloudstack.json",
+  "description": "Project configuration for cloudstack-ai-plugins. Place at your project root to configure how plugins discover services, paths, and conventions.",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference for IDE autocompletion"
+    },
+    "project": {
+      "type": "object",
+      "description": "Top-level project metadata",
+      "properties": {
+        "name": { "type": "string", "description": "Project display name (e.g., 'MyApp')" },
+        "namespace": { "type": "string", "description": "Root C# namespace prefix (e.g., 'MyApp'). Used in code generation." },
+        "description": { "type": "string", "description": "One-line project description" }
+      },
+      "required": ["name", "namespace"]
+    },
+    "repository": {
+      "type": "object",
+      "description": "GitHub repository information. Auto-detected from git remote if omitted.",
+      "properties": {
+        "owner": { "type": "string", "description": "GitHub org or username" },
+        "name": { "type": "string", "description": "Repository name" },
+        "defaultBranch": { "type": "string", "default": "main", "description": "Default branch name" }
+      }
+    },
+    "backend": {
+      "type": "object",
+      "description": "Backend configuration (.NET)",
+      "properties": {
+        "framework": { "type": "string", "enum": ["dotnet"], "default": "dotnet" },
+        "dotnetVersion": { "type": "string", "default": "9.0", "description": "Target .NET version" },
+        "solutionPath": { "type": "string", "description": "Path to .sln file relative to project root. Auto-detected if omitted." },
+        "sharedDomainPath": { "type": "string", "description": "Path to shared Domain project (entities, value objects, events)" },
+        "sharedInfraPath": { "type": "string", "description": "Path to shared Infrastructure project (Result types, auth, resilience)" },
+        "services": {
+          "type": "array",
+          "description": "Microservice definitions",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string", "description": "Service name in PascalCase (e.g., 'DeviceManager')" },
+              "path": { "type": "string", "description": "Path to service root directory (e.g., 'src/DeviceManager')" },
+              "projectPrefix": { "type": "string", "description": "C# project name prefix (e.g., 'MyApp.DeviceManager')" },
+              "dbContext": { "type": "string", "description": "EF Core DbContext class name (e.g., 'DeviceManagerDbContext')" },
+              "schema": { "type": "string", "description": "Database schema name for this service" }
+            },
+            "required": ["name", "path", "projectPrefix"]
+          }
+        },
+        "orm": { "type": "string", "enum": ["efcore"], "default": "efcore" },
+        "readQueryTool": { "type": "string", "enum": ["dapper", "efcore"], "default": "dapper" },
+        "messaging": { "type": "string", "enum": ["wolverinefx", "mediatr", "none"], "default": "wolverinefx" },
+        "messageBroker": { "type": "string", "enum": ["nats", "rabbitmq", "none"], "default": "none" },
+        "resultPattern": { "type": "boolean", "default": true, "description": "Whether handlers return Result<T> instead of throwing exceptions" },
+        "multiTenancy": { "type": "boolean", "default": false, "description": "Whether entities include TenantId" }
+      }
+    },
+    "frontend": {
+      "type": "object",
+      "description": "Frontend configuration",
+      "properties": {
+        "framework": { "type": "string", "enum": ["react", "vue", "none"], "default": "react" },
+        "path": { "type": "string", "default": "web", "description": "Path to frontend project relative to project root" },
+        "language": { "type": "string", "enum": ["typescript", "javascript"], "default": "typescript" },
+        "stateManagement": {
+          "type": "object",
+          "properties": {
+            "server": { "type": "string", "enum": ["tanstack-query", "swr", "none"], "default": "tanstack-query" },
+            "client": { "type": "string", "enum": ["zustand", "redux", "none"], "default": "zustand" }
+          }
+        },
+        "uiLibrary": { "type": "string", "enum": ["shadcn", "mui", "antd", "none"], "default": "shadcn" },
+        "styling": { "type": "string", "enum": ["tailwind", "css-modules", "styled-components"], "default": "tailwind" },
+        "router": { "type": "string", "enum": ["react-router-v6", "react-router-v7", "tanstack-router"], "default": "react-router-v6" },
+        "bundler": { "type": "string", "enum": ["vite", "webpack", "next"], "default": "vite" },
+        "devPort": { "type": "integer", "default": 5173, "description": "Dev server port for Playwright navigation" }
+      }
+    },
+    "infrastructure": {
+      "type": "object",
+      "description": "Infrastructure-as-code configuration",
+      "properties": {
+        "cloud": { "type": "string", "enum": ["azure", "aws", "gcp"], "default": "azure" },
+        "iac": { "type": "string", "enum": ["terraform", "pulumi", "none"], "default": "terraform" },
+        "iacWrapper": { "type": "string", "enum": ["terragrunt", "none"], "default": "none" },
+        "terraformPath": { "type": "string", "default": "infra/terraform/modules", "description": "Path to Terraform modules" },
+        "terragruntPath": { "type": "string", "description": "Path to Terragrunt configuration" },
+        "kubernetes": { "type": "string", "enum": ["aks", "eks", "gke", "none"], "default": "none" },
+        "charts": { "type": "string", "enum": ["helm", "kustomize", "none"], "default": "helm" },
+        "chartsPath": { "type": "string", "default": "deploy/charts", "description": "Path to Helm charts" },
+        "containerRegistry": { "type": "string", "description": "Container registry URL (e.g., 'ghcr.io/myorg')" },
+        "namespace": { "type": "string", "description": "Kubernetes namespace for deployments" },
+        "cicd": { "type": "string", "enum": ["github-actions", "azure-devops", "gitlab-ci"], "default": "github-actions" }
+      }
+    },
+    "localDev": {
+      "type": "object",
+      "description": "Local development environment",
+      "properties": {
+        "orchestrator": { "type": "string", "enum": ["aspire", "docker-compose", "none"], "default": "docker-compose" },
+        "appHostPath": { "type": "string", "description": "Path to .NET Aspire AppHost project (if orchestrator is aspire)" },
+        "composePath": { "type": "string", "description": "Path to docker-compose.yml (if orchestrator is docker-compose)" },
+        "dashboardPort": { "type": "integer", "description": "Aspire dashboard port" },
+        "apiPort": { "type": "integer", "default": 5000, "description": "Backend API port" }
+      }
+    },
+    "conventions": {
+      "type": "object",
+      "description": "Project conventions for git, naming, and formatting",
+      "properties": {
+        "branchFormat": { "type": "string", "default": "{username}/{issue}-{slug}", "description": "Branch naming pattern" },
+        "commitStyle": { "type": "string", "enum": ["lowercase-imperative", "conventional-commits"], "default": "lowercase-imperative" },
+        "errorCodeStyle": { "type": "string", "enum": ["SCREAMING_SNAKE_CASE", "PascalCase", "kebab-case"], "default": "SCREAMING_SNAKE_CASE" }
+      }
+    }
+  },
+  "additionalProperties": true
+}

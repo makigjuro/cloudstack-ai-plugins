@@ -1,0 +1,174 @@
+name: Validate Plugins
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate marketplace.json
+        run: |
+          echo "=== Validating marketplace.json ==="
+          python3 -c "
+          import json, sys
+          with open('.claude-plugin/marketplace.json') as f:
+              data = json.load(f)
+          assert 'name' in data, 'Missing name'
+          assert 'owner' in data, 'Missing owner'
+          assert 'plugins' in data, 'Missing plugins'
+          for p in data['plugins']:
+              assert 'name' in p, f'Plugin missing name'
+              assert 'source' in p, f'Plugin {p.get(\"name\", \"?\")} missing source'
+              assert 'description' in p, f'Plugin {p.get(\"name\", \"?\")} missing description'
+          print(f'Valid: {len(data[\"plugins\"])} plugins registered')
+          "
+
+      - name: Validate plugin.json manifests
+        run: |
+          echo "=== Validating plugin.json files ==="
+          for manifest in plugins/*/.claude-plugin/plugin.json; do
+            plugin_dir=$(dirname "$(dirname "$manifest")")
+            plugin_name=$(basename "$plugin_dir")
+            echo "--- $plugin_name ---"
+            python3 -c "
+          import json, sys
+          with open('$manifest') as f:
+              data = json.load(f)
+          assert 'name' in data, 'Missing name'
+          assert 'description' in data, 'Missing description'
+          assert 'version' in data, 'Missing version'
+          print(f'  Valid: {data[\"name\"]} v{data[\"version\"]}')
+          "
+          done
+
+      - name: Validate SKILL.md frontmatter
+        run: |
+          echo "=== Validating SKILL.md files ==="
+          errors=0
+          for skill in plugins/*/skills/*/SKILL.md; do
+            skill_name=$(basename "$(dirname "$skill")")
+            plugin_name=$(basename "$(dirname "$(dirname "$(dirname "$skill")")")")
+
+            # Check frontmatter exists
+            if ! head -1 "$skill" | grep -q "^---"; then
+              echo "ERROR: $plugin_name/$skill_name - Missing YAML frontmatter"
+              errors=$((errors + 1))
+              continue
+            fi
+
+            # Check required fields
+            frontmatter=$(sed -n '/^---$/,/^---$/p' "$skill" | head -20)
+
+            if ! echo "$frontmatter" | grep -q "^name:"; then
+              echo "ERROR: $plugin_name/$skill_name - Missing 'name' in frontmatter"
+              errors=$((errors + 1))
+            fi
+
+            if ! echo "$frontmatter" | grep -q "^description:"; then
+              echo "ERROR: $plugin_name/$skill_name - Missing 'description' in frontmatter"
+              errors=$((errors + 1))
+            fi
+
+            echo "  OK: $plugin_name/$skill_name"
+          done
+
+          if [ $errors -gt 0 ]; then
+            echo "FAILED: $errors errors found"
+            exit 1
+          fi
+          echo "All SKILL.md files valid"
+
+      - name: Validate agent frontmatter
+        run: |
+          echo "=== Validating agent files ==="
+          for agent in plugins/*/agents/*.md; do
+            [ -f "$agent" ] || continue
+            agent_name=$(basename "$agent" .md)
+            plugin_name=$(basename "$(dirname "$(dirname "$agent")")")
+
+            if ! head -1 "$agent" | grep -q "^---"; then
+              echo "ERROR: $plugin_name/$agent_name - Missing YAML frontmatter"
+              exit 1
+            fi
+
+            echo "  OK: $plugin_name/$agent_name"
+          done
+
+      - name: Validate rule frontmatter
+        run: |
+          echo "=== Validating rule files ==="
+          for rule in plugins/*/rules/*.md; do
+            [ -f "$rule" ] || continue
+            rule_name=$(basename "$rule" .md)
+            plugin_name=$(basename "$(dirname "$(dirname "$rule")")")
+
+            if ! head -1 "$rule" | grep -q "^---"; then
+              echo "ERROR: $plugin_name/$rule_name - Missing YAML frontmatter"
+              exit 1
+            fi
+
+            echo "  OK: $plugin_name/$rule_name"
+          done
+
+      - name: Validate JSON Schema
+        run: |
+          echo "=== Validating cloudstack.schema.json ==="
+          python3 -c "
+          import json
+          with open('schema/cloudstack.schema.json') as f:
+              schema = json.load(f)
+          assert '\$schema' in schema, 'Missing \$schema reference'
+          assert 'properties' in schema, 'Missing properties'
+          print(f'Valid: {len(schema[\"properties\"])} top-level properties')
+          "
+
+      - name: Validate template cloudstack.json against schema
+        run: |
+          echo "=== Validating templates/cloudstack.json ==="
+          python3 -c "
+          import json
+          with open('templates/cloudstack.json') as f:
+              config = json.load(f)
+          assert 'project' in config, 'Missing project section'
+          print('Valid template config')
+          "
+
+      - name: Check file references
+        run: |
+          echo "=== Checking file references ==="
+          errors=0
+          for plugin_dir in plugins/*/; do
+            plugin_name=$(basename "$plugin_dir")
+
+            # Check skills directories have SKILL.md
+            for skill_dir in "$plugin_dir"skills/*/; do
+              [ -d "$skill_dir" ] || continue
+              if [ ! -f "${skill_dir}SKILL.md" ]; then
+                echo "ERROR: $plugin_name/$(basename "$skill_dir") - Missing SKILL.md"
+                errors=$((errors + 1))
+              fi
+            done
+          done
+
+          if [ $errors -gt 0 ]; then
+            echo "FAILED: $errors missing files"
+            exit 1
+          fi
+          echo "All file references valid"
+
+      - name: Summary
+        run: |
+          echo "=== Plugin Summary ==="
+          for plugin_dir in plugins/*/; do
+            plugin_name=$(basename "$plugin_dir")
+            skills=$(find "$plugin_dir"skills -name "SKILL.md" 2>/dev/null | wc -l | tr -d ' ')
+            agents=$(find "$plugin_dir"agents -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+            rules=$(find "$plugin_dir"rules -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+            echo "  $plugin_name: $skills skills, $agents agents, $rules rules"
+          done

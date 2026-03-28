@@ -1,0 +1,9 @@
+{
+  "name": "react-developer",
+  "description": "React + TypeScript frontend scaffolding and browser verification — feature modules, Playwright screenshots, smoke testing, and visual regression checks.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Marjan Gjuroski"
+  },
+  "license": "MIT"
+}
