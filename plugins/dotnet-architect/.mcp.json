@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"],
+      "description": "Library documentation lookup for EF Core, WolverineFx, FluentValidation, Polly, and other .NET libraries. Used by add-entity, add-command, add-query, add-event-handler skills."
+    }
+  }
+}

@@ -3,6 +3,7 @@ name: complete-task
 description: Complete current task with all quality gates, code review, QA check, and submit PR. Use when implementation is done and you want to run the full verification pipeline (build, lint, tests, review, QA) and create the pull request.
 allowed-tools: Bash, Read, Glob, Grep, Task, Skill
 user-invocable: true
+argument-hint: "[issue-number] [--skip-integration] [--auto-fix]"
 ---
 
 # Complete Task

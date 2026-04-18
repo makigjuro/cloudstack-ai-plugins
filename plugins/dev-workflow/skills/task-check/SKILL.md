@@ -3,6 +3,7 @@ name: task-check
 description: QA check to verify implementation matches GitHub issue requirements. Use to validate that all acceptance criteria from the linked issue are met before creating a PR.
 allowed-tools: Bash, Read, Glob, Grep, mcp__github-mcp-server__get_issue
 user-invocable: true
+argument-hint: "[issue-number]"
 ---
 
 # Task Check (QA Verification)

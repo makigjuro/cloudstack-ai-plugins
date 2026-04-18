@@ -3,6 +3,7 @@ name: run-tests
 description: Run .NET tests with smart change detection -- auto-detects changed files via git diff and runs only affected test projects. Use whenever the user wants to run tests, verify changes, check if tests pass, run unit tests, integration tests, or test a specific service.
 allowed-tools: Bash
 user-invocable: true
+argument-hint: "[service] [--integration]"
 ---
 
 # Run Tests -- Smart Change-Aware Test Selection

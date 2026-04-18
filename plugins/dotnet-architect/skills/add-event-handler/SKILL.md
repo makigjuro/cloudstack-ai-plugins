@@ -3,6 +3,7 @@ name: add-event-handler
 description: Scaffold a WolverineFx event handler for domain events or integration events. Use whenever the user wants to react to domain events, publish messages, send notifications, update read models, or add async side effects.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, mcp__context7__resolve-library-id, mcp__context7__query-docs
 user-invocable: true
+argument-hint: "{EventName} [Service]"
 ---
 
 # Add Event Handler

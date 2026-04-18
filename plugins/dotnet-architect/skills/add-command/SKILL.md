@@ -3,6 +3,7 @@ name: add-command
 description: Scaffold a new CQRS command with handler, validator, and POST endpoint following project conventions. Use whenever the user wants to add a write operation, mutation, POST/PUT/DELETE endpoint, or any state-changing action to a microservice.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, mcp__context7__resolve-library-id, mcp__context7__query-docs
 user-invocable: true
+argument-hint: "{CommandName} [Service]"
 ---
 
 # Add CQRS Command

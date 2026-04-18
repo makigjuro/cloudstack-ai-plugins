@@ -2,13 +2,13 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Plugins](https://img.shields.io/badge/plugins-4-purple)](plugins/)
-[![Skills](https://img.shields.io/badge/skills-29-green)](plugins/)
-[![Agents](https://img.shields.io/badge/agents-6-orange)](plugins/)
+[![Skills](https://img.shields.io/badge/skills-31-green)](plugins/)
+[![Agents](https://img.shields.io/badge/agents-7-orange)](plugins/)
 [![.NET 10](https://img.shields.io/badge/.NET-10-512BD4)](https://dotnet.microsoft.com/)
 [![React 19](https://img.shields.io/badge/React-19-61DAFB)](https://react.dev/)
 [![Terraform](https://img.shields.io/badge/Terraform-IaC-7B42BC)](https://www.terraform.io/)
 
-> AI-powered full-stack cloud engineer for Claude Code. 29 skills, 6 agents, 14 rules across 4 plugins.
+> AI-powered full-stack cloud engineer for Claude Code. 31 skills, 7 agents, 14 rules across 4 plugins.
 
 ```
 /plugin marketplace add makigjuro/cloudstack-ai-plugins
@@ -83,10 +83,10 @@ graph TB
 
 | Plugin | Skills | Agents | Rules | What It Does |
 |--------|--------|--------|-------|-------------|
-| [dotnet-architect](plugins/dotnet-architect/) | 6 | 1 | 7 | Hexagonal architecture scaffolding, CQRS, domain entities, migrations, code review |
-| [react-developer](plugins/react-developer/) | 4 | 0 | 2 | React feature modules, Playwright screenshots, smoke testing |
+| [dotnet-architect](plugins/dotnet-architect/) | 7 | 1 | 7 | Hexagonal architecture scaffolding, CQRS, domain entities, migrations, test generation, code review |
+| [react-developer](plugins/react-developer/) | 4 | 1 | 2 | React feature modules, Playwright screenshots, smoke testing, frontend review |
 | [cloud-infra](plugins/cloud-infra/) | 6 | 1 | 1 | Terraform modules, Helm charts, infra linting, infrastructure review |
-| [dev-workflow](plugins/dev-workflow/) | 13 | 4 | 4 | PRD to PR workflow, quality gates, parallel code review, git conventions |
+| [dev-workflow](plugins/dev-workflow/) | 14 | 4 | 4 | PRD to PR workflow, project init, quality gates, parallel code review, git conventions |
 
 Install all four for the complete "cloud engineer" experience, or pick individual plugins for your stack.
 

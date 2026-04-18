@@ -4,6 +4,8 @@ description: Break down a feature into a structured plan with acceptance criteri
 allowed-tools: Read, Glob, Grep, Bash, WebSearch, AskUserQuestion, EnterPlanMode, ExitPlanMode
 model: claude-opus-4-6
 user-invocable: true
+context: fork
+argument-hint: "{feature description}"
 ---
 
 # Plan Feature

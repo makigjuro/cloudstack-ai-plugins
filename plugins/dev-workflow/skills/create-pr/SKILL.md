@@ -3,6 +3,7 @@ name: create-pr
 description: Create a pull request with a structured description linking to the GitHub issue. Use when ready to push and open a PR -- auto-detects changed services/layers and generates a structured PR body with test plan.
 allowed-tools: Bash, Read, Glob, Grep, mcp__github-mcp-server__create_pull_request
 user-invocable: true
+argument-hint: "[issue-number]"
 ---
 
 # Create Pull Request

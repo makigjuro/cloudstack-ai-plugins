@@ -3,6 +3,7 @@ name: screenshot
 description: Capture a screenshot of a URL or route with one command. Use whenever the user wants to take a screenshot, capture a page, see what a route looks like, or visually verify a page. Supports mobile viewport with --mobile and unauthenticated mode with --no-auth.
 allowed-tools: mcp__playwright__browser_navigate, mcp__playwright__browser_wait_for, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_evaluate, mcp__playwright__browser_close, mcp__playwright__browser_resize
 user-invocable: true
+argument-hint: "{url-or-route} [--mobile] [--no-auth]"
 ---
 
 # Screenshot

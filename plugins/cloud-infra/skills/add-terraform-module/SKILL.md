@@ -3,6 +3,7 @@ name: add-terraform-module
 description: Scaffold a new Terraform module with variables, main, and outputs. Use when provisioning a new cloud resource (database, cache, storage, etc.) that needs its own Terraform module and optional IaC wrapper wiring.
 allowed-tools: Write, Read, Glob, Grep
 user-invocable: true
+argument-hint: "{module-name}"
 ---
 
 # Add Terraform Module
