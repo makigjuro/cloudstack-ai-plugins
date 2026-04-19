@@ -43,6 +43,11 @@ These scripts read `TF_PATH` and `CHARTS_PATH` from environment variables. Expor
 export TF_PATH="..." CHARTS_PATH="..."
 ```
 
+The security scan (Track D below) reuses the script from the `trivy-scan` skill rather than duplicating it:
+```bash
+bash {plugin-skills-path}/trivy-scan/scripts/scan-trivy.sh
+```
+
 ## Process
 
 ### Phase 0: Pre-flight
@@ -85,7 +90,15 @@ export CHARTS_PATH="{CHARTS_PATH}"
 bash {plugin-skills-path}/complete-infra/scripts/lint-helm.sh
 ```
 
-If any lint track fails, STOP and report.
+**Track D: Security scan (trivy)**
+```bash
+export TF_PARENT="{TF_PARENT}" CHARTS_PATH="{CHARTS_PATH}"
+bash {plugin-skills-path}/trivy-scan/scripts/scan-trivy.sh
+```
+
+Honours `.trivyignore` at `{TF_PARENT}/.trivyignore`. Every suppression must carry a justifying comment — see the `trivy-scan` skill for conventions.
+
+If any lint or scan track fails, STOP and report. Treat `trivy` missing as a FAIL and print the install hint so the user can remediate.
 
 ### Phase 2: Infrastructure Review (Parallel Agents)
 
@@ -119,6 +132,7 @@ Run `/create-pr {issue}`.
 - Terraform Format: PASS
 - Terraform Validate: PASS
 - Helm Lint: PASS / SKIP (no chart changes)
+- Security Scan (trivy): PASS / WARN (findings in .trivyignore only) / FAIL
 - Infra Review: PASS
 
 PR is ready for human review.

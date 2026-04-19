@@ -27,6 +27,7 @@ Ignore all other changes — the general `reviewer` agent handles application co
 1. Get the diff against the base branch for infrastructure files
 2. Get changed file list for infrastructure directories
 3. Review each changed file against the checklists below
+4. If a `.trivyignore` is present at `{TF_PARENT}/.trivyignore`, read it and correlate its suppressions with the current diff (see **Scanner Correlation** below)
 
 ## Terraform Checklist
 
@@ -81,6 +82,17 @@ Ignore all other changes — the general `reviewer` agent handles application co
 - No `privileged: true` containers
 - `runAsNonRoot: true` where possible
 - No secrets in plain `values.yaml` — use sealed secrets or external secrets
+
+## Scanner Correlation (trivy)
+
+The `/complete-infra` and `/infra-lint` skills run `/trivy-scan` as a separate gate, so your job here is NOT to re-run trivy — it's to sanity-check the human decisions captured in the ignore file.
+
+If `{TF_PARENT}/.trivyignore` exists, read it and confirm:
+
+- **Every suppression has a justifying comment.** An uncommented rule ID is a red flag — either the justification was never written, or the ignore was added reflexively to silence CI. Flag these as warnings.
+- **The justification is consistent with the current diff.** If a comment says "deferred until VNet integration" but the current diff *adds* VNet integration, the suppression is now obsolete — flag it.
+- **The rule is still relevant.** Some trivy rules target deprecated resource types (e.g. `AZU-0026` was written for Azure PostgreSQL Single Server; it misfires on Flexible Server). Confirm the justification actually matches the current resource usage.
+- **Don't re-raise suppressed findings as blockers** — the team has already made a conscious decision on them.
 
 ## CI/CD Checklist
 
