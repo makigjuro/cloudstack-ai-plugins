@@ -3,6 +3,7 @@ name: start-work
 description: Create a feature branch from a GitHub issue and set up the working context. Use whenever starting implementation on a new issue -- creates the branch, fetches requirements, and begins building automatically.
 allowed-tools: Bash, Read, mcp__github-mcp-server__get_issue
 user-invocable: true
+argument-hint: "{issue-number}"
 ---
 
 # Start Work

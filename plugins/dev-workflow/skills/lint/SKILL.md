@@ -3,6 +3,7 @@ name: lint
 description: Run all linters and formatters -- dotnet format, ESLint, helm lint, and terraform validate. Use to verify formatting before a PR. Note that hooks auto-fix on save/commit; this skill is for explicit verification across the full codebase. For infrastructure-only changes, use /infra-lint instead.
 allowed-tools: Bash
 user-invocable: true
+argument-hint: "[--fix]"
 ---
 
 # Lint

@@ -3,6 +3,7 @@ name: docs
 description: Generate or update project documentation from code -- API docs, service docs, architecture docs, or runbooks. Use after adding endpoints, entities, events, or infrastructure changes, or when documentation may be stale.
 allowed-tools: Bash, Read, Glob, Grep, Write, Edit, mcp__claude_ai_Mermaid_Chart__validate_and_render_mermaid_diagram
 user-invocable: true
+argument-hint: "[service|api|architecture|domain|runbook|all]"
 ---
 
 # Generate / Update Documentation

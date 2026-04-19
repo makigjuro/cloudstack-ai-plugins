@@ -83,10 +83,10 @@ graph TB
 
 | Plugin | Skills | Agents | Rules | What It Does |
 |--------|--------|--------|-------|-------------|
-| [dotnet-architect](plugins/dotnet-architect/) | 6 | 1 | 7 | Hexagonal architecture scaffolding, CQRS, domain entities, migrations, code review |
-| [react-developer](plugins/react-developer/) | 4 | 0 | 2 | React feature modules, Playwright screenshots, smoke testing |
+| [dotnet-architect](plugins/dotnet-architect/) | 7 | 1 | 7 | Hexagonal architecture scaffolding, CQRS, domain entities, migrations, test generation, code review |
+| [react-developer](plugins/react-developer/) | 4 | 1 | 2 | React feature modules, Playwright screenshots, smoke testing, frontend review |
 | [cloud-infra](plugins/cloud-infra/) | 6 | 1 | 1 | Terraform modules, Helm charts, infra linting, infrastructure review |
-| [dev-workflow](plugins/dev-workflow/) | 13 | 4 | 4 | PRD to PR workflow, quality gates, parallel code review, git conventions |
+| [dev-workflow](plugins/dev-workflow/) | 14 | 4 | 4 | PRD to PR workflow, project init, quality gates, parallel code review, git conventions |
 
 Install all four for the complete "cloud engineer" experience, or pick individual plugins for your stack.
 

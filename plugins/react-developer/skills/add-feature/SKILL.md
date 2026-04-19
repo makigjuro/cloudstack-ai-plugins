@@ -3,6 +3,7 @@ name: add-feature
 description: Scaffold a new frontend feature module with page, components, API service, and hooks. Use whenever the user wants to add a new page, dashboard section, UI module, or frontend feature to the React app.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, mcp__context7__resolve-library-id, mcp__context7__query-docs
 user-invocable: true
+argument-hint: "{feature-name}"
 ---
 
 # Add Frontend Feature

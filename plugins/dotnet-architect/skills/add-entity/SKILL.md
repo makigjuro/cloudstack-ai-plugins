@@ -3,6 +3,7 @@ name: add-entity
 description: Scaffold a new domain entity with value object ID, aggregate root, factory method, and domain event. Use whenever the user wants to add a new domain concept, database table, persisted object, or aggregate root to the system.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, mcp__context7__resolve-library-id, mcp__context7__query-docs
 user-invocable: true
+argument-hint: "{Entity} [Service]"
 ---
 
 # Add Domain Entity

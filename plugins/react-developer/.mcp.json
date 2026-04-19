@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"],
+      "description": "Library documentation lookup for React, TanStack Query, Zustand, and other frontend libraries. Used by add-feature skill."
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"],
+      "description": "Browser automation for screenshots, smoke testing, and visual feature verification. Used by screenshot, smoke-test, verify-feature skills."
+    }
+  }
+}
