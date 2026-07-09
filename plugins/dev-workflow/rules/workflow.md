@@ -256,12 +256,14 @@ Specialized agents that run in isolated contexts:
 
 | Agent | Purpose | Model |
 |-------|---------|-------|
-| `reviewer` | Security, architecture, quality review (deep PR gate) | Sonnet |
-| `verifier` | Acceptance criteria verification | Sonnet |
-| `investigator` | Evidence gathering for diagnosis | Sonnet |
-| `analyzer` | Codebase analysis for new features | Opus |
+| `reviewer` | Security, architecture, quality review (deep PR gate) | inherits session model |
+| `verifier` | Acceptance criteria verification | inherits session model |
+| `investigator` | Evidence gathering for diagnosis | inherits session model |
+| `analyzer` | Codebase analysis for new features | inherits session model |
 | `doc-checker` | Detect stale docs relative to code changes | Haiku |
-| `infra-reviewer` | Terraform/Helm/CI review (infra-specific gate) | Sonnet |
+| `infra-reviewer` | Terraform/Helm/CI review (infra-specific gate) | inherits session model |
+
+Review and verification agents intentionally have no `model:` pin — they inherit the session model so the quality gate is never weaker than the model that wrote the code. Only `doc-checker` pins Haiku: it is a fast advisory check, not a blocker.
 
 ## Pre-PR Checklist
 

@@ -21,6 +21,8 @@ Read `cloudstack.json` from the project root at the start of execution. Extract:
 - `NAMESPACE` = `project.namespace` (default: detect from `*.sln` name or first `*.csproj` root namespace)
 - `DOMAIN_PATH` = `backend.sharedDomainPath` (default: find directory matching `**/Domain/` containing `Entities/`)
 - `SERVICES` = `backend.services[]` (default: discover from `src/*/` directories containing `.Application/` subfolders)
+- `PUBLISHER_INTERFACE` = `backend.messagingConventions.publisherInterface` (default: `IMessagePublisher` — but grep the codebase for the actual publisher abstraction first; projects often name it after their broker, e.g. `INatsPublisher`)
+- `SUBJECT_PREFIX` = `backend.messagingConventions.subjectPrefix` (used to build subject/topic names consistent with the project's hierarchy)
 
 If `cloudstack.json` does not exist, auto-detect by scanning the project structure.
 
@@ -58,10 +60,10 @@ For handlers that publish to a message broker:
 ```csharp
 public class {EventName}Handler
 {
-    private readonly IMessagePublisher _messagePublisher;
+    private readonly {PUBLISHER_INTERFACE} _messagePublisher;
     private readonly ILogger<{EventName}Handler> _logger;
 
-    public {EventName}Handler(IMessagePublisher messagePublisher, ILogger<{EventName}Handler> logger)
+    public {EventName}Handler({PUBLISHER_INTERFACE} messagePublisher, ILogger<{EventName}Handler> logger)
     {
         _messagePublisher = messagePublisher;
         _logger = logger;
@@ -126,7 +128,7 @@ Next: Run `/run-tests` to verify handler registration.
 ## Error Handling
 
 - **Event class not found:** Suggest running `/add-entity` first to create the entity and its domain events.
-- **Message publisher interface missing:** Check if `IMessagePublisher` is registered in the service's DI. If not, it may need to be added to the Infrastructure layer.
+- **Message publisher interface missing:** Check if `{PUBLISHER_INTERFACE}` is registered in the service's DI. If not, it may need to be added to the Infrastructure layer.
 
 ## Related Skills
 

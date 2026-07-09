@@ -25,7 +25,7 @@ A Claude Code plugin for cloud infrastructure management — Terraform modules, 
 
 | Agent | Model | Purpose |
 |-------|-------|---------|
-| `infra-reviewer` | Sonnet | Dedicated Terraform/Helm/CI review with security, naming, and best-practice checklists |
+| `infra-reviewer` | inherits session model | Dedicated Terraform/Helm/CI review with security, naming, and best-practice checklists |
 
 ## Installation
 

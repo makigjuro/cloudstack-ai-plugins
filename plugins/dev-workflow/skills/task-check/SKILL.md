@@ -35,22 +35,17 @@ if [ -z "$ISSUE" ]; then
   echo "ERROR: Could not determine issue number. Provide as argument: /task-check 42"
   exit 1
 fi
-
-# Auto-detect repo from git remote
-REPO_URL=$(git remote get-url origin)
-OWNER=$(echo "$REPO_URL" | sed -E 's#.*[:/]([^/]+)/[^/]+(\.git)?$#\1#')
-REPO=$(echo "$REPO_URL" | sed -E 's#.*[:/][^/]+/([^/]+?)(\.git)?$#\1#')
 ```
 
 ### Step 2: Fetch Issue Details
 
-Use MCP for structured issue data:
+Fetch the issue (gh infers owner/repo from the git remote):
 
-```
-mcp__github-mcp-server__get_issue(owner: "${OWNER}", repo: "${REPO}", issue_number: $ISSUE)
+```bash
+gh issue view "$ISSUE" --json number,title,body,labels,state,comments
 ```
 
-This returns structured JSON with number, title, body, labels, state, and comments -- no CLI output parsing needed.
+If the GitHub MCP server is available in this session, you may use `mcp__github-mcp-server__get_issue` instead -- it returns typed JSON without output parsing.
 
 ### Step 3: Parse Acceptance Criteria
 

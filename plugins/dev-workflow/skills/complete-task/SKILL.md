@@ -30,6 +30,7 @@ Read `cloudstack.json` from the project root at the start of execution. Extract:
 - `CHARTS_PATH` = `infrastructure.chartsPath` (default: `deploy/charts`)
 - `TERRAFORM_PATH` = `infrastructure.terraformPath` (default: `infra/terraform/modules`)
 - `SERVICES` = `backend.services[]` (default: discover from `src/*/` directories containing `.Application/` subfolders)
+- `VALIDATOR_MCP` = `validators.mcpServer` (optional — enables structured MCP checks in Phases 0 and 1.5)
 
 If `cloudstack.json` does not exist, auto-detect by scanning the project structure.
 
@@ -75,7 +76,9 @@ If pre-flight fails, STOP and report the issue.
 
 **Change Detection -- run immediately after pre-flight:**
 
-Detect what changed using git diff against the base branch. The change detection flags should use paths from cloudstack.json when available.
+If `VALIDATOR_MCP` is configured, call `mcp__{VALIDATOR_MCP}__detect_changes` instead of the bash below — one call returns all flags as structured JSON (`hasBackend`, `hasFrontend`, `hasInfra`, `hasEndpoints`, `hasEntities`, `hasEvents`).
+
+Otherwise, detect what changed using git diff against the base branch. The change detection flags should use paths from cloudstack.json when available.
 
 ```bash
 CHANGED=$(git diff origin/main...HEAD --name-only)
@@ -114,7 +117,7 @@ If either track fails, STOP and report the failure.
 
 ### Phase 1.5: Pending Migrations Check (if HAS_BACKEND)
 
-Check each service for pending EF Core migrations by looping through the configured services:
+If `VALIDATOR_MCP` is configured, call `mcp__{VALIDATOR_MCP}__check_all_migrations` — one batch call covering all services with a structured `anyPending` verdict. Otherwise, check each service for pending EF Core migrations by looping through the configured services:
 
 ```bash
 # For each service in cloudstack.json backend.services[]:
@@ -177,7 +180,38 @@ curl -sf http://localhost:${FRONTEND_PORT} > /dev/null 2>&1 && echo "Frontend: U
 
 ### Phase 4: Parallel Agent Review (Dynamic Composition)
 
-Launch all applicable agents in parallel in a single response. Each agent uses `isolation: "worktree"` for safe parallel reads and `run_in_background: true` so you can begin drafting the PR summary while agents work.
+**Preferred path -- Workflow tool.** If the harness exposes the `Workflow` tool, orchestrate this phase as a workflow script instead of hand-launching agents: findings come back as schema-validated JSON (no report parsing), each finding is adversarially verified before it can block the PR, and a failed run can be resumed without re-running completed agents. Compose the agent list from the change flags and reuse the plugin agent definitions via `agentType`:
+
+```javascript
+export const meta = {
+  name: 'pr-review-gate',
+  description: 'Parallel agent review with adversarial verification',
+  phases: [{ title: 'Review' }, { title: 'Verify' }],
+}
+const FINDINGS = { type: 'object', required: ['pass', 'findings'], properties: {
+  pass: { type: 'boolean' },
+  findings: { type: 'array', items: { type: 'object',
+    required: ['severity', 'file', 'summary'],
+    properties: { severity: { enum: ['critical', 'warning', 'suggestion'] },
+      file: { type: 'string' }, line: { type: 'integer' }, summary: { type: 'string' } } } } } }
+const VERDICT = { type: 'object', required: ['isReal'], properties: {
+  isReal: { type: 'boolean' }, reason: { type: 'string' } } }
+// args = { reviewers: [{ agentType: 'reviewer', prompt: '...' }, ...] } built from the change flags
+const results = await pipeline(
+  args.reviewers,
+  r => agent(r.prompt, { agentType: r.agentType, isolation: 'worktree', phase: 'Review', schema: FINDINGS }),
+  review => parallel((review?.findings ?? [])
+    .filter(f => f.severity !== 'suggestion')
+    .map(f => () => agent(
+      `Adversarially verify this finding against the diff; default to isReal=false if it does not hold up: ${JSON.stringify(f)}`,
+      { phase: 'Verify', schema: VERDICT }).then(v => ({ ...f, verdict: v })))))
+const confirmed = results.filter(Boolean).flat().filter(Boolean).filter(f => f.verdict?.isReal)
+return { confirmed }
+```
+
+Only confirmed findings enter the Phase 5 fix loop; suggestions are reported as advisory. The verifier agent's acceptance-criteria check keeps its MET/UNMET/PARTIAL shape -- give it its own schema rather than forcing it into the findings shape.
+
+**Fallback path -- Agent tool fan-out.** Without the Workflow tool, launch all applicable agents in parallel in a single response. Each agent uses `isolation: "worktree"` for safe parallel reads and `run_in_background: true` so you can begin drafting the PR summary while agents work.
 
 **Always launch:**
 

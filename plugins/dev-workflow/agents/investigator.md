@@ -1,7 +1,6 @@
 ---
 name: investigator
 description: Evidence gatherer for diagnosing problems. Collects facts systematically without drawing conclusions.
-model: sonnet
 tools: Bash, Read, Glob, Grep, WebSearch, mcp__context7__resolve-library-id, mcp__context7__query-docs
 ---
 

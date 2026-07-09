@@ -41,7 +41,7 @@ Scaffolding skills, architecture rules, and a code review agent for .NET microse
 
 | Agent | Model | Description |
 |-------|-------|-------------|
-| `reviewer` | Sonnet | Deep PR-level code review for security, architecture, and quality |
+| `reviewer` | inherits session model | Deep PR-level code review for security, architecture, and quality |
 
 ## Configuration
 

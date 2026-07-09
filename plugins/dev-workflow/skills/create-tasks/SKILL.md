@@ -85,16 +85,10 @@ Create? [Yes / Modify / Cancel]
 
 ### Step 4a: Single Issue Path
 
-Create one issue with all tasks as a checklist using MCP:
+Create one issue with all tasks as a checklist:
 
-```
-mcp__github-mcp-server__create_issue(
-  owner: "{REPO_OWNER}",
-  repo: "{REPO_NAME}",
-  title: "{Feature Title}",
-  labels: ["{labels}"],
-  body: "..."
-)
+```bash
+gh issue create --title "{Feature Title}" --label "{labels}" --body "..."
 ```
 
 Issue body format:
@@ -138,16 +132,10 @@ Only include layer sections that have tasks. Skip empty sections.
 
 ### Step 4b: Epic + Tasks Path
 
-**Create the epic** using MCP:
+**Create the epic:**
 
-```
-mcp__github-mcp-server__create_issue(
-  owner: "{REPO_OWNER}",
-  repo: "{REPO_NAME}",
-  title: "Epic: {Feature Title}",
-  labels: ["epic", "feature", "{labels}"],
-  body: "..."
-)
+```bash
+gh issue create --title "Epic: {Feature Title}" --label epic --label feature --label "{labels}" --body "..."
 ```
 
 Epic body format:
@@ -172,16 +160,10 @@ Epic body format:
 Generated with [Claude Code](https://claude.com/claude-code)
 ```
 
-**Create each task issue** using MCP:
+**Create each task issue:**
 
-```
-mcp__github-mcp-server__create_issue(
-  owner: "{REPO_OWNER}",
-  repo: "{REPO_NAME}",
-  title: "[{Layer}] {Task Title}",
-  labels: ["{layer-label}", "{service-labels}"],
-  body: "..."
-)
+```bash
+gh issue create --title "[{Layer}] {Task Title}" --label "{layer-label}" --label "{service-labels}" --body "..."
 ```
 
 Task body format:
@@ -208,14 +190,11 @@ Generated with [Claude Code](https://claude.com/claude-code)
 
 **Update epic with task links:**
 
+```bash
+gh issue edit {epic-number} --body "{updated body with - [ ] #{taskN} -- {title} links}"
 ```
-mcp__github-mcp-server__update_issue(
-  owner: "{REPO_OWNER}",
-  repo: "{REPO_NAME}",
-  issue_number: {epic-number},
-  body: "{updated body with - [ ] #{taskN} -- {title} links}"
-)
-```
+
+If the GitHub MCP server is available in this session, you may use the equivalent `mcp__github-mcp-server__create_issue` / `update_issue` tools instead -- they return typed JSON without output parsing.
 
 ## Label Mapping
 

@@ -46,13 +46,13 @@ Examples:
 
 ## Commands
 
-Fetch the issue using MCP for structured data:
+Fetch the issue (gh infers owner/repo from the git remote):
 
-```
-mcp__github-mcp-server__get_issue(owner: "{REPO_OWNER}", repo: "{REPO_NAME}", issue_number: {issue})
+```bash
+gh issue view {issue} --json number,title,body,labels,state
 ```
 
-This returns structured JSON with title, body, labels, and state -- no CLI parsing needed.
+If the GitHub MCP server is available in this session, you may use `mcp__github-mcp-server__get_issue` instead -- it returns typed JSON without output parsing.
 
 ```bash
 # Check working tree

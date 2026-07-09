@@ -21,6 +21,7 @@ Perform a comprehensive code review of changes on the current branch compared to
 Read `cloudstack.json` from the project root if it exists. Extract:
 - `SOLUTION` = `backend.solutionPath`
 - `SERVICES` = `backend.services[]`
+- `VALIDATOR_MCP` = `validators.mcpServer` (optional)
 
 If `cloudstack.json` does not exist, auto-detect by scanning the project structure.
 
@@ -70,7 +71,11 @@ Check for OWASP Top 10 vulnerabilities:
 
 ### Step 3: Architecture Review
 
-Use bash-based checks for automated validation, then supplement with manual review.
+If `VALIDATOR_MCP` is configured, prefer its structured tools over the bash checks below — they do real dependency analysis (including project references the greps miss) and return JSON in one call:
+- `mcp__{VALIDATOR_MCP}__validate_all_layers` replaces the layer-dependency loop
+- `mcp__{VALIDATOR_MCP}__check_result_pattern` (per changed handler file) replaces the thrown-exception grep
+
+Fall back to the bash-based checks when no validator MCP is configured, then supplement with manual review.
 
 **Hexagonal Architecture -- validate layer dependencies:**
 
@@ -139,6 +144,10 @@ done
 - Non-descriptive names (data, info, temp, x)
 - Inconsistent naming with existing code
 - Missing XML docs on public APIs
+
+### Step 4.5: Adversarial Verification (when the Workflow tool is available)
+
+Before reporting, if the harness exposes the `Workflow` tool and the review produced Critical or Warning findings, verify them adversarially: fan out one skeptic agent per finding, prompted to REFUTE it against the actual diff (schema `{ isReal: boolean, reason: string }`, default to refuted when uncertain). Drop findings that don't survive. This prevents plausible-but-wrong findings from blocking a PR. Skip this step for suggestion-level findings and when the Workflow tool is unavailable.
 
 ### Step 5: Generate Report
 

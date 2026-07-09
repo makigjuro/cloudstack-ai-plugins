@@ -1,7 +1,6 @@
 ---
 name: frontend-reviewer
 description: Frontend-focused code review for React applications. Checks accessibility, performance, React anti-patterns, and security. Lighter than the full reviewer — only examines frontend code.
-model: sonnet
 tools: Bash, Read, Glob, Grep
 ---
 

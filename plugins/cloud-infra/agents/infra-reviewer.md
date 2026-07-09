@@ -1,7 +1,6 @@
 ---
 name: infra-reviewer
 description: Dedicated Terraform/Helm/CI review for infrastructure changes. Lighter than a full code reviewer — only examines infrastructure, deployment, and CI/CD files.
-model: sonnet
 tools: Bash, Read, Glob, Grep
 ---
 

@@ -1,7 +1,6 @@
 ---
 name: reviewer
 description: Deep PR-level code review for security, architecture, and quality. The thorough gate -- /check-architecture is the quick local check.
-model: sonnet
 tools: Bash, Read, Glob, Grep
 ---
 
@@ -41,6 +40,7 @@ This is the **thorough review** -- run as an agent from `/complete-task` or stan
 - No hardcoded secrets, API keys, or connection strings
 - Authorization checks on all endpoints (`.RequireAuthorization()` or middleware)
 - API keys and tokens must be hashed, never stored plaintext
+- Where API keys are looked up by value, the scheme must use a non-secret prefix for the DB lookup followed by hash verification (BCrypt/Argon2) — never a plaintext equality query or `==` comparison on the secret
 
 ### Sensitive Data Exposure (A02:2021)
 - No sensitive data in logs (passwords, tokens, PII)

@@ -13,13 +13,12 @@ Create a pull request for the current branch with a structured description.
 ## Configuration
 
 Read `cloudstack.json` from the project root at the start of execution. Extract relevant fields:
-- `REPO_OWNER` / `REPO_NAME` = `repository.owner` / `repository.name` (default: detect from `git remote -v`)
 - `SOLUTION` = `backend.solutionPath` (default: find `*.sln`)
 - `FRONTEND_PATH` = `frontend.path` (default: `web`)
 - `CHARTS_PATH` = `infrastructure.chartsPath` (default: `deploy/charts`)
 - `TF_PATH` = `infrastructure.terraformPath` (default: `infra/terraform/modules`)
 
-If `cloudstack.json` does not exist, auto-detect by scanning the project structure and parsing the GitHub remote URL.
+If `cloudstack.json` does not exist, auto-detect by scanning the project structure. The `gh` CLI infers the repository from the git remote -- no owner/repo configuration is needed.
 
 ## Arguments
 
@@ -50,7 +49,7 @@ If `cloudstack.json` does not exist, auto-detect by scanning the project structu
 
 3. **Push and create PR:**
    - Push the branch to origin with `-u` flag.
-   - Create the PR using MCP.
+   - Create the PR with `gh pr create`.
 
 ## PR Body Format
 
@@ -72,13 +71,13 @@ Closes #{issue-number}
 - **Tests:** {changes or "No changes"}
 
 ## Test Plan
-- [ ] Unit tests pass
-- [ ] Integration tests pass (if applicable)
-- [ ] Frontend lint clean (if applicable)
-- [ ] Frontend type-check clean (if applicable)
-- [ ] Helm lint clean (if applicable)
-- [ ] Terraform validate clean (if applicable)
-- [ ] Architecture check passes
+{Include only the tracks matching what changed, with the concrete commands rendered from Configuration values:}
+- [ ] Unit tests pass -- `dotnet test {SOLUTION} --filter "Category!=Integration"`
+- [ ] Integration tests pass -- `dotnet test {SOLUTION} --filter "Category=Integration"` (requires Docker)
+- [ ] Frontend lint + type-check clean -- `cd {FRONTEND_PATH} && npm run lint && npm run type-check`
+- [ ] Helm charts lint clean -- `for c in {CHARTS_PATH}/*/; do helm lint "$c"; done`
+- [ ] Terraform validates -- `terraform -chdir={TF_PATH} validate && terraform fmt -check -recursive {TF_PATH}`
+- [ ] Architecture check passes -- `/check-architecture`
 - [ ] {Any feature-specific manual verification steps}
 
 Generated with [Claude Code](https://claude.com/claude-code)
@@ -89,20 +88,12 @@ Generated with [Claude Code](https://claude.com/claude-code)
 ```bash
 # Push branch
 git push -u origin HEAD
+
+# Create the PR (gh infers owner/repo from the git remote)
+gh pr create --title "{title}" --body "{body}" --base main
 ```
 
-Create the PR using MCP for structured creation:
-
-```
-mcp__github-mcp-server__create_pull_request(
-  owner: "{REPO_OWNER}",
-  repo: "{REPO_NAME}",
-  title: "{title}",
-  body: "{body}",
-  head: "{branch-name}",
-  base: "main"
-)
-```
+If the GitHub MCP server is available in this session, you may use `mcp__github-mcp-server__create_pull_request` instead -- it returns typed JSON without output parsing.
 
 ## Error Handling
 

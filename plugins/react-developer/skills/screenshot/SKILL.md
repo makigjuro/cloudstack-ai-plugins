@@ -40,6 +40,9 @@ Check `cloudstack.json` for `localDev.authConfig`:
       "state": {
         "isAuthenticated": true,
         "token": "dev-token"
+      },
+      "formFields": {
+        "apiKey": "dev-api-key-1"
       }
     }
   }

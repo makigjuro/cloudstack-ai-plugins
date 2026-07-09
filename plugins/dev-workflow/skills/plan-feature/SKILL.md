@@ -2,7 +2,6 @@
 name: plan-feature
 description: Break down a feature into a structured plan with acceptance criteria, affected services, and implementation tasks. Use for simple features that don't need a full PRD -- or when the user describes what they want to build and needs a task breakdown. For complex features needing full requirements, success metrics, and technical planning, use /prd instead.
 allowed-tools: Read, Glob, Grep, Bash, WebSearch, AskUserQuestion, EnterPlanMode, ExitPlanMode
-model: claude-opus-4-6
 user-invocable: true
 context: fork
 argument-hint: "{feature description}"

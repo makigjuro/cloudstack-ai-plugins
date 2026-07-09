@@ -1,7 +1,6 @@
 ---
 name: verifier
 description: QA gate that verifies implementation matches GitHub issue acceptance criteria.
-model: sonnet
 tools: Bash, Read, Glob, Grep
 ---
 
@@ -65,7 +64,7 @@ Verification methods by criterion type:
 | New command/query | Search in application layer (handlers, services) |
 | UI feature | Search in frontend components or pages |
 | Validation rule | Search for validation logic |
-| Error handling | Search for error handling patterns |
+| Error handling | Search for error handling patterns — if the project uses a Result pattern, verify failure paths return specific error codes rather than generic exceptions |
 | Test coverage | Search in test directories for relevant test methods |
 | Documentation | Check for updated docs or comments |
 

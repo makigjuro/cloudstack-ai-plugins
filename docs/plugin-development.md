@@ -148,7 +148,6 @@ Agents are markdown files with YAML frontmatter:
 ---
 name: my-agent
 description: What this agent does
-model: sonnet
 tools: Bash, Read, Glob, Grep
 ---
 
@@ -156,7 +155,7 @@ tools: Bash, Read, Glob, Grep
 ```
 
 Key fields:
-- `model`: `sonnet` (default), `opus` (complex analysis), or `haiku` (fast checks)
+- `model`: omit to inherit the session model (recommended for review/analysis agents — the gate should never run on a weaker model than the one writing the code). Pin `haiku` only for fast, mechanical, advisory checks.
 - `tools`: Comma-separated list of allowed tools
 
 ## Writing Rules

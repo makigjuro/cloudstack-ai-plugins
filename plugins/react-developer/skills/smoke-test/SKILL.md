@@ -77,7 +77,7 @@ Before testing frontend routes, attempt login. Try the UI form flow first:
 
 1. `browser_navigate` to `http://localhost:{DEV_PORT}/login`
 2. `browser_snapshot` to find the login form
-3. If a login form is found, fill it with dev credentials from `localDev.authConfig` or generic test values
+3. If a login form is found, fill it with `localDev.authConfig.formFields` (a field-name → value map, e.g. `{ "apiKey": "dev-api-key-1" }`) or generic test values
 4. `browser_wait_for` redirect away from `/login`
 
 If login fails (stays on `/login` after 5 seconds), fall back to localStorage injection using the auth configuration.
@@ -91,7 +91,7 @@ Instead of hardcoded routes, detect routes from the project's router configurati
 grep -rl "createBrowserRouter\|RouteObject\|<Route" {FRONTEND_PATH}/src/ 2>/dev/null | head -3
 ```
 
-Read the router file and extract all top-level route paths. Always include `/` (root/dashboard).
+Read the router file and extract all top-level route paths. Always include `/` (root/dashboard). If `cloudstack.json` defines `frontend.smokeRoutes`, test those routes in addition to the auto-detected ones — they are the project's known-critical paths and auto-detection may miss dynamic or feature-flagged routes.
 
 If route detection fails, fall back to testing just `/` and `/login`.
 
