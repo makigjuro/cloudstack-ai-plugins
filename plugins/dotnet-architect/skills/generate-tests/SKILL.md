@@ -1,7 +1,7 @@
 ---
 name: generate-tests
 description: Generate unit and integration tests for commands, queries, entities, and event handlers. Use when the user wants to add tests, increase coverage, write specs, or test a handler they just created.
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, mcp__context7__resolve-library-id, mcp__context7__query-docs
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, mcp__plugin_dotnet-architect_context7__resolve-library-id, mcp__plugin_dotnet-architect_context7__query-docs
 user-invocable: true
 argument-hint: "{Handler|Entity} [Service]"
 ---
@@ -23,8 +23,6 @@ Read `cloudstack.json` from the project root at the start of execution. Extract:
 - `NAMESPACE` = `project.namespace` (default: detect from `*.sln`)
 - `SERVICES` = `backend.services[]` (default: discover from project structure)
 - `SOLUTION` = `backend.solutionPath` (default: find `*.sln`)
-- `MESSAGING` = `backend.messaging` (default: `wolverinefx`)
-- `RESULT_PATTERN` = `backend.resultPattern` (default: `true`)
 
 If `cloudstack.json` does not exist, auto-detect by scanning the project structure.
 
@@ -93,10 +91,10 @@ If no test project exists, note it and suggest creating one.
 
 ### Step 5: Generate unit tests
 
-Create test file at `tests/{Service}.UnitTests/` or alongside existing tests:
+Create test file at `tests/{Namespace}.Domain.Tests/` or alongside existing tests:
 
 ```csharp
-namespace {Namespace}.{Service}.UnitTests;
+namespace {Namespace}.Domain.Tests;
 
 public class {Target}Tests
 {
@@ -113,31 +111,31 @@ public class {Target}Tests
     public async Task Handle_ValidCommand_ReturnsSuccess()
     {
         // Arrange
-        var command = new {Command} { /* valid data */ };
-        _repository.GetById(Arg.Any<{Id}>())
+        var command = new {Command}(/* valid args */);
+        _repository.GetByIdAsync(Arg.Any<{Id}>(), Arg.Any<CancellationToken>())
             .Returns(/* expected entity */);
 
         // Act
-        var result = await _sut.Handle(command);
+        var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        await _repository.Received(1).Add(Arg.Any<{Entity}>());
+        result.Should().BeSuccess();
+        await _repository.Received(1).AddAsync(Arg.Any<{Entity}>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task Handle_NotFound_ReturnsFailure()
     {
         // Arrange
-        var command = new {Command} { /* data referencing nonexistent entity */ };
-        _repository.GetById(Arg.Any<{Id}>())
+        var command = new {Command}(/* args referencing nonexistent entity */);
+        _repository.GetByIdAsync(Arg.Any<{Id}>(), Arg.Any<CancellationToken>())
             .Returns(({Entity}?)null);
 
         // Act
-        var result = await _sut.Handle(command);
+        var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeFalse();
+        result.Should().BeFailure();
         result.Error.Code.Should().Be("{ENTITY}_NOT_FOUND");
     }
 }
@@ -150,7 +148,7 @@ Adapt the template based on what the handler actually does — read the real cod
 If using unfamiliar Testcontainers or WireMock patterns, use context7 to look up the current API.
 
 ```csharp
-namespace {Namespace}.{Service}.IntegrationTests;
+namespace {Service}.Tests.Integration;
 
 public class {Target}IntegrationTests : IClassFixture<IntegrationTestFactory>
 {
@@ -166,7 +164,7 @@ public class {Target}IntegrationTests : IClassFixture<IntegrationTestFactory>
     public async Task {Endpoint}_ReturnsExpectedResult()
     {
         // Arrange
-        var client = _factory.CreateClient();
+        var client = _factory.CreateAuthenticatedClient();
 
         // Act
         var response = await client.PostAsJsonAsync("/api/{resource}", new { /* data */ });
@@ -199,13 +197,13 @@ Generate tests for each untested handler, one file per handler.
 ## Generated Tests: {target}
 
 Files created:
-- `tests/{Service}.UnitTests/{Target}Tests.cs` ({N} test methods)
-- `tests/{Service}.IntegrationTests/{Target}IntegrationTests.cs` ({M} test methods) [if --integration]
+- `tests/{Namespace}.Domain.Tests/{Target}Tests.cs` ({N} test methods)
+- `tests/{Service}.Tests.Integration/{Target}IntegrationTests.cs` ({M} test methods) [if --integration]
 
 Test scenarios covered:
 - {list of scenarios}
 
-Run: `dotnet test tests/{Service}.UnitTests --filter {Target}Tests`
+Run: `dotnet test tests/{Namespace}.Domain.Tests --filter {Target}Tests`
 ```
 
 ## Error Handling

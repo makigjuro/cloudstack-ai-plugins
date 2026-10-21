@@ -1,6 +1,7 @@
 ---
-paths:
-  - "**"
+name: workflow
+description: The end-to-end development workflow — requirements, planning, issue tracking, branching, implementation, verification, PR completion, docs, and diagnosis — and which skill or agent to use at each step. Apply when deciding what to do next on a feature, or which cloudstack skill fits the task.
+user-invocable: false
 ---
 
 # Development Workflow
@@ -70,7 +71,7 @@ Use scaffolding skills when available:
 - `/add-migration` — Database migration after model changes
 - `/add-feature` — Frontend feature module (page, components, API service)
 
-**IMPORTANT:** Always create a database migration immediately after adding or modifying entities, configurations, or DbSets. Never commit model changes without the corresponding migration.
+Create a database migration right after adding or modifying entities, configurations, or DbSets, and commit it with the model change — without it the service fails at startup with `PendingModelChangesWarning`.
 
 Run the local environment with `/run-local` to test as you build.
 
@@ -125,12 +126,13 @@ Both `/complete-task` and `/complete-infra` use parallel execution to maximize t
 
 | Agent | When | Purpose |
 |-------|------|---------|
-| `reviewer` | Always | Security, architecture, quality review |
-| `verifier` | Always | Acceptance criteria verification |
-| `doc-checker` | `HAS_ENDPOINTS` or `HAS_ENTITIES` or `HAS_EVENTS` or `HAS_INFRA` | Stale documentation detection |
-| `infra-reviewer` | `HAS_INFRA` | Terraform/Helm/CI-specific review |
+| `dotnet-architect:reviewer` | Always | Security, architecture, quality review |
+| `dev-workflow:verifier` | Always | Acceptance criteria verification |
+| `dev-workflow:doc-checker` | `HAS_ENDPOINTS` or `HAS_ENTITIES` or `HAS_EVENTS` or `HAS_INFRA` | Stale documentation detection |
+| `cloud-infra:infra-reviewer` | `HAS_INFRA` | Terraform/Helm/CI-specific review |
+| `react-developer:frontend-reviewer` | `HAS_FRONTEND` | Accessibility, performance, React patterns, frontend security review |
 
-**Worktree isolation** — All review agents run with `isolation: "worktree"` so they each get an isolated copy of the repository. This enables safe parallel reads without file contention.
+**No worktree isolation for reviewers** — Review agents only read the diff, so they run in parallel against the current working tree. Reserve `isolation: "worktree"` for agents that edit files in parallel.
 
 **Scoped fix loop** — When agents report issues:
 1. Fix the issues
@@ -149,7 +151,7 @@ When implementation is done, run the full completion workflow:
 4. **Parallel Lint + Unit Tests** — Backend, frontend, and infra lint as parallel tracks
 5. **Integration Tests** — Sequential (needs Docker)
 6. **Browser Verification** — Conditional on frontend changes
-7. **Parallel Agent Review** — Dynamic composition based on change detection, worktree-isolated
+7. **Parallel Agent Review** — Dynamic composition based on change detection; reviewers share the working tree
 8. **Scoped Fix Loop** — Fix issues, re-run only affected tracks (max 3 iterations)
 9. **Create PR** — Push and create pull request
 
@@ -256,12 +258,15 @@ Specialized agents that run in isolated contexts:
 
 | Agent | Purpose | Model |
 |-------|---------|-------|
-| `reviewer` | Security, architecture, quality review (deep PR gate) | Sonnet |
-| `verifier` | Acceptance criteria verification | Sonnet |
-| `investigator` | Evidence gathering for diagnosis | Sonnet |
-| `analyzer` | Codebase analysis for new features | Opus |
-| `doc-checker` | Detect stale docs relative to code changes | Haiku |
-| `infra-reviewer` | Terraform/Helm/CI review (infra-specific gate) | Sonnet |
+| `dotnet-architect:reviewer` | Security, architecture, quality review (deep PR gate) | inherits session model |
+| `dev-workflow:verifier` | Acceptance criteria verification | inherits session model |
+| `dev-workflow:investigator` | Evidence gathering for diagnosis | inherits session model |
+| `dev-workflow:analyzer` | Codebase analysis for new features | inherits session model |
+| `dev-workflow:doc-checker` | Detect stale docs relative to code changes | Haiku |
+| `cloud-infra:infra-reviewer` | Terraform/Helm/CI review (infra-specific gate) | inherits session model |
+| `react-developer:frontend-reviewer` | Frontend review (accessibility, performance, React patterns, security) | inherits session model |
+
+Review and verification agents intentionally have no `model:` pin — they inherit the session model so the quality gate is never weaker than the model that wrote the code. Only `dev-workflow:doc-checker` pins Haiku: it is a fast advisory check, not a blocker.
 
 ## Pre-PR Checklist
 

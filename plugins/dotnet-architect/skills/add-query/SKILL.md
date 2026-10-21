@@ -1,7 +1,7 @@
 ---
 name: add-query
 description: Scaffold a new CQRS query with handler and GET endpoint following project conventions. Use whenever the user wants to add a read endpoint, GET route, list/detail view, or search/filter capability to a microservice.
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, mcp__context7__resolve-library-id, mcp__context7__query-docs
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, mcp__plugin_dotnet-architect_context7__resolve-library-id, mcp__plugin_dotnet-architect_context7__query-docs
 user-invocable: true
 argument-hint: "{QueryName} [Service]"
 ---
@@ -72,7 +72,7 @@ public class {Name}Handler
     public async Task<Result<{Name}Response>> Handle({Name}Query query, CancellationToken cancellationToken)
     {
         // Use query repository (read-optimized, potentially Dapper)
-        // Return Result.Success or Result.Failure("NOT_FOUND", ...)
+        // Return Result.Success or Result.Failure("{ENTITY}_NOT_FOUND", ...)
     }
 }
 ```
@@ -92,6 +92,7 @@ Implement in Infrastructure using EF Core or Dapper for read-optimized queries.
 group.MapGet("/{route}", {Name})
     .WithName("{Name}")
     .WithSummary("...")
+    .WithDescription("...")
     .Produces<{Name}Response>(StatusCodes.Status200OK)
     .ProducesProblem(StatusCodes.Status404NotFound);
 

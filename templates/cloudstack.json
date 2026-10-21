@@ -9,21 +9,39 @@
     "solutionPath": "src/MyProject.sln",
     "sharedDomainPath": "src/Shared/MyProject.Domain",
     "sharedInfraPath": "src/Shared/MyProject.Shared.Infrastructure",
+    "sharedPaths": [
+      "src/Shared/MyProject.Domain",
+      "src/Shared/MyProject.Shared.Infrastructure"
+    ],
     "services": [
       {
         "name": "ServiceOne",
         "path": "src/ServiceOne",
         "projectPrefix": "MyProject.ServiceOne",
-        "dbContext": "ServiceOneDbContext"
+        "dbContext": "ServiceOneDbContext",
+        "aliases": ["s1", "service-one"],
+        "labels": ["service-one"],
+        "testProjects": {
+          "unit": ["tests/MyProject.ServiceOne.Tests"],
+          "integration": ["tests/MyProject.ServiceOne.Tests.Integration"]
+        }
       }
     ]
   },
   "frontend": {
     "path": "web",
-    "devPort": 5173
+    "devPort": 5173,
+    "smokeRoutes": ["/", "/dashboard"]
   },
   "infrastructure": {
     "chartsPath": "deploy/charts",
     "terraformPath": "infra/terraform/modules"
+  },
+  "localDev": {
+    "authConfig": {
+      "storageKey": "auth-storage",
+      "state": { "isAuthenticated": true, "token": "dev-token" },
+      "formFields": { "apiKey": "dev-api-key" }
+    }
   }
 }

@@ -1,4 +1,7 @@
 ---
+name: helm-chart-conventions
+description: Helm chart conventions — release namespace, standard labels, chart structure, and values conventions. Apply whenever creating or editing Helm templates, values files, or helpers under charts/.
+user-invocable: false
 paths:
   - "**/charts/**/*.yaml"
   - "**/charts/**/*.yml"
@@ -16,8 +19,9 @@ paths:
 - `app.kubernetes.io/managed-by: Helm`
 
 ## Chart Structure
+Each chart lives in its own directory:
 ```
-charts/
+{CHARTS_PATH}/{chart-name}/
 ├── Chart.yaml          # name, version, appVersion
 ├── values.yaml         # defaults (image, replicas, resources, env)
 └── templates/

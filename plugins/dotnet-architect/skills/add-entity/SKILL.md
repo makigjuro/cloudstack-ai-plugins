@@ -1,7 +1,7 @@
 ---
 name: add-entity
 description: Scaffold a new domain entity with value object ID, aggregate root, factory method, and domain event. Use whenever the user wants to add a new domain concept, database table, persisted object, or aggregate root to the system.
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, mcp__context7__resolve-library-id, mcp__context7__query-docs
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, mcp__plugin_dotnet-architect_context7__resolve-library-id, mcp__plugin_dotnet-architect_context7__query-docs
 user-invocable: true
 argument-hint: "{Entity} [Service]"
 ---
@@ -117,7 +117,7 @@ public class {Entity}CreatedEvent : DomainEvent
 }
 ```
 
-## 4. Repository Interface (`Domain/` or `Application/`)
+## 4. Repository Interfaces (`{DOMAIN_PATH}/Repositories/`)
 
 ```csharp
 public interface I{Entity}Repository
@@ -157,17 +157,18 @@ public class {Entity}Configuration : IEntityTypeConfiguration<{Entity}>
 public DbSet<{Entity}> {Entity}s => Set<{Entity}>();
 ```
 
-## 7. EF Core Migration (MANDATORY)
+## 7. EF Core Migration
 
-After adding the DbSet and entity configuration, **always** create a migration immediately:
+After adding the DbSet and entity configuration, create a migration immediately:
 
 ```bash
 dotnet ef migrations add Add{Entity} \
   --project src/{Service}/{Service}.Infrastructure \
-  --startup-project src/{Service}/{Service}.Host
+  --startup-project src/{Service}/{Service}.Host \
+  --output-dir Persistence/Migrations
 ```
 
-Review the generated migration to verify only expected changes are included. This step is **not optional** -- skipping it causes `PendingModelChangesWarning` errors at startup.
+Review the generated migration to verify only expected changes are included; a missing migration causes `PendingModelChangesWarning` at startup.
 
 ## Checklist
 - [ ] Value object ID with validation and `GetEqualityComponents()`
@@ -191,7 +192,7 @@ Files created/modified:
 - `{DOMAIN_PATH}/ValueObjects/{Entity}Id.cs`
 - `{DOMAIN_PATH}/Entities/{Entity}.cs`
 - `{DOMAIN_PATH}/Events/{Entity}CreatedEvent.cs`
-- `src/{Service}/{Service}.Application/` -- Repository interfaces
+- `{DOMAIN_PATH}/Repositories/` -- Repository interfaces
 - `src/{Service}/{Service}.Infrastructure/Persistence/Configurations/{Entity}Configuration.cs`
 - `src/{Service}/{Service}.Infrastructure/Persistence/{Service}DbContext.cs` (modified)
 - Migration: `src/{Service}/{Service}.Infrastructure/Persistence/Migrations/{timestamp}_Add{Entity}.cs`

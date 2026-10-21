@@ -1,7 +1,7 @@
 ---
 name: smoke-test
 description: Smoke test the running frontend and API by navigating key routes with Playwright, checking for console errors and broken pages. Use after starting the dev server or to verify the app works before creating a PR.
-allowed-tools: Bash, Read, Glob, Grep, mcp__playwright__browser_navigate, mcp__playwright__browser_snapshot, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_console_messages, mcp__playwright__browser_wait_for, mcp__playwright__browser_network_requests, mcp__playwright__browser_close, mcp__playwright__browser_click, mcp__playwright__browser_fill_form, mcp__playwright__browser_evaluate
+allowed-tools: Bash, Read, Glob, Grep, mcp__plugin_react-developer_playwright__browser_navigate, mcp__plugin_react-developer_playwright__browser_snapshot, mcp__plugin_react-developer_playwright__browser_take_screenshot, mcp__plugin_react-developer_playwright__browser_console_messages, mcp__plugin_react-developer_playwright__browser_wait_for, mcp__plugin_react-developer_playwright__browser_network_requests, mcp__plugin_react-developer_playwright__browser_close, mcp__plugin_react-developer_playwright__browser_click, mcp__plugin_react-developer_playwright__browser_fill_form, mcp__plugin_react-developer_playwright__browser_evaluate
 user-invocable: true
 ---
 
@@ -22,10 +22,6 @@ Navigate key application routes using Playwright and verify they render without 
 Read `cloudstack.json` from the project root at the start of execution. Extract:
 - `FRONTEND_PATH` = `frontend.path` (default: `web`)
 - `DEV_PORT` = `frontend.devPort` (default: `5173`)
-- `UI_LIBRARY` = `frontend.uiLibrary` (default: `shadcn`)
-- `STATE_SERVER` = `frontend.stateManagement.server` (default: `tanstack-query`)
-- `STATE_CLIENT` = `frontend.stateManagement.client` (default: `zustand`)
-- `MULTI_TENANT` = `backend.multiTenancy` (default: `false`)
 
 Also extract:
 - `API_PORT` = `backend.devPort` (default: `5000`)
@@ -43,6 +39,8 @@ Check `cloudstack.json` for `localDev.authConfig`. If present, use it. Otherwise
 The local environment must be running. If not, suggest starting the dev server first.
 
 ## Process
+
+Playwright tools are `mcp__plugin_react-developer_playwright__<tool>`; short names below (e.g. `browser_navigate`) refer to those.
 
 ### Step 1: Verify Services Are Up
 
@@ -77,7 +75,7 @@ Before testing frontend routes, attempt login. Try the UI form flow first:
 
 1. `browser_navigate` to `http://localhost:{DEV_PORT}/login`
 2. `browser_snapshot` to find the login form
-3. If a login form is found, fill it with dev credentials from `localDev.authConfig` or generic test values
+3. If a login form is found, fill it with `localDev.authConfig.formFields` (a field-name → value map, e.g. `{ "apiKey": "dev-api-key-1" }`) or generic test values
 4. `browser_wait_for` redirect away from `/login`
 
 If login fails (stays on `/login` after 5 seconds), fall back to localStorage injection using the auth configuration.
@@ -91,17 +89,17 @@ Instead of hardcoded routes, detect routes from the project's router configurati
 grep -rl "createBrowserRouter\|RouteObject\|<Route" {FRONTEND_PATH}/src/ 2>/dev/null | head -3
 ```
 
-Read the router file and extract all top-level route paths. Always include `/` (root/dashboard).
+Read the router file and extract all top-level route paths. Always include `/` (root/dashboard). If `cloudstack.json` defines `frontend.smokeRoutes`, test those routes in addition to the auto-detected ones — they are the project's known-critical paths and auto-detection may miss dynamic or feature-flagged routes.
 
 If route detection fails, fall back to testing just `/` and `/login`.
 
 **For each route:**
 
-1. **Navigate** using `mcp__playwright__browser_navigate`
-2. **Wait** for the page to settle using `mcp__playwright__browser_wait_for` (wait for network idle or a known element)
-3. **Snapshot** the page using `mcp__playwright__browser_snapshot` to check the accessibility tree for content
-4. **Check console** using `mcp__playwright__browser_console_messages` for errors
-5. **Screenshot** (if `--screenshot`) using `mcp__playwright__browser_take_screenshot`
+1. **Navigate** using `mcp__plugin_react-developer_playwright__browser_navigate`
+2. **Wait** for the page to settle using `mcp__plugin_react-developer_playwright__browser_wait_for` — wait for the page's main heading or a known element's text to appear (it accepts text to appear/disappear, or a time in seconds); fall back to a short time wait (2–3 s)
+3. **Snapshot** the page using `mcp__plugin_react-developer_playwright__browser_snapshot` to check the accessibility tree for content
+4. **Check console** using `mcp__plugin_react-developer_playwright__browser_console_messages` for errors
+5. **Screenshot** (if `--screenshot`) using `mcp__plugin_react-developer_playwright__browser_take_screenshot`
 
 ### Step 3.5: Interactive CRUD Flows (only when --interactive)
 
@@ -129,7 +127,7 @@ Auto-detect CRUD opportunities from the current page:
 
 Flag issues:
 - **Console errors** — any `error` level messages in the browser console
-- **Network failures** — check `mcp__playwright__browser_network_requests` for failed requests (4xx/5xx)
+- **Network failures** — check `mcp__plugin_react-developer_playwright__browser_network_requests` for failed requests (4xx/5xx)
 - **Empty pages** — snapshot shows no meaningful content
 - **Auth redirects** — unexpected redirects to /login
 
@@ -137,7 +135,7 @@ Flag issues:
 
 Close the browser session:
 ```
-mcp__playwright__browser_close
+mcp__plugin_react-developer_playwright__browser_close
 ```
 
 ## Output Format

@@ -1,7 +1,6 @@
 ---
 name: infra-reviewer
 description: Dedicated Terraform/Helm/CI review for infrastructure changes. Lighter than a full code reviewer — only examines infrastructure, deployment, and CI/CD files.
-model: sonnet
 tools: Bash, Read, Glob, Grep
 ---
 
@@ -11,7 +10,7 @@ Infrastructure-focused reviewer covering Terraform, Helm, and CI/CD.
 
 ## When to Use
 
-Launched by `/complete-task` when infrastructure changes are detected, or by `/complete-infra` as the primary review agent. Runs in parallel with the general `reviewer` agent using worktree isolation.
+Launched by `/complete-task` when infrastructure changes are detected, or by `/complete-infra` as the primary review agent. Runs alongside the general `dotnet-architect:reviewer` agent in the shared working tree.
 
 ## Scope
 
@@ -23,6 +22,8 @@ Only review files under:
 Ignore all other changes — the general `reviewer` agent handles application code, frontend, and tests.
 
 ## Review Process
+
+Derive `TF_PARENT` as the parent of `cloudstack.json` `infrastructure.terraformPath` (default `infra/terraform`).
 
 1. Get the diff against the base branch for infrastructure files
 2. Get changed file list for infrastructure directories

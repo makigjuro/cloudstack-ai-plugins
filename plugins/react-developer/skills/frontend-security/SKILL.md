@@ -1,4 +1,7 @@
 ---
+name: frontend-security
+description: Frontend security rules to apply while writing code — XSS prevention, token handling, browser storage, secrets, CORS, API error handling, content security, and dependencies. Apply whenever writing or editing frontend .ts/.tsx code.
+user-invocable: false
 paths:
   - "src/**/*.ts"
   - "src/**/*.tsx"

@@ -25,7 +25,7 @@ Read `cloudstack.json` from the project root at the start of execution. Extract:
 - `TG_PATH` = `infrastructure.terragruntPath` (default: `infra/terragrunt`)
 - `IAC_WRAPPER` = `infrastructure.iacWrapper` (default: `none`)
 
-If `cloudstack.json` does not exist, auto-detect by scanning the project structure. Derive `TF_PARENT` as the parent directory of `TF_PATH` (e.g., if `TF_PATH` is `infra/terraform/modules`, `TF_PARENT` is `infra`).
+If `cloudstack.json` does not exist, auto-detect by scanning the project structure. Derive `TF_PARENT` as the parent directory of `TF_PATH` (e.g., if `TF_PATH` is `infra/terraform/modules`, `TF_PARENT` is `infra/terraform`).
 
 ## Terraform / Terragrunt
 
@@ -87,5 +87,5 @@ Report pass/fail per category:
 - Terragrunt Validate: PASS/FAIL (or SKIPPED if IAC_WRAPPER != terragrunt)
 - Helm Lint: PASS/FAIL (or SKIPPED)
 - Helm Template: PASS/FAIL (or SKIPPED)
-- Security Scan (trivy): PASS/FAIL (or SKIPPED if trivy missing)
+- Security Scan (trivy): PASS/FAIL (FAIL with install hint if trivy is missing)
 ```

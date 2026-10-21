@@ -16,8 +16,6 @@ plugins/<plugin-name>/
 │       └── SKILL.md         # Skill definition
 ├── agents/                  # Optional
 │   └── <agent-name>.md
-├── rules/                   # Optional
-│   └── <rule-name>.md
 ├── hooks/                   # Optional
 │   └── hooks.json
 └── scripts/                 # Optional
@@ -148,7 +146,6 @@ Agents are markdown files with YAML frontmatter:
 ---
 name: my-agent
 description: What this agent does
-model: sonnet
 tools: Bash, Read, Glob, Grep
 ---
 
@@ -156,27 +153,30 @@ tools: Bash, Read, Glob, Grep
 ```
 
 Key fields:
-- `model`: `sonnet` (default), `opus` (complex analysis), or `haiku` (fast checks)
+- `model`: omit to inherit the session model (recommended for review/analysis agents — the gate should never run on a weaker model than the one writing the code). Pin `haiku` only for fast, mechanical, advisory checks.
 - `tools`: Comma-separated list of allowed tools
 
-## Writing Rules
+## Writing Convention Skills
 
-Rules provide contextual guidance based on file paths:
+Claude Code does not load a `rules/` directory from plugins. Ship file-scoped coding conventions as background skills instead:
 
 ```yaml
 ---
+name: csharp-conventions
+description: General C# conventions. Apply whenever writing or editing C# code under src/.
+user-invocable: false
 paths:
   - "src/**/*.cs"
   - "src/**/*.csproj"
 ---
 
-# Rule Title
+# Convention Title
 
 ## Convention 1
 - Description
 ```
 
-The `paths` field determines when the rule activates.
+`user-invocable: false` hides the skill from the slash menu, the `description` tells Claude when to apply it, and `paths` limits activation to matching files. Omit `paths` for conventions that apply everywhere.
 
 ## Writing Hooks
 
@@ -224,5 +224,6 @@ The `validate-plugins.yml` workflow automatically checks:
 - marketplace.json structure
 - plugin.json manifests
 - SKILL.md frontmatter (name, description required)
-- Agent and rule frontmatter
+- Agent frontmatter
+- No `rules/` directories (they are never loaded)
 - File references (every skill directory has a SKILL.md)

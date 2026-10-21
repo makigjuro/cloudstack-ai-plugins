@@ -46,9 +46,33 @@
               "path": { "type": "string", "description": "Path to service root directory (e.g., 'src/DeviceManager')" },
               "projectPrefix": { "type": "string", "pattern": "^[A-Z]", "description": "C# project name prefix (e.g., 'MyApp.DeviceManager')" },
               "dbContext": { "type": "string", "description": "EF Core DbContext class name (e.g., 'DeviceManagerDbContext')" },
-              "schema": { "type": "string", "description": "Database schema name for this service" }
+              "schema": { "type": "string", "description": "Database schema name for this service" },
+              "aliases": { "type": "array", "items": { "type": "string" }, "description": "Short names accepted by skills (e.g., ['dm', 'device-manager'])" },
+              "labels": { "type": "array", "items": { "type": "string" }, "description": "GitHub issue labels applied to tasks touching this service" },
+              "testProjects": {
+                "type": "object",
+                "description": "Explicit test project paths when they don't follow the {projectPrefix}.Tests.* convention",
+                "properties": {
+                  "unit": { "type": "array", "items": { "type": "string" }, "description": "Unit test project directories" },
+                  "integration": { "type": "array", "items": { "type": "string" }, "description": "Integration test project directories (empty array = service has none)" }
+                }
+              }
             },
             "required": ["name", "path", "projectPrefix"]
+          }
+        },
+        "sharedPaths": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Paths shared across services (shared Domain, Infrastructure, ServiceDefaults) — a change here means the full test suite should run"
+        },
+        "devPort": { "type": "integer", "minimum": 1024, "maximum": 65535, "description": "Backend API port during local development" },
+        "messagingConventions": {
+          "type": "object",
+          "description": "Project messaging conventions used by scaffolding and analysis skills",
+          "properties": {
+            "publisherInterface": { "type": "string", "description": "Publisher abstraction to inject in event handlers (e.g., 'INatsPublisher', 'IMessagePublisher')" },
+            "subjectPrefix": { "type": "string", "description": "Root of the message subject hierarchy (e.g., 'signalbeam'). Skills grep this to map the event topology." }
           }
         },
         "orm": { "type": "string", "enum": ["efcore"], "default": "efcore" },
@@ -77,7 +101,14 @@
         "styling": { "type": "string", "enum": ["tailwind", "css-modules", "styled-components"], "default": "tailwind" },
         "router": { "type": "string", "enum": ["react-router-v7", "tanstack-router", "react-router-v6"], "default": "react-router-v7" },
         "bundler": { "type": "string", "enum": ["vite", "webpack", "next"], "default": "vite" },
-        "devPort": { "type": "integer", "default": 5173, "minimum": 1024, "maximum": 65535, "description": "Dev server port for Playwright navigation" }
+        "devPort": { "type": "integer", "default": 5173, "minimum": 1024, "maximum": 65535, "description": "Dev server port for Playwright navigation" },
+        "defaultRoute": { "type": "string", "default": "/", "description": "Route to open when no specific route is requested (e.g., '/dashboard')" },
+        "routerFile": { "type": "string", "description": "Path to the route definitions file, if auto-detection misfires (e.g., 'web/src/routes/index.tsx')" },
+        "smokeRoutes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Known-critical routes for smoke testing (e.g., ['/', '/devices']). Supplements route auto-detection."
+        }
       }
     },
     "infrastructure": {
@@ -105,7 +136,28 @@
         "appHostPath": { "type": "string", "description": "Path to .NET Aspire AppHost project (if orchestrator is aspire)" },
         "composePath": { "type": "string", "description": "Path to docker-compose.yml (if orchestrator is docker-compose)" },
         "dashboardPort": { "type": "integer", "minimum": 1024, "maximum": 65535, "description": "Aspire dashboard port" },
-        "apiPort": { "type": "integer", "default": 5000, "minimum": 1024, "maximum": 65535, "description": "Backend API port" }
+        "apiPort": { "type": "integer", "default": 5000, "minimum": 1024, "maximum": 65535, "description": "Backend API port" },
+        "ports": {
+          "type": "object",
+          "additionalProperties": { "type": "integer" },
+          "description": "Named local-dev ports for infrastructure dependencies (e.g., { \"nats\": 4222, \"valkey\": 6379 })"
+        },
+        "authConfig": {
+          "type": "object",
+          "description": "How skills authenticate against the local frontend during browser verification",
+          "properties": {
+            "storageKey": { "type": "string", "description": "localStorage key holding the persisted auth store (e.g., 'auth-storage')" },
+            "state": { "type": "object", "description": "State object to inject for localStorage-based auth (shape of the persisted store's 'state' field)" },
+            "formFields": { "type": "object", "additionalProperties": { "type": "string" }, "description": "Login form field values for UI-flow auth (e.g., { \"apiKey\": \"dev-api-key-1\" })" }
+          }
+        }
+      }
+    },
+    "validators": {
+      "type": "object",
+      "description": "Project-provided validation tooling that skills should prefer over generic shell checks",
+      "properties": {
+        "mcpServer": { "type": "string", "description": "Name of an MCP server exposing batch architecture-validation tools (detect_changes, validate_all_layers, check_all_migrations, check_result_pattern). Skills call mcp__{server}__{tool} and fall back to shell checks when absent." }
       }
     },
     "conventions": {
@@ -114,7 +166,10 @@
       "properties": {
         "branchFormat": { "type": "string", "default": "{username}/{issue}-{slug}", "description": "Branch naming pattern" },
         "commitStyle": { "type": "string", "enum": ["lowercase-imperative", "conventional-commits"], "default": "lowercase-imperative" },
-        "errorCodeStyle": { "type": "string", "enum": ["SCREAMING_SNAKE_CASE", "PascalCase", "kebab-case"], "default": "SCREAMING_SNAKE_CASE" }
+        "errorCodeStyle": { "type": "string", "enum": ["SCREAMING_SNAKE_CASE", "PascalCase", "kebab-case"], "default": "SCREAMING_SNAKE_CASE" },
+        "terraformNaming": { "type": "string", "description": "Resource naming pattern for IaC (e.g., '{project}-{resource}-{env}-{location_short}')" },
+        "projectPrefix": { "type": "string", "description": "Short project prefix used in resource names (e.g., 'sb')" },
+        "locationShort": { "type": "object", "additionalProperties": { "type": "string" }, "description": "Cloud region → short-code map used in resource names (e.g., { \"westeurope\": \"weu\" })" }
       }
     }
   },

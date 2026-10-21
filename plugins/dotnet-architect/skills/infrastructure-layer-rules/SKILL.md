@@ -1,4 +1,7 @@
 ---
+name: infrastructure-layer-rules
+description: Infrastructure layer rules — repository implementations, EF Core configuration and DbContext, mandatory migrations with zero-downtime patterns, DI registration, and external service clients. Apply whenever writing or editing code in an Infrastructure project.
+user-invocable: false
 paths:
   - "src/**/Infrastructure/**/*.cs"
 ---
@@ -23,8 +26,8 @@ paths:
 - DbSets for aggregate roots only
 - Protected parameterless constructor not needed (DI handles instantiation)
 
-## EF Core Migrations (MANDATORY)
-- **Always create a migration** when adding or modifying entities, configurations, or DbSets
+## EF Core Migrations
+- Create a migration whenever you add or modify entities, configurations, or DbSets
 - Run `dotnet ef migrations add {Name} --project {Infrastructure} --startup-project {Host}` immediately after model changes
 - Never commit entity/configuration changes without the corresponding migration
 - Review generated migrations before committing -- verify only expected changes are included

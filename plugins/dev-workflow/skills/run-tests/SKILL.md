@@ -36,30 +36,24 @@ Determine from user input:
 
 ## 2. Resolve Test Projects
 
-### Auto-detection approach
-
-Use git diff to identify changed files and map them to test projects:
+Run the deterministic resolver script instead of reasoning about the mapping yourself:
 
 ```bash
-# Get changed files relative to main
-CHANGED_FILES=$(git diff origin/main...HEAD --name-only 2>/dev/null; git diff --name-only 2>/dev/null; git diff --name-only --cached 2>/dev/null)
+${CLAUDE_PLUGIN_ROOT}/scripts/resolve-test-projects.sh [--mode unit|integration|all] [--service {slug}] [--diff-base {ref}]
 ```
 
-Map changed source paths to their corresponding test projects:
-1. For each changed file under a service's source path, find matching test projects by convention (e.g., `{ServicePath}.Tests.Unit`, `{ServicePath}.Tests.Integration`, `{ProjectPrefix}.Tests.*`).
-2. If shared/foundational code changed (shared domain, shared infrastructure), fall back to running the full test suite.
-3. If only non-source files changed (docs, config, CI), report "No tests affected" and offer to run the full suite.
+It reads `cloudstack.json` (`backend.services[]` with `aliases`/`testProjects`, `backend.sharedPaths[]`) and degrades to convention-based discovery (`tests/{projectPrefix}.Tests*`, fuzzy directory matching) when the config or `jq` is missing.
 
-### Explicit service mode
+**Exit-code contract:**
 
-When a service name is provided, look up its path from `cloudstack.json` and find test projects matching that service's project prefix.
+| Exit | Meaning | Action |
+|------|---------|--------|
+| 0 + paths on stdout | Targeted test projects resolved | Run `dotnet test` on each printed path |
+| 0 + `NO_TESTS_AFFECTED` | Only non-source files changed, or the service explicitly has no tests of this kind | Report it; offer the full suite |
+| 2 | Shared/foundational code changed, or mapping inconclusive | Run the full suite: `dotnet test {SOLUTION}` |
+| 1 | Error (unknown service, no config match) | Report stderr message to the user |
 
-### Fallback
-
-If change detection cannot determine targeted projects, fall back to running the full suite:
-```bash
-dotnet test {SOLUTION}
-```
+Auto-detection mode (no `--service`) diffs against the default branch plus working tree and staged changes. Explicit service mode accepts the service name, its path basename, or any alias from `backend.services[].aliases` — case- and separator-insensitive.
 
 ## 3. Pre-flight: Docker Check (Integration Tests Only)
 
@@ -134,5 +128,5 @@ For failures, suggest fixes if they relate to recent changes.
 
 ## Related Skills
 
-- Use `/check-architecture` to verify architecture rules before running tests
+- Use `/dotnet-architect:check-architecture` to verify architecture rules before running tests
 - Use `/lint` to check formatting before creating a PR

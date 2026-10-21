@@ -53,7 +53,7 @@ Present the user with a summary of what's changed and recommend which docs to up
 
 ### Step 2: Gather Evidence
 
-Read the actual code -- do NOT guess or use stale memory. For each doc type:
+Read the actual code for each doc type:
 
 **Service doc (`docs/services/{service-name}/README.md`):**
 1. Read `src/{Service}/{Service}.Host/Program.cs` -- DI, middleware, config sections
@@ -122,7 +122,7 @@ After generating:
 1. Check all file paths referenced in the doc actually exist
 2. Check all endpoint routes match what's in the code
 3. Check all config keys match what's in appsettings / values.yaml
-4. Validate any Mermaid diagrams using `mcp__claude_ai_Mermaid_Chart__validate_and_render_mermaid_diagram` -- fix syntax errors before writing
+4. If the Mermaid Chart tool (`mcp__claude_ai_Mermaid_Chart__validate_and_render_mermaid_diagram`) is available, validate diagrams with it; otherwise re-check the syntax by hand.
 5. Report what was generated/updated and word count
 
 ## Output Formats
@@ -255,8 +255,8 @@ Create a new resource.
 
 | Resource | Request | Limit |
 |----------|---------|-------|
-| CPU | 100m | 500m |
-| Memory | 256Mi | 512Mi |
+| CPU | {cpu-request} | {cpu-limit} |
+| Memory | {memory-request} | {memory-limit} |
 
 ## Common Issues
 

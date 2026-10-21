@@ -1,7 +1,7 @@
 ---
 name: infra-plan
 description: Plan infrastructure changes — Terraform modules, Helm charts, CI/CD pipelines. Use when the user wants to add or modify cloud infrastructure, Kubernetes resources, or deployment pipelines.
-allowed-tools: Read, Glob, Grep, Task
+allowed-tools: Read, Glob, Grep, Agent
 user-invocable: true
 ---
 

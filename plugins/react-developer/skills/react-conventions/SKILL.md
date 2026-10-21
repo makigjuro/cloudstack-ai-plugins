@@ -1,4 +1,7 @@
 ---
+name: react-conventions
+description: React + TypeScript frontend conventions — centralized API client, API services, state management, components, and file organization. Apply whenever writing or editing frontend .ts/.tsx code.
+user-invocable: false
 paths:
   - "src/**/*.ts"
   - "src/**/*.tsx"

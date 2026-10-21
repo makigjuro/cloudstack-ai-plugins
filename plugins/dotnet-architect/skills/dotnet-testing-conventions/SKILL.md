@@ -1,4 +1,7 @@
 ---
+name: dotnet-testing-conventions
+description: Testing conventions for .NET — xUnit facts/theories, NSubstitute mocks, integration tests, test organization, and naming. Apply whenever writing or editing tests under tests/.
+user-invocable: false
 paths:
   - "tests/**/*.cs"
 ---

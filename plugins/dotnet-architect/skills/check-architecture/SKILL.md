@@ -18,6 +18,16 @@ Read `cloudstack.json` from the project root at the start of execution. Extract:
 
 If `cloudstack.json` does not exist, auto-detect by scanning the project structure.
 
+## Validator MCP Fast Path
+
+If the project registers an architecture-validator MCP server (declared in `cloudstack.json` as `validators.mcpServer`, e.g. `"my-validator"`), prefer its batch tools over the grep/dotnet-ef checks below — they return structured JSON in one call for all services instead of N shell invocations:
+
+- `mcp__{server}__validate_all_layers` replaces the per-service layer-dependency greps (section 2)
+- `mcp__{server}__check_all_migrations` replaces per-service `dotnet ef migrations has-pending-model-changes` loops
+- `mcp__{server}__check_result_pattern` replaces the thrown-exception grep (section 3), with acceptable-throw exclusions built in
+
+Fall back to the manual checks below when no validator MCP is configured or a tool call fails.
+
 ## 1. Run NetArchTest.Rules Tests
 
 First, run any architecture tests in the test suite:
@@ -52,8 +62,6 @@ grep -rn "throw new.*Exception" src/**/Application/ --include="*Handler.cs"
 ```
 
 Acceptable throws (exclude these from violations): `ArgumentException` in value object constructors, `InvalidOperationException` for programmer errors, `NotImplementedException` for placeholder code.
-
-If no handler files changed, skip this check.
 
 ## 4. CQRS Conventions
 
@@ -107,13 +115,13 @@ Any service with pending changes is a **FAIL** -- entity/configuration changes m
 ### Manual Checks
 | # | Check | Status | Violations |
 |---|-------|--------|------------|
-| 1 | Layer dependencies | {PASS/FAIL} | {count} |
-| 2 | Result pattern | {PASS/FAIL} | {count} |
-| 3 | CQRS conventions | {PASS/FAIL} | {count} |
-| 4 | Domain entities | {PASS/FAIL} | {count} |
-| 5 | Error codes | {PASS/FAIL} | {count} |
-| 6 | Endpoints | {PASS/FAIL} | {count} |
-| 7 | Pending migrations | {PASS/FAIL} | {count} |
+| 2 | Layer dependencies | {PASS/FAIL} | {count} |
+| 3 | Result pattern | {PASS/FAIL} | {count} |
+| 4 | CQRS conventions | {PASS/FAIL} | {count} |
+| 5 | Domain entities | {PASS/FAIL} | {count} |
+| 6 | Error codes | {PASS/FAIL} | {count} |
+| 7 | Endpoints | {PASS/FAIL} | {count} |
+| 8 | Pending migrations | {PASS/FAIL} | {count} |
 
 ### Violations
 - {file}:{line} -- {description} -- **Fix:** {suggestion}

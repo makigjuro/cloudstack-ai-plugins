@@ -1,4 +1,7 @@
 ---
+name: domain-layer-rules
+description: Domain layer rules — zero external dependencies, entities, aggregate roots, value objects, domain events, and repository interfaces. Apply whenever writing or editing code in a Domain project.
+user-invocable: false
 paths:
   - "src/**/Domain/**/*.cs"
 ---
@@ -13,7 +16,7 @@ paths:
 - Inherit from `Entity<TId>` where `TId` is a strongly-typed value object
 - Identity equality based on ID only
 - Protected parameterless constructor for EF Core deserialization
-- Public constructor taking `TId id` that calls `base(id)`
+- Private or protected constructor taking `TId id` that calls `base(id)`; create instances through static factory methods
 
 ## Aggregate Roots
 - Inherit from `AggregateRoot<TId>` which extends `Entity<TId>`

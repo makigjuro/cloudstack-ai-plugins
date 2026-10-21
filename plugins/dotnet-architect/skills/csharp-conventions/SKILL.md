@@ -1,4 +1,7 @@
 ---
+name: csharp-conventions
+description: General C# conventions for the hexagonal .NET services — record commands/queries, Result-based error handling, async, multi-tenancy, DI registration, and naming. Apply whenever writing or editing C# code under src/.
+user-invocable: false
 paths:
   - "src/**/*.cs"
 ---
@@ -27,12 +30,7 @@ paths:
 
 ## DI Registration
 - Services registered as scoped: `services.AddScoped<IService, Service>()`
-- Background services: `services.AddHostedService<T>()`
-- Options pattern: `services.Configure<TOptions>(configuration.GetSection("Key"))`
-- HTTP clients: `services.AddHttpClient<IClient, Client>(client => { client.Timeout = ...; })`
 
 ## Naming
-- PascalCase for types, methods, properties
 - `_camelCase` for private fields
-- Interfaces prefixed with `I`
 - Folders match namespace segments

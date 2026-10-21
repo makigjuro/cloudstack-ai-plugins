@@ -1,7 +1,7 @@
 ---
 name: verify-feature
 description: Auto-detect changed frontend routes, navigate them with Playwright, take screenshots, and check for console/network errors. Use after implementing a frontend feature to verify it works visually — auto-detects routes from git changes or accepts a route argument. Supports --responsive for mobile testing and --interactive for click testing.
-allowed-tools: Bash, Read, Glob, Grep, mcp__playwright__browser_navigate, mcp__playwright__browser_snapshot, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_console_messages, mcp__playwright__browser_wait_for, mcp__playwright__browser_network_requests, mcp__playwright__browser_close, mcp__playwright__browser_click, mcp__playwright__browser_fill_form, mcp__playwright__browser_evaluate, mcp__playwright__browser_resize
+allowed-tools: Bash, Read, Glob, Grep, mcp__plugin_react-developer_playwright__browser_navigate, mcp__plugin_react-developer_playwright__browser_snapshot, mcp__plugin_react-developer_playwright__browser_take_screenshot, mcp__plugin_react-developer_playwright__browser_console_messages, mcp__plugin_react-developer_playwright__browser_wait_for, mcp__plugin_react-developer_playwright__browser_network_requests, mcp__plugin_react-developer_playwright__browser_close, mcp__plugin_react-developer_playwright__browser_click, mcp__plugin_react-developer_playwright__browser_fill_form, mcp__plugin_react-developer_playwright__browser_evaluate, mcp__plugin_react-developer_playwright__browser_resize
 user-invocable: true
 ---
 
@@ -20,10 +20,6 @@ Post-implementation browser verification for frontend features. Auto-detects cha
 Read `cloudstack.json` from the project root at the start of execution. Extract:
 - `FRONTEND_PATH` = `frontend.path` (default: `web`)
 - `DEV_PORT` = `frontend.devPort` (default: `5173`)
-- `UI_LIBRARY` = `frontend.uiLibrary` (default: `shadcn`)
-- `STATE_SERVER` = `frontend.stateManagement.server` (default: `tanstack-query`)
-- `STATE_CLIENT` = `frontend.stateManagement.client` (default: `zustand`)
-- `MULTI_TENANT` = `backend.multiTenancy` (default: `false`)
 
 If `cloudstack.json` does not exist, auto-detect by checking `package.json` dependencies.
 
@@ -33,13 +29,15 @@ Check `cloudstack.json` for `localDev.authConfig`. If present, use it for localS
 
 ## Process
 
+Playwright tools are `mcp__plugin_react-developer_playwright__<tool>`; short names below (e.g. `browser_navigate`) refer to those.
+
 ### Step 1: Detect Routes
 
 If a route was provided, use it directly. Otherwise, auto-detect from recent changes:
 
 ```bash
 # Find changed page files
-git diff --name-only HEAD~3 | grep "{FRONTEND_PATH}/src/.*pages/"
+git diff --name-only origin/main...HEAD | grep "{FRONTEND_PATH}/src/.*pages/"
 ```
 
 Map changed page files to routes by finding the router configuration file:
@@ -70,7 +68,7 @@ Navigate to `http://localhost:{DEV_PORT}` to establish the origin, then inject a
 For each detected route:
 
 1. **Navigate** — `browser_navigate` to `http://localhost:{DEV_PORT}{route}`
-2. **Wait** — `browser_wait_for` for content to load (network idle or 3 seconds)
+2. **Wait** — wait for the page's main heading or a known element's text to appear with `browser_wait_for` (it accepts text to appear/disappear, or a time in seconds); fall back to a short time wait (2–3 s)
 3. **Snapshot** — `browser_snapshot` to check accessibility tree for meaningful content (not just a loading spinner or error boundary)
 4. **Console** — `browser_console_messages` to flag any `error` level messages
 5. **Network** — `browser_network_requests` to flag 4xx/5xx responses

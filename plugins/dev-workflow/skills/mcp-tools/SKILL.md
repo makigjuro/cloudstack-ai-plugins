@@ -1,13 +1,14 @@
 ---
-paths:
-  - "**"
+name: mcp-tools
+description: When and how to use the bundled and optional MCP tools — context7 library docs, Playwright browser automation, Mermaid diagram validation, and GitHub (gh CLI first). Apply when looking up library APIs, verifying frontend pages in a browser, validating diagrams, or doing GitHub operations.
+user-invocable: false
 ---
 
 # MCP Tool Usage
 
-When MCP tools are available, prefer them over CLI equivalents. MCP tools return structured data, handle authentication automatically, and are more reliable than parsing CLI output.
+When the context7, Playwright, or Mermaid Chart MCP tools are available, prefer them over CLI equivalents: they return structured data and handle authentication.
 
-> **Note:** MCP servers are optional and user-configured. The sections below describe tools that may or may not be available in your environment. If a referenced MCP tool is not available, fall back to the CLI equivalent.
+> **Note:** Servers bundled by a plugin are exposed as `mcp__plugin_<plugin>_<server>__<tool>` — context7 ships with dev-workflow, dotnet-architect, and react-developer; Playwright ships with react-developer. Servers the user configured themselves use the short `mcp__<server>__<tool>` form (e.g. `mcp__playwright__browser_navigate`), so use whichever variant is present. Mermaid Chart and github-mcp-server are user-configured and optional. If a referenced MCP tool is not available, fall back to the CLI equivalent.
 
 ## context7 — Library Documentation
 
@@ -20,8 +21,8 @@ Before scaffolding code that uses a library, look up the current API to avoid ou
 - Researching library capabilities during feature planning
 
 **How to use:**
-1. Resolve the library ID: `mcp__context7__resolve-library-id` with the library name
-2. Query docs: `mcp__context7__query-docs` with the library ID and your question
+1. Resolve the library ID: `mcp__plugin_dev-workflow_context7__resolve-library-id` with the library name
+2. Query docs: `mcp__plugin_dev-workflow_context7__query-docs` with the library ID and your question
 
 Don't look up docs for every trivial operation — use it when the pattern is non-obvious, when hitting an error, or when a library feature might already exist for what you're building.
 
@@ -39,10 +40,10 @@ Use for frontend verification, smoke testing, interactive CRUD verification, and
 
 ### Basic pattern (navigate + check)
 
-1. Navigate: `mcp__playwright__browser_navigate` to the URL
-2. Wait: `mcp__playwright__browser_wait_for` for content to load
-3. Snapshot: `mcp__playwright__browser_snapshot` for accessibility tree, or `browser_take_screenshot` for visual
-4. Check: `mcp__playwright__browser_console_messages` for errors
+1. Navigate: `mcp__plugin_react-developer_playwright__browser_navigate` to the URL
+2. Wait: `mcp__plugin_react-developer_playwright__browser_wait_for` for content to load
+3. Snapshot: `mcp__plugin_react-developer_playwright__browser_snapshot` for accessibility tree, or `browser_take_screenshot` for visual
+4. Check: `mcp__plugin_react-developer_playwright__browser_console_messages` for errors
 
 ### Interactive CRUD pattern
 
@@ -100,4 +101,4 @@ gh search issues "query" --repo owner/repo
 gh search code "query" --repo owner/repo
 ```
 
-If the `github-mcp-server` MCP is available, prefer its structured tools (`mcp__github-mcp-server__get_issue`, `mcp__github-mcp-server__create_pull_request`, etc.) over the CLI equivalents for typed JSON responses.
+If `github-mcp-server` is available you may use its tools (`mcp__github-mcp-server__get_issue`, `mcp__github-mcp-server__create_pull_request`, etc.) instead of `gh`; `gh` remains the default.

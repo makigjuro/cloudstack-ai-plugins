@@ -1,7 +1,7 @@
 ---
 name: complete-task
 description: Complete current task with all quality gates, code review, QA check, and submit PR. Use when implementation is done and you want to run the full verification pipeline (build, lint, tests, review, QA) and create the pull request.
-allowed-tools: Bash, Read, Glob, Grep, Task, Skill
+allowed-tools: Bash, Read, Glob, Grep, Agent, Skill, Workflow
 user-invocable: true
 argument-hint: "[issue-number] [--skip-integration] [--auto-fix]"
 ---
@@ -30,6 +30,7 @@ Read `cloudstack.json` from the project root at the start of execution. Extract:
 - `CHARTS_PATH` = `infrastructure.chartsPath` (default: `deploy/charts`)
 - `TERRAFORM_PATH` = `infrastructure.terraformPath` (default: `infra/terraform/modules`)
 - `SERVICES` = `backend.services[]` (default: discover from `src/*/` directories containing `.Application/` subfolders)
+- `VALIDATOR_MCP` = `validators.mcpServer` (optional — enables structured MCP checks in Phases 0 and 1.5)
 
 If `cloudstack.json` does not exist, auto-detect by scanning the project structure.
 
@@ -52,14 +53,14 @@ If `cloudstack.json` does not exist, auto-detect by scanning the project structu
     |
   integration-tests -> browser-verify
     |
-  parallel-agents (reviewer || verifier || doc-checker? || infra-reviewer?)
+  parallel-agents (reviewer || verifier || doc-checker? || infra-reviewer? || frontend-reviewer?)
     |
   [issues?] -> scoped-fix -> [restart affected tracks]
     |
   create-pr -> [done]
 ```
 
-CRITICAL: Do not skip states. Do not proceed if a gate fails. Maximum 3 fix iterations before stopping.
+Run every applicable state in order and stop at the first failed gate; allow at most 3 fix iterations.
 
 ## Process
 
@@ -75,7 +76,9 @@ If pre-flight fails, STOP and report the issue.
 
 **Change Detection -- run immediately after pre-flight:**
 
-Detect what changed using git diff against the base branch. The change detection flags should use paths from cloudstack.json when available.
+If `VALIDATOR_MCP` is configured, call `mcp__{VALIDATOR_MCP}__detect_changes` instead of the bash below — one call returns all flags as structured JSON (`hasBackend`, `hasFrontend`, `hasInfra`, `hasEndpoints`, `hasEntities`, `hasEvents`).
+
+Otherwise, detect what changed using git diff against the base branch. The change detection flags should use paths from cloudstack.json when available.
 
 ```bash
 CHANGED=$(git diff origin/main...HEAD --name-only)
@@ -88,7 +91,7 @@ CHARTS_PATH="deploy/"     # from infrastructure.chartsPath parent
 
 HAS_BACKEND=$(echo "$CHANGED" | grep -q "^${SRC_PATH}" && echo true || echo false)
 HAS_FRONTEND=$(echo "$CHANGED" | grep -q "^${FRONTEND_PATH}" && echo true || echo false)
-HAS_INFRA=$(echo "$CHANGED" | grep -q "^${INFRA_PATH}\|^${CHARTS_PATH}\|^\.github/" && echo true || echo false)
+HAS_INFRA=$(echo "$CHANGED" | grep -q "^${INFRA_PATH}\|^${CHARTS_PATH}\|^\.github/workflows/" && echo true || echo false)
 HAS_ENDPOINTS=$(echo "$CHANGED" | grep -q "Endpoints/" && echo true || echo false)
 HAS_ENTITIES=$(echo "$CHANGED" | grep -q "Domain/Entities/" && echo true || echo false)
 HAS_EVENTS=$(echo "$CHANGED" | grep -q "Domain/Events/" && echo true || echo false)
@@ -114,7 +117,7 @@ If either track fails, STOP and report the failure.
 
 ### Phase 1.5: Pending Migrations Check (if HAS_BACKEND)
 
-Check each service for pending EF Core migrations by looping through the configured services:
+If `VALIDATOR_MCP` is configured, call `mcp__{VALIDATOR_MCP}__check_all_migrations` — one batch call covering all services with a structured `anyPending` verdict. Otherwise, check each service for pending EF Core migrations by looping through the configured services:
 
 ```bash
 # For each service in cloudstack.json backend.services[]:
@@ -177,19 +180,54 @@ curl -sf http://localhost:${FRONTEND_PORT} > /dev/null 2>&1 && echo "Frontend: U
 
 ### Phase 4: Parallel Agent Review (Dynamic Composition)
 
-Launch all applicable agents in parallel in a single response. Each agent uses `isolation: "worktree"` for safe parallel reads and `run_in_background: true` so you can begin drafting the PR summary while agents work.
+**Preferred path -- Workflow tool.** If the harness exposes the `Workflow` tool, orchestrate this phase as a workflow script instead of hand-launching agents: findings come back as schema-validated JSON (no report parsing), each finding is adversarially verified before it can block the PR, and a failed run can be resumed without re-running completed agents. Compose the agent list from the change flags and reuse the plugin agent definitions via `agentType`. Plugin agents are registered under their plugin namespace, so use the qualified names: `dotnet-architect:reviewer`, `dev-workflow:verifier`, `dev-workflow:doc-checker`, `cloud-infra:infra-reviewer`, `react-developer:frontend-reviewer`. Pass the diff base in `args` so every agent -- including the verifiers -- reviews the same range:
+
+```javascript
+export const meta = {
+  name: 'pr-review-gate',
+  description: 'Parallel agent review with adversarial verification',
+  phases: [{ title: 'Review' }, { title: 'Verify' }],
+}
+const FINDINGS = { type: 'object', required: ['pass', 'findings'], properties: {
+  pass: { type: 'boolean' },
+  findings: { type: 'array', items: { type: 'object',
+    required: ['severity', 'file', 'summary'],
+    properties: { severity: { enum: ['critical', 'warning', 'suggestion'] },
+      file: { type: 'string' }, line: { type: 'integer' }, summary: { type: 'string' } } } } } }
+const VERDICT = { type: 'object', required: ['isReal'], properties: {
+  isReal: { type: 'boolean' }, reason: { type: 'string' } } }
+// args = { base: 'origin/main', reviewers: [{ agentType: 'dotnet-architect:reviewer', prompt: '...' }, ...] }
+// built from the change flags. A reviewer may carry its own `schema` (the verifier passes a criteria schema). Reviewers only read, so they share the working tree (no worktree isolation).
+const results = await pipeline(
+  args.reviewers,
+  r => agent(`${r.prompt}\n\nReview \`git diff ${args.base}...HEAD\`.`,
+    { agentType: r.agentType, label: r.agentType, phase: 'Review', schema: r.schema ?? FINDINGS }),
+  review => parallel((review?.findings ?? [])
+    .filter(f => f.severity !== 'suggestion')
+    .map(f => () => agent(
+      `Adversarially verify this finding against \`git diff ${args.base}...HEAD\` and the surrounding code; default to isReal=false if it does not hold up: ${JSON.stringify(f)}`,
+      { phase: 'Verify', schema: VERDICT }).then(v => ({ ...f, verdict: v })))))
+const confirmed = results.filter(Boolean).flat().filter(Boolean).filter(f => f.verdict?.isReal)
+return { confirmed }
+```
+
+Only confirmed findings enter the Phase 5 fix loop; suggestions are reported as advisory. The verifier agent's acceptance-criteria check keeps its MET/UNMET/PARTIAL shape -- give it its own schema rather than forcing it into the findings shape.
+
+**Fallback path -- Agent tool fan-out.** Without the Workflow tool, launch all applicable agents in parallel in a single response. Use the namespaced `subagent_type` for each (shown below) and `run_in_background: true` so you can begin drafting the PR summary while agents work. The agents only read the diff, so they run in the current working tree -- do not use worktree isolation.
 
 **Always launch:**
 
-1. **`reviewer`** (isolation: worktree, run_in_background: true) -- Code review for security, architecture, and quality issues. Uses the `reviewer` agent definition. The agent should review `git diff origin/main...HEAD` and return a structured report with Critical/Warning/Suggestion categories and a PASS/FAIL summary.
+1. **`dotnet-architect:reviewer`** (run_in_background: true) -- Code review for security, architecture, and quality issues. The agent should review `git diff origin/main...HEAD` and return a structured report with Critical/Warning/Suggestion categories and a PASS/FAIL summary.
 
-2. **`verifier`** (isolation: worktree, run_in_background: true) -- QA verification that implementation matches the GitHub issue acceptance criteria. Uses the `verifier` agent definition. The agent should fetch the issue via `gh issue view`, compare against the diff, and return MET/UNMET/PARTIAL status for each criterion with a PASS/FAIL summary.
+2. **`dev-workflow:verifier`** (run_in_background: true) -- QA verification that implementation matches the GitHub issue acceptance criteria. The agent should fetch the issue via `gh issue view`, compare against the diff, and return MET/UNMET/PARTIAL status for each criterion with a PASS/FAIL summary.
 
 **Conditionally launch:**
 
-3. **`doc-checker`** (isolation: worktree, run_in_background: true) -- Only if `HAS_ENDPOINTS` OR `HAS_ENTITIES` OR `HAS_EVENTS` OR `HAS_INFRA`. Detects stale documentation relative to code changes.
+3. **`dev-workflow:doc-checker`** (run_in_background: true) -- Only if `HAS_ENDPOINTS` OR `HAS_ENTITIES` OR `HAS_EVENTS` OR `HAS_INFRA`. Detects stale documentation relative to code changes.
 
-4. **`infra-reviewer`** (isolation: worktree, run_in_background: true) -- Only if `HAS_INFRA`. Dedicated Terraform/Helm/CI review using the `infra-reviewer` agent definition.
+4. **`cloud-infra:infra-reviewer`** (run_in_background: true) -- Only if `HAS_INFRA`. Dedicated Terraform/Helm/CI review.
+
+5. **`react-developer:frontend-reviewer`** (run_in_background: true) -- Only if `HAS_FRONTEND`. Frontend review for accessibility, performance, React patterns, and security; review `git diff origin/main...HEAD -- ${FRONTEND_PATH}`.
 
 While agents run in the background, begin preparing the PR description (title, summary of changes, test plan). You will be notified as each agent completes -- do not poll or sleep. Once all agents have reported back, proceed to Phase 5.
 
@@ -256,6 +294,7 @@ On success:
 - Task Check: PASS ({x}/{y} criteria met)
 - Doc Check: PASS (no stale docs) / SKIP (no endpoint/entity/event/infra changes)
 - Infra Review: PASS / SKIP (no infra changes)
+- Frontend Review: APPROVED / CHANGES REQUESTED / BLOCKED / SKIP (no frontend changes)
 
 PR is ready for human review.
 ```
@@ -280,7 +319,7 @@ Reason: {error details}
 
 - This skill is idempotent -- safe to run multiple times
 - All bash commands use explicit paths relative to repo root
-- Subagents run with worktree isolation to avoid polluting main conversation and enable safe parallel reads
+- Review subagents keep their file reads out of the main conversation; they only read, so they share the working tree instead of paying for worktree isolation
 - Never force-push or amend commits during this process
 - If unsure about a fix, ask the user rather than guessing
 - Parallel tracks are launched as multiple tool calls in a single response for maximum throughput

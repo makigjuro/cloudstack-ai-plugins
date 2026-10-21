@@ -100,21 +100,14 @@ jobs:
             echo "  OK: $plugin_name/$agent_name"
           done
 
-      - name: Validate rule frontmatter
+      - name: Reject plugin rules directories
         run: |
-          echo "=== Validating rule files ==="
-          for rule in plugins/*/rules/*.md; do
-            [ -f "$rule" ] || continue
-            rule_name=$(basename "$rule" .md)
-            plugin_name=$(basename "$(dirname "$(dirname "$rule")")")
-
-            if ! head -1 "$rule" | grep -q "^---"; then
-              echo "ERROR: $plugin_name/$rule_name - Missing YAML frontmatter"
-              exit 1
-            fi
-
-            echo "  OK: $plugin_name/$rule_name"
-          done
+          # Claude Code never loads plugins/*/rules -- conventions must ship as skills
+          if ls -d plugins/*/rules 2>/dev/null; then
+            echo "ERROR: rules/ directories are not loaded by Claude Code; move them to skills/<name>/SKILL.md with user-invocable: false"
+            exit 1
+          fi
+          echo "No rules/ directories"
 
       - name: Validate JSON Schema
         run: |
@@ -201,6 +194,5 @@ jobs:
             plugin_name=$(basename "$plugin_dir")
             skills=$(find "$plugin_dir"skills -name "SKILL.md" 2>/dev/null | wc -l | tr -d ' ')
             agents=$(find "$plugin_dir"agents -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
-            rules=$(find "$plugin_dir"rules -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
-            echo "  $plugin_name: $skills skills, $agents agents, $rules rules"
+            echo "  $plugin_name: $skills skills, $agents agents"
           done

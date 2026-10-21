@@ -1,13 +1,13 @@
 ---
 name: code-review
 description: Review code changes for security, architecture, and quality issues. Use for deep PR-level review -- checks OWASP vulnerabilities, hexagonal architecture violations, code smells, and test gaps. For a quick architecture-only check, use /check-architecture instead.
-allowed-tools: Bash, Read, Glob, Grep
+allowed-tools: Bash, Read, Glob, Grep, Agent, Workflow
 user-invocable: true
 ---
 
 # Code Review
 
-Perform a comprehensive code review of changes on the current branch compared to main. This skill can be invoked standalone or used as part of `/complete-task`.
+Perform a comprehensive code review of changes on the current branch compared to main. This skill runs standalone; `/complete-task` runs the equivalent `dotnet-architect:reviewer` agent instead.
 
 ## Arguments
 
@@ -21,6 +21,7 @@ Perform a comprehensive code review of changes on the current branch compared to
 Read `cloudstack.json` from the project root if it exists. Extract:
 - `SOLUTION` = `backend.solutionPath`
 - `SERVICES` = `backend.services[]`
+- `VALIDATOR_MCP` = `validators.mcpServer` (optional)
 
 If `cloudstack.json` does not exist, auto-detect by scanning the project structure.
 
@@ -43,34 +44,38 @@ git log origin/main..HEAD --oneline
 
 Check for OWASP Top 10 vulnerabilities:
 
-**Injection (A03:2021)**
+**Injection**
 - SQL: Look for string concatenation in queries, raw SQL without parameters
 - Command: Look for `Process.Start`, `Bash` with user input
 - Search patterns: `FromSqlRaw`, `ExecuteSqlRaw`, string interpolation in queries
 
-**Broken Authentication (A07:2021)**
+**Broken Authentication**
 - Hardcoded credentials, API keys, connection strings
 - Missing authorization attributes on endpoints
 - Weak password validation
 
-**Sensitive Data Exposure (A02:2021)**
+**Sensitive Data Exposure**
 - Logging sensitive data (passwords, tokens, PII)
 - Returning sensitive fields in API responses
 - Missing encryption for sensitive storage
 
-**Security Misconfiguration (A05:2021)**
+**Security Misconfiguration**
 - Debug mode enabled in non-dev code
 - Overly permissive CORS
 - Missing security headers
 - Default credentials
 
-**XSS (A03:2021)**
+**XSS**
 - React: `dangerouslySetInnerHTML` without sanitization
 - Unescaped user input in responses
 
 ### Step 3: Architecture Review
 
-Use bash-based checks for automated validation, then supplement with manual review.
+If `VALIDATOR_MCP` is configured, prefer its structured tools over the bash checks below — they do real dependency analysis (including project references the greps miss) and return JSON in one call:
+- `mcp__{VALIDATOR_MCP}__validate_all_layers` replaces the layer-dependency loop
+- `mcp__{VALIDATOR_MCP}__check_result_pattern` (per changed handler file) replaces the thrown-exception grep
+
+Fall back to the bash-based checks when no validator MCP is configured, then supplement with manual review.
 
 **Hexagonal Architecture -- validate layer dependencies:**
 
@@ -139,6 +144,10 @@ done
 - Non-descriptive names (data, info, temp, x)
 - Inconsistent naming with existing code
 - Missing XML docs on public APIs
+
+### Step 4.5: Adversarial Verification (when the Workflow tool is available)
+
+Before reporting, if the harness exposes the `Workflow` tool and the review produced Critical or Warning findings, verify them adversarially: fan out one skeptic agent per finding, prompted to REFUTE it against the actual diff (schema `{ isReal: boolean, reason: string }`, default to refuted when uncertain). Drop findings that don't survive. This prevents plausible-but-wrong findings from blocking a PR. Skip this step for suggestion-level findings and when the Workflow tool is unavailable.
 
 ### Step 5: Generate Report
 
@@ -233,21 +242,10 @@ Things done well in this change:
 | Security | No | Yes (OWASP Top 10) |
 | Architecture | Layer deps, Result pattern, CQRS, entities, migrations | Same + circular deps, anemic models |
 | Quality | No | Yes (code smells, naming, testing gaps) |
-| When | During development, quick verification | Before PR, as gate in /complete-task |
+| When | During development, quick verification | Before PR, standalone deep review |
 
 Use `/check-architecture` for quick feedback while coding. Use `/code-review` for the final gate before a PR.
 
-## Integration with /complete-task
-
-When called as an agent from `/complete-task`:
-- Return only the Summary section with pass/fail status
-- Include the count of critical issues
-- Critical issues cause the parent workflow to pause for fixes
-
 ## Guidelines
 
-- Be specific -- include file paths and line numbers
-- Be constructive -- suggest fixes, don't just criticize
-- Prioritize -- focus on what matters most for this codebase
-- Context matters -- consider the feature being built
 - Don't nitpick -- save style debates for linters

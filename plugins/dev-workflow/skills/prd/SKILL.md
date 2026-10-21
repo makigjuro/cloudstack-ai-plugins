@@ -1,9 +1,8 @@
 ---
 name: prd
 description: Generate a Product Requirements Document through guided discovery questions and codebase analysis. Use for complex features that need structured requirements, success metrics, and technical planning before implementation.
-allowed-tools: Bash, Read, Glob, Grep, Task, AskUserQuestion, Write, EnterPlanMode, ExitPlanMode
+allowed-tools: Bash, Read, Glob, Grep, Agent, AskUserQuestion, Write, EnterPlanMode, ExitPlanMode
 user-invocable: true
-context: fork
 argument-hint: "{feature name}"
 ---
 
@@ -28,11 +27,11 @@ If `cloudstack.json` does not exist, auto-detect by scanning the project structu
 
 ### Phase 0: Enter Plan Mode
 
-**Always start by calling `EnterPlanMode` before doing anything else.** PRD generation is a planning activity -- it requires codebase exploration, discovery questions, and user alignment before producing output. Plan mode ensures you can explore freely and get user sign-off on the approach before writing the PRD file. Exit plan mode with `ExitPlanMode` only after Phase 4 validation is complete and the user has approved the PRD content.
+**Always start by calling `EnterPlanMode` before doing anything else.** PRD generation is a planning activity -- it requires codebase exploration, discovery questions, and user alignment before producing output. Plan mode ensures you can explore freely and get user sign-off on the approach before writing the PRD file. Draft the PRD in the plan, get the user's approval, call `ExitPlanMode`, then write the file (Phase 3) and validate it (Phase 4) — plan mode blocks file writes.
 
 ### Phase 1: Discovery Questions
 
-Ask the user these questions using AskUserQuestion. Group related questions together.
+Use AskUserQuestion for whatever the request and the codebase don't already answer, drawing on these areas:
 
 **Problem & Users**
 1. What problem are we solving? What's the business impact if we don't solve it?
@@ -56,7 +55,7 @@ Ask the user these questions using AskUserQuestion. Group related questions toge
 
 ### Phase 2: Codebase Analysis (unless --skip-analysis)
 
-Use the `analyzer` agent to analyze the existing codebase:
+Use the `dev-workflow:analyzer` agent to analyze the existing codebase:
 
 ```
 Analyze the codebase for implementing "{feature name}".

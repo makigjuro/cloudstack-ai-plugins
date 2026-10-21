@@ -49,7 +49,7 @@ grep -rn "IEntityTypeConfiguration" src/{Service}/
 
 ### Step 2: Create Migration
 
-Run from the Infrastructure project directory:
+Run from the repository root:
 
 ```bash
 dotnet ef migrations add {Name} \

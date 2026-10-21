@@ -1,4 +1,7 @@
 ---
+name: endpoint-conventions
+description: Minimal API endpoint conventions — static MapEndpoints classes, route groups, OpenAPI metadata, handler DI, and Result-to-HTTP conversion. Apply whenever writing or editing endpoint classes.
+user-invocable: false
 paths:
   - "src/**/Endpoints/**/*.cs"
   - "src/**/*Endpoints*.cs"
@@ -45,6 +48,7 @@ public static class OrderEndpoints
         [FromServices] CreateOrderHandler handler,
         CancellationToken cancellationToken)
     {
+        var command = new CreateOrderCommand(/* map from request */);
         var result = await handler.Handle(command, cancellationToken);
         return result.ToHttpResult();
     }

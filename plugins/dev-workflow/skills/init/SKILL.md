@@ -1,6 +1,6 @@
 ---
 name: init
-description: Scan a project and generate cloudstack.json configuration. Use when setting up cloudstack-ai-plugins for the first time, onboarding a new project, or when the user says "init", "setup", "configure", "get started", or "onboard".
+description: Scan a project and generate cloudstack.json configuration. Use when setting up cloudstack-ai-plugins in a project for the first time, onboarding a new project, or regenerating cloudstack.json.
 allowed-tools: Bash, Read, Glob, Grep, Write, AskUserQuestion
 user-invocable: true
 argument-hint: "[--minimal]"

@@ -1,4 +1,7 @@
 ---
+name: backend-security
+description: Backend security rules to apply while writing code — injection prevention, secrets, endpoint authentication, JWT/OIDC, API keys, input validation, error responses, and dependencies. Apply whenever writing or editing C# code under src/.
+user-invocable: false
 paths:
   - "src/**/*.cs"
 ---
@@ -22,11 +25,10 @@ Apply these rules while writing code, not just during review.
 - Never log secrets, tokens, passwords, or PII -- use structured logging with explicit fields
 - Connection strings go in `appsettings.json` (dev) or Kubernetes Secrets (deployed)
 - Check: no `password=`, `apikey=`, `secret=`, `bearer` literals in committed code
-- API keys and tokens must be hashed before storage -- never store plaintext
 
 ## Endpoint Authentication
 
-Every new endpoint MUST have authentication. Rules:
+Rules:
 - Every new endpoint requires auth unless it is a health check, metrics, or explicitly public endpoint
 - If an endpoint must be public, annotate with `.AllowAnonymous()` and add a code comment explaining why
 - Service-to-service endpoints that use `.AllowAnonymous()` must validate the caller via other means (internal network, service token)
@@ -50,8 +52,6 @@ Every new endpoint MUST have authentication. Rules:
 
 - API keys must be hashed (e.g., BCrypt) before storage -- never store plaintext
 - Use a prefix for DB lookup, then verify the full key with constant-time comparison or hash verify
-- Never compare API keys with `==` -- use constant-time comparison or hash verify
-
 ## Input Validation
 
 - Validate all external input at the API boundary (endpoint or command level)
