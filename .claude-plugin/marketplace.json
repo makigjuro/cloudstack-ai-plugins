@@ -5,7 +5,7 @@
     "email": "makigjuro@users.noreply.github.com"
   },
   "metadata": {
-    "description": "Claude Code plugins for full-stack cloud engineering — .NET hexagonal architecture, React frontend, Terraform/Helm infrastructure, and end-to-end development workflow orchestration.",
+    "description": "A reference architecture for cloud web apps — hexagonal .NET services, React, Terraform + Helm on Azure/AKS — and the Claude Code workflow that builds and ships it.",
     "version": "0.3.0",
     "pluginRoot": "./plugins"
   },
@@ -13,7 +13,7 @@
     {
       "name": "dotnet-architect",
       "source": "./plugins/dotnet-architect",
-      "description": "Hexagonal architecture scaffolding and enforcement for .NET microservices — CQRS commands/queries, domain entities, EF Core migrations, architecture validation, and deep code review.",
+      "description": "Backend layer of the cloudstack reference architecture — scaffolds and enforces hexagonal .NET services: CQRS commands and queries, domain entities, EF Core migrations, tests, and architecture review.",
       "version": "0.3.0",
       "author": { "name": "Marjan Gjuroski" },
       "category": "productivity",
@@ -24,7 +24,7 @@
     {
       "name": "react-developer",
       "source": "./plugins/react-developer",
-      "description": "React + TypeScript frontend scaffolding and browser verification — feature modules, Playwright screenshots, smoke testing, and visual regression checks.",
+      "description": "Frontend layer of the cloudstack reference architecture — React + TypeScript feature modules, frontend conventions and security, Playwright smoke tests and screenshots, and frontend review.",
       "version": "0.3.0",
       "author": { "name": "Marjan Gjuroski" },
       "category": "productivity",
@@ -35,7 +35,7 @@
     {
       "name": "cloud-infra",
       "source": "./plugins/cloud-infra",
-      "description": "Terraform + Helm infrastructure scaffolding, linting, and review — module scaffolding, chart templates, validation pipelines, security scanning (trivy), and infrastructure-specific code review.",
+      "description": "Cloud layer of the cloudstack reference architecture — Terraform/Terragrunt modules and Helm charts for Azure/AKS, with linting, trivy security scans, plan-before-apply, and infrastructure review.",
       "version": "0.3.0",
       "author": { "name": "Marjan Gjuroski" },
       "category": "productivity",
@@ -46,7 +46,7 @@
     {
       "name": "dev-workflow",
       "source": "./plugins/dev-workflow",
-      "description": "End-to-end development workflow — PRD generation, feature planning, GitHub issue creation, branch management, quality gates, parallel code review, and PR creation.",
+      "description": "The workflow that ties the cloudstack reference architecture together — requirements, GitHub issues, branches, quality gates, parallel review agents, and pull requests, from idea to shippable change.",
       "version": "0.3.0",
       "author": { "name": "Marjan Gjuroski" },
       "category": "productivity",

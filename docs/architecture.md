@@ -1,6 +1,6 @@
 # Reference Architecture
 
-This document describes the software and cloud architecture that the cloudstack-ai-plugins encode. Every skill, rule, and agent in this marketplace is built to scaffold, enforce, and review these patterns.
+This is the reference architecture for a cloud web app that the cloudstack plugins build, enforce and ship: hexagonal .NET services, a React frontend, and Terraform + Helm on Azure/AKS. Every skill, convention skill and agent in the marketplace exists to scaffold, check or review one part of it, so this page is also the map of what the plugins do.
 
 ## Overview
 
@@ -558,7 +558,7 @@ graph TD
 | `doc-checker` | Endpoints, entities, or infra changed | Detect stale documentation |
 | `infra-reviewer` | `HAS_INFRA` | Terraform/Helm-specific security and best practices |
 
-All agents run in parallel with worktree isolation -- each gets its own copy of the repo so they don't interfere with each other.
+The review agents only read the diff, so they run in parallel in the shared working tree.
 
 ## Quality Gates
 
@@ -573,6 +573,8 @@ The plugins enforce quality at multiple levels:
 | **On demand** | `run-tests` | Smart change detection, runs only affected test projects |
 | **Pre-PR** | `complete-task` | Full pipeline: build, lint, test, review, QA |
 | **Pre-merge** | `reviewer` agent | Deep security + architecture + quality review |
+| **Pre-deploy** | `infra-lint`, `trivy-scan`, `infra-reviewer` | Terraform/Helm validation, security misconfigurations, infra review |
+| **Deploy** | `infra-apply` | Shows the plan, applies exactly the reviewed plan after confirmation |
 
 ## Technology Choices
 

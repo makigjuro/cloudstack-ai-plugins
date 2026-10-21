@@ -1,81 +1,64 @@
 # dotnet-architect
 
-A Claude Code plugin for .NET projects following hexagonal architecture with CQRS, DDD, and the Result pattern.
+**The backend layer of the [cloudstack reference architecture](../../README.md).** It scaffolds .NET microservices with hexagonal architecture and keeps them that way.
 
-## What it provides
+```
+/plugin install dotnet-architect@cloudstack-ai-plugins
+```
 
-Scaffolding skills, architecture convention skills, and a code review agent for .NET microservice projects that use:
+## The architecture it enforces
 
-- Hexagonal architecture (Domain / Application / Infrastructure / Host layers)
-- CQRS with WolverineFx
-- Domain-Driven Design (entities, value objects, aggregate roots, domain events)
-- Result pattern (no exceptions for business logic)
-- EF Core + PostgreSQL
-- FluentValidation
-- Minimal API endpoints
+- **Layers:** Domain → Application → Infrastructure → Host. Domain depends on nothing.
+- **DDD:** aggregate roots with private constructors and factory methods, typed value-object IDs, domain events. Repository interfaces live in Domain.
+- **CQRS with WolverineFx:** commands go through FluentValidation and return a minimal response. Queries handle reads.
+- **`Result<T>`** for business outcomes instead of exceptions, with entity-specific error codes.
+- **Persistence:** EF Core + PostgreSQL. Every model change ships with its migration.
+- **Endpoints:** Minimal APIs with OpenAPI metadata and authentication by default.
+
+The diagrams are in [docs/architecture.md](../../docs/architecture.md).
 
 ## Skills
 
-| Skill | Description |
-|-------|-------------|
-| `/add-entity` | Scaffold a domain entity with value object ID, aggregate root, factory method, domain event, repository interfaces, EF Core configuration, and migration |
-| `/add-command` | Scaffold a CQRS command with handler, validator, and POST/PUT/DELETE endpoint |
-| `/add-query` | Scaffold a CQRS query with handler and GET endpoint |
-| `/add-event-handler` | Scaffold a WolverineFx event handler for domain or integration events |
-| `/add-migration` | Create an EF Core migration for a microservice |
-| `/check-architecture` | Verify hexagonal layer rules, Result pattern usage, CQRS conventions, and pending migrations |
+| Skill | What it creates |
+|---|---|
+| `/dotnet-architect:add-entity Order OrderService` | Entity, typed ID, domain event, repository interfaces, EF configuration, migration |
+| `/dotnet-architect:add-command CreateOrder OrderService` | Command, handler, validator, POST/PUT/DELETE endpoint |
+| `/dotnet-architect:add-query GetOrder OrderService` | Query, handler, GET endpoint |
+| `/dotnet-architect:add-event-handler OrderCreated OrderService` | WolverineFx handler for domain or integration events |
+| `/dotnet-architect:add-migration AddOrderStatus OrderService` | EF Core migration |
+| `/dotnet-architect:generate-tests CreateOrderHandler OrderService` | xUnit unit tests and Testcontainers integration tests |
+| `/dotnet-architect:check-architecture` | Quick check for layer violations, Result usage, CQRS conventions and pending migrations |
+
+**Agent:** `dotnet-architect:reviewer` is the deep PR review for security, architecture and quality. It runs in `/dev-workflow:complete-task`.
 
 ## Convention skills
 
-Background skills (`user-invocable: false`) that Claude applies automatically when it works on matching files. They don't appear in the slash menu.
+Claude applies these automatically when it edits matching files:
 
-| Skill | Applies to | Description |
-|------|-----------|-------------|
-| `csharp-conventions` | `src/**/*.cs` | Commands, queries, error handling, async, DI, naming |
-| `domain-layer-rules` | `src/**/Domain/**/*.cs` | Zero dependencies, entities, aggregates, value objects, events |
-| `endpoint-conventions` | `src/**/Endpoints/**/*.cs` | Minimal API structure, OpenAPI metadata, Result-to-HTTP |
-| `validator-conventions` | `src/**/*Validator*.cs` | FluentValidation conventions |
-| `infrastructure-layer-rules` | `src/**/Infrastructure/**/*.cs` | Repositories, EF Core, migrations, DI registration |
-| `dotnet-testing-conventions` | `tests/**/*.cs` | xUnit, NSubstitute, FluentAssertions, integration tests |
-| `backend-security` | `src/**/*.cs` | Injection prevention, secrets, auth, JWT, input validation |
-
-## Agents
-
-| Agent | Model | Description |
-|-------|-------|-------------|
-| `reviewer` | inherits session model | Deep PR-level code review for security, architecture, and quality |
+| Skill | Applies to |
+|---|---|
+| `csharp-conventions`, `backend-security` | `src/**/*.cs` |
+| `domain-layer-rules` | `src/**/Domain/**/*.cs` |
+| `infrastructure-layer-rules` | `src/**/Infrastructure/**/*.cs` |
+| `endpoint-conventions` | `src/**/Endpoints/**/*.cs` |
+| `validator-conventions` | `src/**/*Validator*.cs` |
+| `dotnet-testing-conventions` | `tests/**/*.cs` |
 
 ## Configuration
 
-Skills auto-detect project structure by default. For explicit configuration, create a `cloudstack.json` in your project root:
-
 ```json
 {
-  "project": {
-    "namespace": "MyCompany.MyProject"
-  },
+  "project": { "namespace": "MyCompany.MyProject" },
   "backend": {
     "solutionPath": "src/MyProject.sln",
-    "sharedDomainPath": "src/Shared/MyProject.Domain",
-    "sharedInfraPath": "src/Shared/MyProject.Infrastructure",
-    "services": ["OrderService", "PaymentService", "NotificationService"]
+    "services": [{ "name": "OrderService", "path": "src/OrderService" }]
   }
 }
 ```
 
-If `cloudstack.json` is absent, skills will:
-- Detect the namespace from the `*.sln` filename or first `*.csproj` root namespace
-- Find the Domain project by locating `**/Domain/` directories containing `Entities/`
-- Find the Infrastructure project by locating `**/Shared.*Infrastructure/`
-- Discover services from `src/*/` directories that contain `.Application/` subfolders
-- Find the solution file by searching for `*.sln` in `src/`
+Without `cloudstack.json`, the skills detect the namespace from the solution, find Domain and Infrastructure projects, and discover services under `src/`. See the [cloudstack.json reference](../../docs/cloudstack-json-reference.md).
 
-## Installation
-
-Add this plugin to your Claude Code project configuration. The skills and agents will be available automatically.
-
-## Prerequisites
-
-- .NET SDK (9.0+)
-- EF Core tools (`dotnet tool install --global dotnet-ef`)
-- PostgreSQL (for integration tests via Testcontainers)
+**Prerequisites:**
+- .NET SDK (the reference stack targets .NET 10)
+- `dotnet-ef` (`dotnet tool install --global dotnet-ef`)
+- Docker, for Testcontainers integration tests

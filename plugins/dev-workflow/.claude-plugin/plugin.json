@@ -1,6 +1,6 @@
 {
   "name": "dev-workflow",
-  "description": "End-to-end development workflow — PRD generation, feature planning, GitHub issue creation, branch management, quality gates, parallel code review, and PR creation.",
+  "description": "The workflow that ties the cloudstack reference architecture together — requirements, GitHub issues, branches, quality gates, parallel review agents, and pull requests, from idea to shippable change.",
   "version": "0.3.0",
   "author": {
     "name": "Marjan Gjuroski"

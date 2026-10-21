@@ -1,100 +1,73 @@
 # Getting Started
 
+cloudstack-ai-plugins is a reference architecture for cloud web apps plus the Claude Code workflow that builds and ships it. This guide takes you from install to your first deployed change.
+
 ## Prerequisites
 
-- [Claude Code](https://claude.ai/code) installed
-- A .NET + React + Azure project (or any subset)
+- [Claude Code](https://claude.com/claude-code)
+- `gh` (GitHub CLI), authenticated
+- For the stack you use:
+  - .NET SDK and `dotnet-ef`
+  - Node.js
+  - Docker (for integration tests and local dev)
+  - `terraform`, `helm`, `trivy` (and `terragrunt`)
 
-## Installation
-
-### Step 1: Add the marketplace
-
-In Claude Code, run:
+## 1. Install
 
 ```
 /plugin marketplace add makigjuro/cloudstack-ai-plugins
-```
-
-### Step 2: Install plugins
-
-Install the plugins you need:
-
-```
+/plugin install dev-workflow@cloudstack-ai-plugins
 /plugin install dotnet-architect@cloudstack-ai-plugins
 /plugin install react-developer@cloudstack-ai-plugins
 /plugin install cloud-infra@cloudstack-ai-plugins
-/plugin install dev-workflow@cloudstack-ai-plugins
 ```
 
-### Step 3: Configure your project
+Install only the layers you need. Each plugin works on its own, and `dev-workflow` uses whichever others are present.
 
-Create a `cloudstack.json` at your project root. Start from the template:
+## 2. Configure
 
-```bash
-cp <plugin-path>/templates/cloudstack.json ./cloudstack.json
+```
+/dev-workflow:init
 ```
 
-Or create a minimal one:
+This scans your project and writes a `cloudstack.json` with your solution, services, frontend path, infra paths and conventions. It's optional, since the plugins auto-detect without it. It is worth having on a real project. Every field is in the [cloudstack.json reference](cloudstack-json-reference.md), and `templates/cloudstack.json` is a full starting point.
 
-```json
-{
-  "$schema": "https://raw.githubusercontent.com/makigjuro/cloudstack-ai-plugins/main/schema/cloudstack.schema.json",
-  "project": {
-    "name": "MyProject",
-    "namespace": "MyProject"
-  },
-  "backend": {
-    "solutionPath": "src/MyProject.sln",
-    "services": [
-      { "name": "OrderService", "path": "src/OrderService", "projectPrefix": "MyProject.OrderService" }
-    ]
-  }
-}
-```
-
-This file is optional. Without it, plugins auto-detect from your project structure.
-
-### Step 4: Verify installation
+Check that the backend matches the architecture:
 
 ```
 /dotnet-architect:check-architecture
 ```
 
-This should scan your project and report on hexagonal architecture layer compliance.
+## 3. Build a feature
 
-## Configuration Reference
+1. **Plan.** `/dev-workflow:prd` for a complex feature, or `/dev-workflow:plan-feature` for a simple one. Then `/dev-workflow:create-tasks` turns the plan into GitHub issues.
+2. **Branch.** `/dev-workflow:start-work 42` creates the branch from issue #42 and starts implementing.
+3. **Build.** Claude uses the scaffolding skills as it goes:
+   - `/dotnet-architect:add-entity`, `add-command`, `add-query`, `add-event-handler`
+   - `/react-developer:add-feature`
+   - `/cloud-infra:add-helm-chart` and `add-terraform-module` for new services or resources
 
-See [cloudstack.json reference](cloudstack-json-reference.md) for all available fields.
+   The convention skills keep each layer consistent while it edits.
+4. **Verify.** `/dev-workflow:run-tests` runs only the affected tests. `/react-developer:verify-feature` checks changed pages in a browser.
+5. **Ship.** `/dev-workflow:complete-task` builds, lints, tests, runs the review agents, fixes what they find and opens the PR.
 
-## Workflow
+## 4. Deploy
 
-The recommended workflow with all plugins installed:
+1. `/cloud-infra:infra-lint` validates Terraform and Helm and runs the trivy security scan.
+2. `/cloud-infra:infra-apply dev` shows the plan for an environment.
+3. `/cloud-infra:infra-apply dev --apply` applies exactly that reviewed plan after you confirm. If anything changed since planning, it stops so you can re-plan and review again.
 
-1. **Plan**: `/dev-workflow:plan-feature` to break down the feature
-2. **Track**: `/dev-workflow:create-tasks` to create GitHub issues
-3. **Branch**: `/dev-workflow:start-work 42` to create a feature branch
-4. **Build**: Use `/dotnet-architect:add-*` and `/react-developer:add-feature` skills
-5. **Verify**: `/dotnet-architect:check-architecture` for quick checks
-6. **Complete**: `/dev-workflow:complete-task` for the full quality pipeline
+For an infra-only branch, `/cloud-infra:complete-infra` runs lint, scan and review, then opens the PR.
 
-## Optional MCP Servers
+## MCP servers
 
-For the best experience, configure these MCP servers in your `.mcp.json`:
+The plugins bundle what they need:
+- **context7**, for library docs while scaffolding
+- **Playwright**, for browser checks in react-developer
 
-```json
-{
-  "mcpServers": {
-    "context7": {
-      "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp"]
-    },
-    "playwright": {
-      "command": "npx",
-      "args": ["@playwright/mcp@latest"]
-    }
-  }
-}
-```
+Mermaid Chart (diagram validation) and `github-mcp-server` are used when you have them; GitHub operations default to `gh`.
 
-- **context7**: Library documentation lookup (used by scaffolding skills)
-- **playwright**: Browser automation (used by screenshot, verify-feature, smoke-test)
+## Next
+
+- [Reference architecture](architecture.md): layers, CQRS flow, cloud topology, quality gates
+- [Writing plugins and skills](plugin-development.md)

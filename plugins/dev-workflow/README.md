@@ -1,105 +1,59 @@
 # dev-workflow
 
-End-to-end development workflow plugin for Claude Code. Provides PRD generation, feature planning, GitHub issue creation, branch management, quality gates, parallel code review, and PR creation.
+**The workflow layer of the [cloudstack reference architecture](../../README.md).** It moves a feature from idea to a shippable pull request and runs the backend, frontend and infra plugins' checks at the right moments.
 
-## What's Included
+```
+/plugin install dev-workflow@cloudstack-ai-plugins
+```
 
-### Skills (13)
+## The flow
 
-| Skill | Description |
-|-------|-------------|
-| `/prd` | Generate a Product Requirements Document through guided discovery |
-| `/plan-feature` | Break a feature into structured implementation tasks |
-| `/create-tasks` | Create GitHub issues (auto-detects single issue vs epic + tasks) |
-| `/start-work` | Create a feature branch from a GitHub issue |
-| `/complete-task` | Full completion workflow: build, lint, test, review, PR |
-| `/create-pr` | Create a pull request with structured description |
-| `/code-review` | Deep code review for security, architecture, and quality |
-| `/task-check` | QA check: verify implementation matches issue acceptance criteria |
-| `/run-tests` | Run tests with smart change detection |
-| `/lint` | Run all linters and formatters |
-| `/run-local` | Start the local development environment |
-| `/docs` | Generate or update documentation from code |
-| `/diagnose` | Investigate problems with structured evidence gathering |
+| Stage | Skills |
+|---|---|
+| Plan | `/dev-workflow:prd` (full requirements), `/dev-workflow:plan-feature` (lighter breakdown), `/dev-workflow:create-tasks` (GitHub issues: single or epic + tasks) |
+| Build | `/dev-workflow:start-work 42` branches from the issue and starts implementing |
+| Verify | `/dev-workflow:run-tests` (only affected test projects), `/dev-workflow:lint`, `/dev-workflow:run-local` (Aspire or Docker Compose) |
+| Ship | `/dev-workflow:complete-task` builds, lints, tests, runs parallel review agents, fixes issues (max 3 rounds) and opens the PR |
+| Support | `/dev-workflow:code-review`, `/dev-workflow:task-check`, `/dev-workflow:create-pr`, `/dev-workflow:docs`, `/dev-workflow:diagnose`, `/dev-workflow:init` |
 
-### Agents (4)
+`complete-task` checks only what changed and uses whichever other plugins are installed:
+- With dotnet-architect: .NET build, migrations check, architecture review.
+- With react-developer: type-check, ESLint, browser checks and frontend review.
+- With cloud-infra: Helm/Terraform lint, trivy and infra review.
 
-| Agent | Model | Purpose |
-|-------|-------|---------|
-| `verifier` | inherits session model | QA gate — verifies implementation matches GitHub issue acceptance criteria |
-| `investigator` | inherits session model | Evidence gatherer for diagnosing problems, collects facts without drawing conclusions |
-| `analyzer` | inherits session model | Codebase analyzer — finds patterns, related code, and integration points before new features |
-| `doc-checker` | Haiku | Fast advisory check — detects stale documentation relative to code changes |
+Without them, it still handles tests, review, acceptance criteria and the PR.
 
-### Convention skills (4)
+## Agents
 
-Background skills (`user-invocable: false`) that Claude applies automatically when it works on matching files. They don't appear in the slash menu.
+| Agent | Model | Role |
+|---|---|---|
+| `dev-workflow:verifier` | session model | Checks the implementation against the issue's acceptance criteria |
+| `dev-workflow:analyzer` | session model | Maps existing patterns and integration points before a new feature |
+| `dev-workflow:investigator` | session model | Gathers evidence for `/diagnose` without jumping to conclusions |
+| `dev-workflow:doc-checker` | Haiku | Fast advisory check for docs made stale by the change |
 
-| Skill | Scope | Description |
-|------|-------|-------------|
-| `git-conventions` | `**` | Branch naming, commit messages, staging, PR conventions |
-| `workflow` | `**` | Master workflow doc — end-to-end development process with all skill references |
-| `mcp-tools` | — | Guidance for bundled and optional MCP servers (context7, playwright, Mermaid Chart, GitHub) |
-| `skill-writing` | — | Principles for writing effective Claude Code skills |
+## Always-on guardrails
 
-### Hooks (3)
-
-| Hook | Trigger | Description |
-|------|---------|-------------|
-| `format-on-save.sh` | PostToolUse (Edit/Write) | Auto-formats files after editing (C#, TS/JS, Terraform, Python, Go) |
-| `pre-commit-lint.sh` | PreToolUse (Bash) | Lints and auto-fixes staged files before git commit |
-| `scan-secrets.sh` | PreToolUse (Bash) | Scans for leaked secrets before git commit/push |
-
-### Scripts
-
-| Script | Description |
-|--------|-------------|
-| `preflight.sh` | Shared pre-flight check for branch validation and issue extraction |
+- **Convention skills** that Claude applies automatically:
+  - `git-conventions`: branches, commits, PRs
+  - `workflow`: which skill fits each step
+  - `mcp-tools`: when to use the MCP servers
+  - `skill-writing`: how to write skills
+- **Hooks:**
+  - `format-on-save.sh` formats C#, TS/JS, Terraform, Python and Go after edits.
+  - `pre-commit-lint.sh` lints staged files before `git commit`.
+  - `scan-secrets.sh` blocks leaked keys and tokens before commit or push.
 
 ## Configuration
 
-The hooks and scripts auto-detect project paths. For explicit configuration, create a `cloudstack.json` in your project root:
+Run `/dev-workflow:init` to generate `cloudstack.json` from your project layout. The fields this plugin uses most are:
+- `backend.solutionPath`
+- `backend.services[]` (with `aliases`/`testProjects` for test resolution)
+- `frontend.path`
+- `localDev.*`
+- `conventions.branchFormat` / `commitStyle`
+- `validators.mcpServer`
 
-```json
-{
-  "backend": {
-    "solutionPath": "src/MyProject.sln"
-  },
-  "frontend": {
-    "path": "web"
-  }
-}
-```
+Without the file, the plugin auto-detects. See the [cloudstack.json reference](../../docs/cloudstack-json-reference.md).
 
-Without this file, the plugin will:
-- Search for `*.sln` files under `src/` or the project root
-- Look for `package.json` in `web/`, `frontend/`, `client/`, or `app/` directories
-
-## Supported Languages
-
-The format-on-save and pre-commit hooks support:
-- **C#** via `dotnet format`
-- **TypeScript/JavaScript** via ESLint
-- **Terraform** via `terraform fmt`
-- **Python** via ruff or black
-- **Go** via gofmt
-- **Helm** via `helm lint`
-
-## Optional MCP Servers
-
-The plugin works best with these MCP servers, but none are required:
-
-- **context7** — Library documentation lookup (avoids outdated patterns)
-- **playwright** — Browser automation for frontend verification
-- **Mermaid Chart** — Diagram validation for documentation
-- **github-mcp-server** — Structured GitHub API access (falls back to `gh` CLI)
-
-## Installation
-
-Add to your Claude Code project as a plugin:
-
-```bash
-claude plugins add /path/to/dev-workflow
-```
-
-Or reference it in your project's plugin configuration.
+**MCP servers:** context7 (library docs) is bundled. Mermaid Chart and `github-mcp-server` are used when available. GitHub operations default to the `gh` CLI.

@@ -1,6 +1,6 @@
 {
   "name": "react-developer",
-  "description": "React + TypeScript frontend scaffolding and browser verification — feature modules, Playwright screenshots, smoke testing, and visual regression checks.",
+  "description": "Frontend layer of the cloudstack reference architecture — React + TypeScript feature modules, frontend conventions and security, Playwright smoke tests and screenshots, and frontend review.",
   "version": "0.3.0",
   "author": {
     "name": "Marjan Gjuroski"
