@@ -1,6 +1,6 @@
 # Reference Architecture
 
-This is the reference architecture for a cloud web app that the cloudstack plugins build, enforce and ship: hexagonal .NET services, a React frontend, and Terraform + Helm on Azure/AKS. Every skill, convention skill and agent in the marketplace exists to scaffold, check or review one part of it, so this page is also the map of what the plugins do.
+This is the reference architecture for a cloud web app that the cloudstack plugins build, enforce and ship: hexagonal .NET services, a React frontend, and Terraform on Azure Container Apps (AKS + Helm as an alternative). Every skill, convention skill and agent in the marketplace exists to scaffold, check or review one part of it, so this page is also the map of what the plugins do.
 
 ## Overview
 
@@ -15,7 +15,7 @@ graph TB
     end
 
     subgraph gateway["API Gateway / Ingress"]
-        ingress["Kubernetes Ingress<br/>TLS Termination + Routing"]
+        ingress["API Gateway<br/>external ingress, TLS + routing"]
     end
 
     subgraph services["Microservices"]
@@ -261,124 +261,95 @@ web/src/
 
 ## Cloud Infrastructure
 
-The infrastructure layer uses Terraform for provisioning and Helm for workload deployment, with a clear separation between the two concerns.
+The default runtime is **Azure Container Apps (ACA)**: serverless containers with revisions, scale-to-zero and managed ingress, without running a Kubernetes cluster. Terraform/Terragrunt provisions everything; CI builds immutable images and rolls each service to a new revision. **AKS + Helm** is supported as an alternative runtime.
+
+> Status: the Terraform, Terragrunt, lint, trivy and plan/apply skills work today for both runtimes. Container Apps–specific scaffolding (`add-container-app`, migration jobs) and the application deploy skill are tracked in [#4](https://github.com/makigjuro/cloudstack-ai-plugins/issues/4).
 
 ```mermaid
 graph TB
-    subgraph dev["Developer Workstation"]
-        claude["Claude Code<br/>+ cloudstack plugins"]
-        git["Git Push"]
+    subgraph cicd["GitHub Actions (OIDC to Azure)"]
+        build_ci["Build + test"]
+        image["Build image<br/>tag = git SHA"]
+        roll["Migrate job → new revision<br/>→ health check → smoke test"]
     end
 
-    subgraph cicd["GitHub Actions CI/CD"]
-        build_ci["Build + Test"]
-        docker["Container Build<br/>ghcr.io"]
-        deploy_ci["Deploy Pipeline"]
-    end
+    subgraph azure["Azure"]
+        swa["Static Web Apps<br/>React SPA"]
+        acr["Container Registry<br/>AcrPull via managed identity"]
 
-    subgraph iac["Infrastructure as Code"]
-        tf["Terraform Modules<br/>infra/terraform/modules/"]
-        tg["Terragrunt<br/>infra/terragrunt/{env}/"]
-        helm["Helm Charts<br/>deploy/charts/"]
-    end
-
-    subgraph azure["Azure Cloud"]
-        subgraph aks["AKS Cluster"]
-            subgraph ns["Kubernetes Namespace"]
-                svc1["Service A<br/>Deployment + Service"]
-                svc2["Service B<br/>Deployment + Service"]
-                svc3["Service C<br/>Deployment + Service"]
-                ingress["Ingress Controller"]
+        subgraph vnet["VNet"]
+            subgraph env["Container Apps environment"]
+                gw["API gateway<br/>external ingress"]
+                svc1["Service A<br/>internal ingress"]
+                svc2["Service B<br/>internal ingress"]
+                job["Migration job<br/>(ACA Job)"]
             end
+            pg[("PostgreSQL<br/>Flexible Server, private DNS")]
         end
 
-        subgraph data["Managed Services"]
-            pg[("PostgreSQL<br/>Flexible Server")]
-            nats_svc["NATS<br/>JetStream"]
-            redis_svc["Redis / Valkey<br/>Cache"]
-            blob_svc["Blob Storage<br/>Artifacts"]
-            kv["Key Vault<br/>Secrets"]
-        end
-
-        subgraph monitor["Observability"]
-            otel["OpenTelemetry<br/>Collector"]
-            grafana["Grafana<br/>Dashboards"]
-            loki["Loki<br/>Logs"]
-            tempo["Tempo<br/>Traces"]
-            prom["Prometheus<br/>Metrics"]
-        end
+        kv["Key Vault<br/>secret refs via managed identity"]
+        logs["Log Analytics<br/>+ OpenTelemetry"]
     end
 
-    subgraph frontend["Frontend"]
-        spa["React SPA<br/>Static Hosting / CDN"]
-    end
+    iac["Terraform + Terragrunt<br/>infra/terragrunt/{env}/"]
 
-    claude --> git
-    git --> build_ci
-    build_ci --> docker
-    docker --> deploy_ci
-    deploy_ci --> helm
+    build_ci --> image --> acr
+    image --> roll
+    roll --> env
+    iac -.provisions.-> azure
 
-    tf --> azure
-    tg --> tf
-    helm --> ns
-
-    ingress --> svc1
-    ingress --> svc2
-    ingress --> svc3
+    swa --> gw
+    gw --> svc1
+    gw --> svc2
     svc1 --> pg
-    svc1 --> nats_svc
-    svc2 --> redis_svc
-    svc3 --> blob_svc
-    aks --> kv
+    svc2 --> pg
+    job --> pg
+    env -.pulls.-> acr
+    env -.secrets.-> kv
+    env --> logs
 
-    svc1 --> otel
-    svc2 --> otel
-    svc3 --> otel
-    otel --> prom
-    otel --> loki
-    otel --> tempo
-    prom --> grafana
-    loki --> grafana
-    tempo --> grafana
-
-    spa --> ingress
-
-    style dev fill:#1D4ED8,color:#fff
     style cicd fill:#7C3AED,color:#fff
-    style iac fill:#D97706,color:#fff
-    style aks fill:#2563EB,color:#fff
-    style ns fill:#3B82F6,color:#fff
-    style data fill:#059669,color:#fff
-    style monitor fill:#0E7490,color:#fff
-    style frontend fill:#10B981,color:#fff
     style azure fill:#0078D4,color:#fff
+    style vnet fill:#1D4ED8,color:#fff
+    style env fill:#2563EB,color:#fff
 ```
+
+**Design rules**
+- **Images are immutable**: tagged with the git SHA, never deployed as `:latest`, so every rollout creates a traceable revision and rollback means re-activating the previous one.
+- **Only the gateway is public**: every other service uses internal ingress (`https://<app>.internal.<environment-domain>`).
+- **No stored credentials**: apps pull from ACR and read Key Vault secrets with a managed identity; CI authenticates to Azure with OIDC federated credentials.
+- **Migrations before traffic**: EF Core migrations run as an ACA Job before the new revision is activated.
+- **Every app has probes**: `/health/live` and `/health/ready`.
+- **Environments are promoted, not rebuilt**: the same image moves dev → staging → prod behind GitHub environment approvals.
 
 ### Terraform Module Structure
 
-Each cloud resource gets its own module. Modules are composed via Terragrunt dependency graphs.
+Each cloud resource gets its own module, composed per environment with Terragrunt dependency graphs.
 
 ```
 infra/terraform/modules/
-├── resource-group/         # Azure resource group
-├── aks-cluster/           # AKS with node pools
-├── postgresql/            # Flexible Server
-├── redis/                 # Cache for Redis
-├── storage-account/       # Blob storage
-├── key-vault/             # Secrets management
-└── container-registry/    # GHCR or ACR
+├── resource-group/
+├── networking/                 # VNet, subnets, private DNS
+├── managed-identity/
+├── monitoring/                 # Log Analytics
+├── key-vault/
+├── container-registry/         # ACR
+├── postgresql/                 # Flexible Server
+├── container-app-environment/
+├── container-app/              # one unit per service
+├── container-app-job/          # migrations, setup tasks
+└── static-web-app/             # frontend
 ```
 
 **Conventions:**
-- One resource per module, named `"this"`
 - Naming: `{project}-{resource}-{env}-{location_short}`
 - All resources tagged with `project`, `environment`, `managed-by`
-- Terragrunt handles backend config and dependency ordering
+- Terragrunt handles remote state, provider generation and dependency ordering
+- The image tag is an input variable, so `apply` with a new tag rolls a new revision
 
-### Helm Chart Structure
+### Alternative runtime: AKS + Helm
 
-Each microservice gets its own Helm chart with standard templates.
+To run on AKS instead, each microservice gets its own Helm chart (`/cloud-infra:add-helm-chart`). An explicit `infrastructure.runtime` switch arrives with the Container Apps skills in #4.
 
 ```
 deploy/charts/
@@ -547,7 +518,7 @@ graph TD
 |------|-------------|-------|
 | `HAS_BACKEND` | Files under `src/` | .NET build, lint, unit tests, migration check |
 | `HAS_FRONTEND` | Files under `{frontend.path}/` | Type-check, ESLint, browser verification |
-| `HAS_INFRA` | Files under `infra/`, `deploy/`, `.github/` | Helm lint, Terraform fmt, infra-reviewer agent |
+| `HAS_INFRA` | Files under `infra/`, `deploy/`, `.github/workflows/` | Helm lint, Terraform fmt, infra-reviewer agent |
 
 **Agent composition:**
 
@@ -593,6 +564,6 @@ The plugins enforce quality at multiple levels:
 | Client state | Zustand | Minimal boilerplate, no reducers |
 | UI components | shadcn/ui | Copy-paste ownership, Tailwind-native |
 | IaC | Terraform + Terragrunt | Declarative, multi-cloud, DRY with Terragrunt |
-| Orchestration | Helm | Kubernetes-native, templated deployments |
+| Runtime | Azure Container Apps | Revisions, scale-to-zero, managed ingress without operating a cluster (AKS + Helm as alternative) |
 | CI/CD | GitHub Actions | Integrated with repo, marketplace of actions |
 | Observability | OpenTelemetry | Vendor-neutral, auto-instrumented |

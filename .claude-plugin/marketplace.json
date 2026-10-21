@@ -5,7 +5,7 @@
     "email": "makigjuro@users.noreply.github.com"
   },
   "metadata": {
-    "description": "A reference architecture for cloud web apps — hexagonal .NET services, React, Terraform + Helm on Azure/AKS — and the Claude Code workflow that builds and ships it.",
+    "description": "A reference architecture for cloud web apps — hexagonal .NET services, React, Terraform on Azure Container Apps — and the Claude Code workflow that builds and ships it.",
     "version": "0.3.0",
     "pluginRoot": "./plugins"
   },
@@ -35,11 +35,11 @@
     {
       "name": "cloud-infra",
       "source": "./plugins/cloud-infra",
-      "description": "Cloud layer of the cloudstack reference architecture — Terraform/Terragrunt modules and Helm charts for Azure/AKS, with linting, trivy security scans, plan-before-apply, and infrastructure review.",
+      "description": "Cloud layer of the cloudstack reference architecture — Terraform/Terragrunt for Azure Container Apps (or AKS + Helm), with linting, trivy security scans, plan-before-apply, and infrastructure review.",
       "version": "0.3.0",
       "author": { "name": "Marjan Gjuroski" },
       "category": "productivity",
-      "tags": ["terraform", "helm", "azure", "kubernetes", "infrastructure", "aks", "trivy"],
+      "tags": ["terraform", "azure", "container-apps", "terragrunt", "infrastructure", "helm", "aks", "trivy"],
       "repository": "https://github.com/makigjuro/cloudstack-ai-plugins",
       "license": "MIT"
     },
