@@ -6,6 +6,8 @@ user-invocable: false
 
 # Git Conventions
 
+If `cloudstack.json` sets `conventions.branchFormat` or `conventions.commitStyle`, those override the defaults below.
+
 ## Branch Naming
 
 Format: `{username}/{issue-number}-{short-slug}`
@@ -13,8 +15,6 @@ Format: `{username}/{issue-number}-{short-slug}`
 Examples:
 - `jdoe/166-aks-cluster-services`
 - `asmith/247-real-time-sse-websocket`
-
-Legacy branches used `feature/` prefix — new branches must use the `{username}/` format.
 
 ## Commit Messages
 

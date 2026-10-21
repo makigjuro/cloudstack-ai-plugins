@@ -21,10 +21,6 @@ Capture a screenshot of a URL or route. Nothing else — no tables, no analysis,
 Read `cloudstack.json` from the project root at the start of execution. Extract:
 - `FRONTEND_PATH` = `frontend.path` (default: `web`)
 - `DEV_PORT` = `frontend.devPort` (default: `5173`)
-- `UI_LIBRARY` = `frontend.uiLibrary` (default: `shadcn`)
-- `STATE_SERVER` = `frontend.stateManagement.server` (default: `tanstack-query`)
-- `STATE_CLIENT` = `frontend.stateManagement.client` (default: `zustand`)
-- `MULTI_TENANT` = `backend.multiTenancy` (default: `false`)
 
 If `cloudstack.json` does not exist, auto-detect by checking `package.json` dependencies.
 
@@ -54,6 +50,8 @@ If `localDev.authConfig` is not present, use a generic dev auth pattern:
 2. Fall back to injecting: `localStorage.setItem('auth-storage', JSON.stringify({ state: { isAuthenticated: true }, version: 0 }))`
 
 ## Process
+
+Playwright tools are `mcp__plugin_react-developer_playwright__<tool>`; short names below (e.g. `browser_navigate`) refer to those.
 
 ### Step 1: Resolve URL
 

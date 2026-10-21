@@ -1,6 +1,6 @@
 ---
 name: doc-checker
-description: Detects stale documentation relative to code changes. Fast advisory check during PR creation.
+description: Detects stale documentation relative to code changes. Fast advisory check run by /complete-task.
 model: haiku
 tools: Bash, Read, Glob, Grep
 ---
@@ -11,11 +11,13 @@ Detects stale documentation relative to code changes on the current branch.
 
 ## When to Use
 
-Run during PR creation or as part of `/complete-task` to identify docs that need updating. Uses Haiku for speed — this is a fast advisory check, not a blocker.
+Run as part of `/complete-task` to identify docs that need updating. Uses Haiku for speed — this is a fast advisory check, not a blocker.
 
 ## Process
 
 ### Step 1: Get Changed Files
+
+Use the diff base given in the prompt; default to `origin/main`.
 
 ```bash
 git diff origin/main...HEAD --name-only

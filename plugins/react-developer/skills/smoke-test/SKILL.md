@@ -22,10 +22,6 @@ Navigate key application routes using Playwright and verify they render without 
 Read `cloudstack.json` from the project root at the start of execution. Extract:
 - `FRONTEND_PATH` = `frontend.path` (default: `web`)
 - `DEV_PORT` = `frontend.devPort` (default: `5173`)
-- `UI_LIBRARY` = `frontend.uiLibrary` (default: `shadcn`)
-- `STATE_SERVER` = `frontend.stateManagement.server` (default: `tanstack-query`)
-- `STATE_CLIENT` = `frontend.stateManagement.client` (default: `zustand`)
-- `MULTI_TENANT` = `backend.multiTenancy` (default: `false`)
 
 Also extract:
 - `API_PORT` = `backend.devPort` (default: `5000`)
@@ -43,6 +39,8 @@ Check `cloudstack.json` for `localDev.authConfig`. If present, use it. Otherwise
 The local environment must be running. If not, suggest starting the dev server first.
 
 ## Process
+
+Playwright tools are `mcp__plugin_react-developer_playwright__<tool>`; short names below (e.g. `browser_navigate`) refer to those.
 
 ### Step 1: Verify Services Are Up
 

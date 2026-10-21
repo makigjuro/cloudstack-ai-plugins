@@ -1,13 +1,13 @@
 ---
 name: code-review
 description: Review code changes for security, architecture, and quality issues. Use for deep PR-level review -- checks OWASP vulnerabilities, hexagonal architecture violations, code smells, and test gaps. For a quick architecture-only check, use /check-architecture instead.
-allowed-tools: Bash, Read, Glob, Grep
+allowed-tools: Bash, Read, Glob, Grep, Agent, Workflow
 user-invocable: true
 ---
 
 # Code Review
 
-Perform a comprehensive code review of changes on the current branch compared to main. This skill can be invoked standalone or used as part of `/complete-task`.
+Perform a comprehensive code review of changes on the current branch compared to main. This skill runs standalone; `/complete-task` runs the equivalent `dotnet-architect:reviewer` agent instead.
 
 ## Arguments
 
@@ -242,21 +242,10 @@ Things done well in this change:
 | Security | No | Yes (OWASP Top 10) |
 | Architecture | Layer deps, Result pattern, CQRS, entities, migrations | Same + circular deps, anemic models |
 | Quality | No | Yes (code smells, naming, testing gaps) |
-| When | During development, quick verification | Before PR, as gate in /complete-task |
+| When | During development, quick verification | Before PR, standalone deep review |
 
 Use `/check-architecture` for quick feedback while coding. Use `/code-review` for the final gate before a PR.
 
-## Integration with /complete-task
-
-When called as an agent from `/complete-task`:
-- Return only the Summary section with pass/fail status
-- Include the count of critical issues
-- Critical issues cause the parent workflow to pause for fixes
-
 ## Guidelines
 
-- Be specific -- include file paths and line numbers
-- Be constructive -- suggest fixes, don't just criticize
-- Prioritize -- focus on what matters most for this codebase
-- Context matters -- consider the feature being built
 - Don't nitpick -- save style debates for linters

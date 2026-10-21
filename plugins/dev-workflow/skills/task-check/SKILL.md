@@ -17,7 +17,7 @@ Verify that the implementation on the current branch satisfies the requirements 
 
 ## Configuration
 
-Auto-detect the GitHub repository from `git remote -v` (extract owner and repo name). If `cloudstack.json` exists, it may contain a `project.repository` field as a fallback.
+Auto-detect the GitHub repository from `git remote -v` (extract owner and repo name). If `cloudstack.json` sets `repository.owner` / `repository.name`, use them as a fallback.
 
 ## Process
 
@@ -215,16 +215,8 @@ For each criterion, collect evidence:
 - If implementation includes features not in issue, note as "EXTRA"
 - Not a failure, but worth flagging for review
 
-## Integration with /complete-task
-
-When called as an agent from `/complete-task`:
-- Return pass/fail status and count of unmet Must Have criteria
-- Include list of gaps if any
-- Unmet Must Have criteria cause the parent workflow to pause
-
 ## Guidelines
 
-- Be thorough but practical -- focus on what matters
 - Evidence is key -- always show where something is implemented
 - Partial credit counts -- note progress even if incomplete
 - Consider intent -- sometimes requirements evolve during implementation

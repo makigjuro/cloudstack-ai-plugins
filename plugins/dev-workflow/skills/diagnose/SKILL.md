@@ -30,7 +30,7 @@ Clarify the problem:
 
 ### Phase 2: Evidence Collection
 
-Use an investigator approach to gather evidence systematically.
+Gather evidence from the sources below; delegate to the `dev-workflow:investigator` agent when the search is broad.
 
 **Source 1: Error Messages & Logs**
 ```bash
@@ -116,7 +116,7 @@ For each hypothesis (starting with highest likelihood):
 
 Once a hypothesis is confirmed:
 
-**5 Whys Analysis:**
+**5 Whys** (use when the cause chain isn't obvious):
 1. Why did {symptom} happen? -> {immediate cause}
 2. Why did {immediate cause} happen? -> {deeper cause}
 3. Why did {deeper cause} happen? -> {even deeper}
@@ -252,7 +252,7 @@ Once a hypothesis is confirmed:
 ## Quick Mode (--quick)
 
 For urgent issues, use abbreviated process:
-1. Collect obvious evidence (2 min)
+1. Collect the obvious evidence
 2. Form top hypothesis
 3. Test immediately
 4. Propose quick fix
@@ -260,9 +260,4 @@ For urgent issues, use abbreviated process:
 
 ## Guidelines
 
-- Follow the evidence -- don't jump to conclusions
-- Document everything -- future you will thank past you
-- Consider multiple hypotheses -- avoid confirmation bias
-- Test hypotheses -- don't assume, verify
-- Think systematically -- use the 5 Whys
 - Propose prevention -- fix the system, not just the symptom

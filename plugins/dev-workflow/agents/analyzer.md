@@ -10,7 +10,7 @@ Codebase analyzer that discovers patterns, related code, and integration points 
 
 ## When to Use
 
-Run as an agent from `/prd` or `/plan-feature` to ground new feature plans in what already exists in the codebase.
+Run as an agent from `/prd` to ground new feature plans in what already exists in the codebase.
 
 ## Exploration Strategy
 

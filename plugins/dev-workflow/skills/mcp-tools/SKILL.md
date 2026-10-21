@@ -6,7 +6,7 @@ user-invocable: false
 
 # MCP Tool Usage
 
-When MCP tools are available, prefer them over CLI equivalents. MCP tools return structured data, handle authentication automatically, and are more reliable than parsing CLI output.
+When the context7, Playwright, or Mermaid Chart MCP tools are available, prefer them over CLI equivalents: they return structured data and handle authentication.
 
 > **Note:** Servers bundled by a plugin are exposed as `mcp__plugin_<plugin>_<server>__<tool>` — context7 ships with dev-workflow, dotnet-architect, and react-developer; Playwright ships with react-developer. Servers the user configured themselves use the short `mcp__<server>__<tool>` form (e.g. `mcp__playwright__browser_navigate`), so use whichever variant is present. Mermaid Chart and github-mcp-server are user-configured and optional. If a referenced MCP tool is not available, fall back to the CLI equivalent.
 
@@ -101,4 +101,4 @@ gh search issues "query" --repo owner/repo
 gh search code "query" --repo owner/repo
 ```
 
-If the `github-mcp-server` MCP is available, prefer its structured tools (`mcp__github-mcp-server__get_issue`, `mcp__github-mcp-server__create_pull_request`, etc.) over the CLI equivalents for typed JSON responses.
+If `github-mcp-server` is available you may use its tools (`mcp__github-mcp-server__get_issue`, `mcp__github-mcp-server__create_pull_request`, etc.) instead of `gh`; `gh` remains the default.

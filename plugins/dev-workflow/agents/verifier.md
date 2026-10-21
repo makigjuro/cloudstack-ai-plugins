@@ -48,7 +48,7 @@ Categorize each criterion:
 
 ### Step 4: Verify Implementation
 
-For each criterion, search the codebase to find evidence:
+For each criterion, search the codebase to find evidence. Use the diff base given in the prompt; default to `origin/main`.
 
 ```bash
 git diff origin/main...HEAD --name-only

@@ -60,7 +60,7 @@ If `cloudstack.json` does not exist, auto-detect by scanning the project structu
   create-pr -> [done]
 ```
 
-CRITICAL: Do not skip states. Do not proceed if a gate fails. Maximum 3 fix iterations before stopping.
+Run every applicable state in order and stop at the first failed gate; allow at most 3 fix iterations.
 
 ## Process
 
@@ -197,11 +197,11 @@ const FINDINGS = { type: 'object', required: ['pass', 'findings'], properties: {
 const VERDICT = { type: 'object', required: ['isReal'], properties: {
   isReal: { type: 'boolean' }, reason: { type: 'string' } } }
 // args = { base: 'origin/main', reviewers: [{ agentType: 'dotnet-architect:reviewer', prompt: '...' }, ...] }
-// built from the change flags. Reviewers only read, so they share the working tree (no worktree isolation).
+// built from the change flags. A reviewer may carry its own `schema` (the verifier passes a criteria schema). Reviewers only read, so they share the working tree (no worktree isolation).
 const results = await pipeline(
   args.reviewers,
   r => agent(`${r.prompt}\n\nReview \`git diff ${args.base}...HEAD\`.`,
-    { agentType: r.agentType, label: r.agentType, phase: 'Review', schema: FINDINGS }),
+    { agentType: r.agentType, label: r.agentType, phase: 'Review', schema: r.schema ?? FINDINGS }),
   review => parallel((review?.findings ?? [])
     .filter(f => f.severity !== 'suggestion')
     .map(f => () => agent(
@@ -217,15 +217,15 @@ Only confirmed findings enter the Phase 5 fix loop; suggestions are reported as 
 
 **Always launch:**
 
-1. **`dotnet-architect:reviewer`** (run_in_background: true) -- Code review for security, architecture, and quality issues. Uses the `reviewer` agent definition. The agent should review `git diff origin/main...HEAD` and return a structured report with Critical/Warning/Suggestion categories and a PASS/FAIL summary.
+1. **`dotnet-architect:reviewer`** (run_in_background: true) -- Code review for security, architecture, and quality issues. The agent should review `git diff origin/main...HEAD` and return a structured report with Critical/Warning/Suggestion categories and a PASS/FAIL summary.
 
-2. **`dev-workflow:verifier`** (run_in_background: true) -- QA verification that implementation matches the GitHub issue acceptance criteria. Uses the `verifier` agent definition. The agent should fetch the issue via `gh issue view`, compare against the diff, and return MET/UNMET/PARTIAL status for each criterion with a PASS/FAIL summary.
+2. **`dev-workflow:verifier`** (run_in_background: true) -- QA verification that implementation matches the GitHub issue acceptance criteria. The agent should fetch the issue via `gh issue view`, compare against the diff, and return MET/UNMET/PARTIAL status for each criterion with a PASS/FAIL summary.
 
 **Conditionally launch:**
 
 3. **`dev-workflow:doc-checker`** (run_in_background: true) -- Only if `HAS_ENDPOINTS` OR `HAS_ENTITIES` OR `HAS_EVENTS` OR `HAS_INFRA`. Detects stale documentation relative to code changes.
 
-4. **`cloud-infra:infra-reviewer`** (run_in_background: true) -- Only if `HAS_INFRA`. Dedicated Terraform/Helm/CI review using the `infra-reviewer` agent definition.
+4. **`cloud-infra:infra-reviewer`** (run_in_background: true) -- Only if `HAS_INFRA`. Dedicated Terraform/Helm/CI review.
 
 While agents run in the background, begin preparing the PR description (title, summary of changes, test plan). You will be notified as each agent completes -- do not poll or sleep. Once all agents have reported back, proceed to Phase 5.
 

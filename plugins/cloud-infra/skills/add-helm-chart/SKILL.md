@@ -39,7 +39,7 @@ If `cloudstack.json` does not exist, auto-detect by scanning the project structu
 │   └── hpa.yaml
 ```
 
-2. Read the helm-charts rule file (if present) for project conventions. Also scan existing charts in `{CHARTS_PATH}/` to follow established patterns.
+2. Follow the `helm-chart-conventions` skill and scan existing charts in `{CHARTS_PATH}/` for established patterns.
 
 3. Generate files following these conventions:
    - Namespace: Use `{{ .Release.Namespace }}` in templates (do not hardcode)

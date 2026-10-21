@@ -128,5 +128,5 @@ For failures, suggest fixes if they relate to recent changes.
 
 ## Related Skills
 
-- Use `/check-architecture` to verify architecture rules before running tests
+- Use `/dotnet-architect:check-architecture` to verify architecture rules before running tests
 - Use `/lint` to check formatting before creating a PR

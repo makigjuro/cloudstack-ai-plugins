@@ -100,7 +100,7 @@ This is the **thorough review** -- run as an agent from `/complete-task` or stan
 
 ### Error Handling
 - No empty catch blocks
-- No catching generic `Exception` without re-throw
+- No catching generic `Exception` unless it is logged and converted to a `Result` failure
 - Validation on all external inputs (FluentValidation)
 
 ### Testing
@@ -190,8 +190,4 @@ Not blocking, but flag when:
 
 ## Guidelines
 
-- Be specific -- include file paths and line numbers
-- Be constructive -- suggest fixes, don't just criticize
-- Prioritize -- focus on what matters most
-- Context matters -- consider the feature being built
 - Don't nitpick -- save style debates for linters

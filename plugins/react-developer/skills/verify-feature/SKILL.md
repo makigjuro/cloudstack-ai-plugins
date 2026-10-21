@@ -20,10 +20,6 @@ Post-implementation browser verification for frontend features. Auto-detects cha
 Read `cloudstack.json` from the project root at the start of execution. Extract:
 - `FRONTEND_PATH` = `frontend.path` (default: `web`)
 - `DEV_PORT` = `frontend.devPort` (default: `5173`)
-- `UI_LIBRARY` = `frontend.uiLibrary` (default: `shadcn`)
-- `STATE_SERVER` = `frontend.stateManagement.server` (default: `tanstack-query`)
-- `STATE_CLIENT` = `frontend.stateManagement.client` (default: `zustand`)
-- `MULTI_TENANT` = `backend.multiTenancy` (default: `false`)
 
 If `cloudstack.json` does not exist, auto-detect by checking `package.json` dependencies.
 
@@ -33,13 +29,15 @@ Check `cloudstack.json` for `localDev.authConfig`. If present, use it for localS
 
 ## Process
 
+Playwright tools are `mcp__plugin_react-developer_playwright__<tool>`; short names below (e.g. `browser_navigate`) refer to those.
+
 ### Step 1: Detect Routes
 
 If a route was provided, use it directly. Otherwise, auto-detect from recent changes:
 
 ```bash
 # Find changed page files
-git diff --name-only HEAD~3 | grep "{FRONTEND_PATH}/src/.*pages/"
+git diff --name-only origin/main...HEAD | grep "{FRONTEND_PATH}/src/.*pages/"
 ```
 
 Map changed page files to routes by finding the router configuration file:

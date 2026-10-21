@@ -22,7 +22,7 @@ If `cloudstack.json` does not exist, auto-detect by scanning the project structu
 
 ### Phase 0: Enter Plan Mode
 
-**Always start by calling `EnterPlanMode` before doing anything else.** Feature planning is a planning activity -- it requires codebase exploration, scope clarification, and user alignment before producing the plan. Plan mode ensures you can explore freely and get user sign-off on the approach. Exit plan mode with `ExitPlanMode` only after the plan is complete and the user has approved it.
+Start in plan mode (`EnterPlanMode`): explore the codebase and clarify scope before producing the plan. Feature planning is a planning activity -- it requires codebase exploration, scope clarification, and user alignment before producing the plan. Plan mode ensures you can explore freely and get user sign-off on the approach. Exit plan mode with `ExitPlanMode` only after the plan is complete and the user has approved it.
 
 1. **Clarify scope** -- Ask the user if the feature description is ambiguous. Identify which service(s) are affected.
 2. **Explore existing code** -- Search for related entities, handlers, endpoints, and tests that the feature touches or extends.
@@ -92,4 +92,3 @@ Plan complete. Next steps:
 - Keep tasks small enough that each maps to roughly one file or one logical change.
 - Flag when a task requires a new migration, a new messaging subject, or a new API route.
 - If the feature spans multiple services, note cross-service integration points.
-- After producing the plan, suggest the user run `/create-tasks` to push it to GitHub.

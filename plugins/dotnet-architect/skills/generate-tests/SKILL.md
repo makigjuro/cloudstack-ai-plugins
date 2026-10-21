@@ -23,8 +23,6 @@ Read `cloudstack.json` from the project root at the start of execution. Extract:
 - `NAMESPACE` = `project.namespace` (default: detect from `*.sln`)
 - `SERVICES` = `backend.services[]` (default: discover from project structure)
 - `SOLUTION` = `backend.solutionPath` (default: find `*.sln`)
-- `MESSAGING` = `backend.messaging` (default: `wolverinefx`)
-- `RESULT_PATTERN` = `backend.resultPattern` (default: `true`)
 
 If `cloudstack.json` does not exist, auto-detect by scanning the project structure.
 
@@ -113,28 +111,28 @@ public class {Target}Tests
     public async Task Handle_ValidCommand_ReturnsSuccess()
     {
         // Arrange
-        var command = new {Command} { /* valid data */ };
-        _repository.GetById(Arg.Any<{Id}>())
+        var command = new {Command}(/* valid args */);
+        _repository.GetByIdAsync(Arg.Any<{Id}>(), Arg.Any<CancellationToken>())
             .Returns(/* expected entity */);
 
         // Act
-        var result = await _sut.Handle(command);
+        var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        await _repository.Received(1).Add(Arg.Any<{Entity}>());
+        await _repository.Received(1).AddAsync(Arg.Any<{Entity}>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task Handle_NotFound_ReturnsFailure()
     {
         // Arrange
-        var command = new {Command} { /* data referencing nonexistent entity */ };
-        _repository.GetById(Arg.Any<{Id}>())
+        var command = new {Command}(/* args referencing nonexistent entity */);
+        _repository.GetByIdAsync(Arg.Any<{Id}>(), Arg.Any<CancellationToken>())
             .Returns(({Entity}?)null);
 
         // Act
-        var result = await _sut.Handle(command);
+        var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeFalse();

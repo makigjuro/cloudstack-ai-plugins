@@ -1,13 +1,13 @@
 ---
 name: trivy-scan
-description: Scan Terraform and Helm charts for security misconfigurations using trivy. Use for a fast IaC security check — catches issues that `/infra-lint` doesn't (secrets, public-access defaults, missing encryption, weak TLS, over-broad IAM). Invoked automatically by `/infra-lint` and `/complete-infra`.
+description: Scan Terraform and Helm charts for security misconfigurations using trivy. Use for a fast IaC security check — catches issues that `/infra-lint` doesn't (public-access defaults, missing encryption, weak TLS, over-broad IAM). Invoked automatically by `/infra-lint` and `/complete-infra`.
 allowed-tools: Bash, Read
 user-invocable: true
 ---
 
 # Trivy Security Scan
 
-Run Aqua Security's trivy against the infrastructure tree to catch misconfigurations that `terraform validate` and `helm lint` miss — things like publicly exposed storage, missing encryption, weak TLS, over-broad IAM role assignments, and container image vulnerabilities.
+Run Aqua Security's trivy against the infrastructure tree to catch misconfigurations that `terraform validate` and `helm lint` miss — things like publicly exposed storage, missing encryption, weak TLS, and over-broad IAM role assignments.
 
 ## When to Use
 
@@ -16,9 +16,11 @@ Run Aqua Security's trivy against the infrastructure tree to catch misconfigurat
 
 ## Arguments
 
-- `--strict` — Fail on any finding, including `LOW`. Default: fail on `CRITICAL`, `HIGH`, `MEDIUM`; `LOW` is advisory.
-- `--warn-only` — Never exit non-zero; just report. Useful for CI `continue-on-error` style gating.
-- `--severity HIGH,CRITICAL` — Comma-separated list to override the default severity filter.
+The script takes no CLI flags; the skill maps each argument to an environment variable:
+
+- `--strict` — Run with `TRIVY_STRICT=1` (adds `LOW` to the fail set). Default: fail on `CRITICAL`, `HIGH`, `MEDIUM`; `LOW` is advisory.
+- `--warn-only` — Run with `TRIVY_WARN_ONLY=1`: never exit non-zero on findings; just report. Useful for CI `continue-on-error` style gating.
+- `--severity HIGH,CRITICAL` — Run with `TRIVY_SEVERITY=HIGH,CRITICAL` to override the default severity filter.
 
 ## Configuration
 
@@ -30,7 +32,7 @@ Derive `TF_PARENT` as the parent directory of `TF_PATH` (e.g., `infra/terraform/
 
 ## Prerequisites
 
-`trivy` must be installed locally. The skill does NOT auto-install — be explicit about system changes.
+`trivy` must be installed locally. The skill does not auto-install — be explicit about system changes.
 
 ```bash
 # macOS
@@ -40,11 +42,11 @@ brew install trivy
 curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
 ```
 
-If `trivy` is missing, the skill prints the install command and exits non-zero (unless `--warn-only`).
+If `trivy` is missing, the script prints the install command and exits 2 (even with `--warn-only`).
 
 ## Suppressing findings — `.trivyignore`
 
-Project-local exemptions go in `deploy/terraform/.trivyignore` (or the parent of `TF_PATH`). One rule ID per line, with a comment explaining **why**:
+Project-local exemptions go in a `.trivyignore` file. The script uses the first one it finds, in this order: `TRIVY_IGNOREFILE` (if set and the file exists), then `{TF_PARENT}/.trivyignore`, then `.trivyignore` in the parent of `CHARTS_PATH`, then `./.trivyignore`. One rule ID per line, with a comment explaining **why**:
 
 ```
 # Deferred until VNet integration (see deploy/terraform/README.md "Known limitations")
@@ -56,7 +58,7 @@ AZU-0022
 AZU-0026
 ```
 
-Every ignore entry MUST carry a justification comment. The comment is what a future reviewer uses to decide whether the suppression is still valid.
+Every ignore entry must carry a justification comment. The comment is what a future reviewer uses to decide whether the suppression is still valid.
 
 ## Scripts
 
@@ -68,32 +70,24 @@ The script reads `TF_PARENT` and `CHARTS_PATH` from environment variables. Expor
 
 ```bash
 export TF_PARENT="..." CHARTS_PATH="..."
-bash {plugin-skills-path}/trivy-scan/scripts/scan-trivy.sh
+bash ${CLAUDE_PLUGIN_ROOT}/skills/trivy-scan/scripts/scan-trivy.sh
 ```
 
 ## Process
 
-### Step 1: Pre-flight
+### Step 1: Run the scan
 
-Verify `trivy` is available:
-
-```bash
-if ! command -v trivy >/dev/null 2>&1; then
-  echo "trivy is not installed. Install it and re-run:"
-  echo "  brew install trivy   # macOS"
-  echo "  curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin   # Linux"
-  exit 1
-fi
-```
-
-### Step 2: Run the scan
+The script checks for `trivy` itself. Set the argument-mapped variables only when the corresponding argument was given:
 
 ```bash
 export TF_PARENT="{TF_PARENT}" CHARTS_PATH="{CHARTS_PATH}"
-bash {plugin-skills-path}/trivy-scan/scripts/scan-trivy.sh
+# --strict:        export TRIVY_STRICT=1
+# --warn-only:     export TRIVY_WARN_ONLY=1
+# --severity X:    export TRIVY_SEVERITY=X
+bash ${CLAUDE_PLUGIN_ROOT}/skills/trivy-scan/scripts/scan-trivy.sh
 ```
 
-### Step 3: Report
+### Step 2: Report
 
 Group findings by severity. For each finding, include:
 - Rule ID (e.g. `AZU-0013`)
@@ -102,7 +96,7 @@ Group findings by severity. For each finding, include:
 - File:line reference
 - Remediation link (trivy provides this)
 
-If findings exist that are NOT in `.trivyignore`, STOP with FAIL. If all remaining findings are suppressed by `.trivyignore`, PASS with a summary of the suppressed count.
+If any finding is not suppressed by `.trivyignore`, report FAIL. If all remaining findings are suppressed by `.trivyignore`, PASS with a summary of the suppressed count.
 
 ## Output
 
@@ -142,7 +136,5 @@ If findings exist that are NOT in `.trivyignore`, STOP with FAIL. If all remaini
 
 ## Guidelines
 
-- Never commit a `.trivyignore` entry without a justification comment.
 - Periodically review `.trivyignore` — deferred items should either be resolved or have an issue tracking the work.
-- Treat `CRITICAL`/`HIGH` findings as PR blockers; `MEDIUM` as must-fix-before-merge; `LOW` as advisory.
 - Trivy rules occasionally target deprecated resource types (e.g. AZU-0026 is Single-Server only). Verify before suppressing — and document the reason.

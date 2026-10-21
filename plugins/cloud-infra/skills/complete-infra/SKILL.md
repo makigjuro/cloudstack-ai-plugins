@@ -45,14 +45,14 @@ export TF_PATH="..." CHARTS_PATH="..."
 
 The security scan (Track D below) reuses the script from the `trivy-scan` skill rather than duplicating it:
 ```bash
-bash {plugin-skills-path}/trivy-scan/scripts/scan-trivy.sh
+bash ${CLAUDE_PLUGIN_ROOT}/skills/trivy-scan/scripts/scan-trivy.sh
 ```
 
 ## Process
 
 ### Phase 0: Pre-flight
 
-Run pre-flight checks inline (or source the shared preflight script if available):
+Run pre-flight checks inline:
 
 ```bash
 BRANCH=$(git branch --show-current)
@@ -71,7 +71,7 @@ echo "Issue:  ${ISSUE:-<none>}"
 
 ### Phase 1: Parallel Infrastructure Lint
 
-Launch all lint tracks in parallel using separate Bash tool calls in a single response.
+The tracks are independent; run them in parallel.
 
 **Track A: Terraform format check**
 ```bash
@@ -81,36 +81,36 @@ terraform fmt -check -recursive {TF_PARENT}
 **Track B: Terraform validate (changed modules only)**
 ```bash
 export TF_PATH="{TF_PATH}"
-bash {plugin-skills-path}/complete-infra/scripts/validate-terraform.sh
+bash ${CLAUDE_PLUGIN_ROOT}/skills/complete-infra/scripts/validate-terraform.sh
 ```
 
 **Track C: Helm lint (if charts changed)**
 ```bash
 export CHARTS_PATH="{CHARTS_PATH}"
-bash {plugin-skills-path}/complete-infra/scripts/lint-helm.sh
+bash ${CLAUDE_PLUGIN_ROOT}/skills/complete-infra/scripts/lint-helm.sh
 ```
 
 **Track D: Security scan (trivy)**
 ```bash
 export TF_PARENT="{TF_PARENT}" CHARTS_PATH="{CHARTS_PATH}"
-bash {plugin-skills-path}/trivy-scan/scripts/scan-trivy.sh
+bash ${CLAUDE_PLUGIN_ROOT}/skills/trivy-scan/scripts/scan-trivy.sh
 ```
 
 Honours `.trivyignore` at `{TF_PARENT}/.trivyignore`. Every suppression must carry a justifying comment — see the `trivy-scan` skill for conventions.
 
 If any lint or scan track fails, STOP and report. Treat `trivy` missing as a FAIL and print the install hint so the user can remediate.
 
-### Phase 2: Infrastructure Review (Parallel Agents)
+### Phase 2: Infrastructure Review
 
 Launch the review agent (it only reads, so no worktree isolation is needed):
 
-**Agent: `cloud-infra:infra-reviewer`** — Dedicated Terraform/Helm/CI review using the `infra-reviewer` agent definition. Reviews `git diff origin/main...HEAD -- {TF_PARENT}/ {CHARTS_PATH}/ .github/workflows/` and returns PASS/FAIL with findings covering security, naming, resource limits, and CI best practices.
+**Agent: `cloud-infra:infra-reviewer`** — Dedicated Terraform/Helm/CI review using the `infra-reviewer` agent definition. Reviews `git diff origin/main...HEAD -- {TF_PARENT}/ {CHARTS_PATH}/ .github/workflows/` and returns APPROVED / CHANGES REQUESTED / BLOCKED with findings covering security, naming, resource limits, and CI best practices.
 
 ### Phase 3: Evaluate
 
-**If review passes:** Proceed to Phase 4.
+**If the review verdict is APPROVED:** Proceed to Phase 4.
 
-**If issues found:**
+**If the verdict is CHANGES REQUESTED or BLOCKED:**
 1. Display findings
 2. Fix issues (max 3 iterations)
 3. Re-run from Phase 1
@@ -132,8 +132,8 @@ Run `/create-pr {issue}`.
 - Terraform Format: PASS
 - Terraform Validate: PASS
 - Helm Lint: PASS / SKIP (no chart changes)
-- Security Scan (trivy): PASS / WARN (findings in .trivyignore only) / FAIL
-- Infra Review: PASS
+- Security Scan (trivy): PASS / FAIL
+- Infra Review: APPROVED
 
 PR is ready for human review.
 ```

@@ -19,8 +19,9 @@ paths:
 - `app.kubernetes.io/managed-by: Helm`
 
 ## Chart Structure
+Each chart lives in its own directory:
 ```
-charts/
+{CHARTS_PATH}/{chart-name}/
 ├── Chart.yaml          # name, version, appVersion
 ├── values.yaml         # defaults (image, replicas, resources, env)
 └── templates/

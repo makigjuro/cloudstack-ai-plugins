@@ -157,17 +157,18 @@ public class {Entity}Configuration : IEntityTypeConfiguration<{Entity}>
 public DbSet<{Entity}> {Entity}s => Set<{Entity}>();
 ```
 
-## 7. EF Core Migration (MANDATORY)
+## 7. EF Core Migration
 
-After adding the DbSet and entity configuration, **always** create a migration immediately:
+After adding the DbSet and entity configuration, create a migration immediately:
 
 ```bash
 dotnet ef migrations add Add{Entity} \
   --project src/{Service}/{Service}.Infrastructure \
-  --startup-project src/{Service}/{Service}.Host
+  --startup-project src/{Service}/{Service}.Host \
+  --output-dir Persistence/Migrations
 ```
 
-Review the generated migration to verify only expected changes are included. This step is **not optional** -- skipping it causes `PendingModelChangesWarning` errors at startup.
+Review the generated migration to verify only expected changes are included; a missing migration causes `PendingModelChangesWarning` at startup.
 
 ## Checklist
 - [ ] Value object ID with validation and `GetEqualityComponents()`

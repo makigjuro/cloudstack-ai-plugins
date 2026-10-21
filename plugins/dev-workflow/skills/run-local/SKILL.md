@@ -19,8 +19,12 @@ Start the local development environment using the configured orchestrator.
 Read `cloudstack.json` from the project root at the start of execution. Extract:
 - `FRONTEND_PATH` = `frontend.path` (default: `web`)
 - `FRONTEND_PORT` = `frontend.devPort` (default: `5173`)
+- `SOLUTION` = `backend.solutionPath` (default: first `*.sln` under `src/`)
+- `ORCHESTRATOR` = `localDev.orchestrator` (`aspire`, `docker-compose`, or `none`)
+- `APP_HOST_PATH` = `localDev.appHostPath` (when the orchestrator is Aspire)
+- `COMPOSE_PATH` = `localDev.composePath` (when the orchestrator is Docker Compose)
 
-Additionally check for local dev configuration. The skill supports two orchestrators:
+If `localDev` is not set, fall back to detecting the orchestrator from the project structure. The skill supports two orchestrators:
 
 **Option A -- .NET Aspire (default if AppHost project exists):**
 Look for a project directory matching `*AppHost*` under `src/`. If found:
@@ -55,7 +59,7 @@ The Aspire dashboard will be available at `https://localhost:${DASHBOARD_PORT}`.
 
 **If using Docker Compose:**
 ```bash
-docker compose up -d
+docker compose -f ${COMPOSE_PATH} up -d
 ```
 
 ### Step 3: Start Frontend (unless --backend-only)

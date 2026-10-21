@@ -48,6 +48,7 @@ public static class OrderEndpoints
         [FromServices] CreateOrderHandler handler,
         CancellationToken cancellationToken)
     {
+        var command = new CreateOrderCommand(/* map from request */);
         var result = await handler.Handle(command, cancellationToken);
         return result.ToHttpResult();
     }

@@ -63,8 +63,6 @@ grep -rn "throw new.*Exception" src/**/Application/ --include="*Handler.cs"
 
 Acceptable throws (exclude these from violations): `ArgumentException` in value object constructors, `InvalidOperationException` for programmer errors, `NotImplementedException` for placeholder code.
 
-If no handler files changed, skip this check.
-
 ## 4. CQRS Conventions
 
 Verify:

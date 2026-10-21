@@ -77,7 +77,7 @@ Closes #{issue-number}
 - [ ] Frontend lint + type-check clean -- `cd {FRONTEND_PATH} && npm run lint && npm run type-check`
 - [ ] Helm charts lint clean -- `for c in {CHARTS_PATH}/*/; do helm lint "$c"; done`
 - [ ] Terraform validates -- `terraform -chdir={TF_PATH} validate && terraform fmt -check -recursive {TF_PATH}`
-- [ ] Architecture check passes -- `/check-architecture`
+- [ ] Architecture check passes -- `/dotnet-architect:check-architecture`
 - [ ] {Any feature-specific manual verification steps}
 
 Generated with [Claude Code](https://claude.com/claude-code)

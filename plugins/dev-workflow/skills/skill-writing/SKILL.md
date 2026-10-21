@@ -13,7 +13,7 @@ Follow these principles when creating or modifying skills.
 
 ## Description Frontmatter
 
-The `description` field in YAML frontmatter is the primary triggering mechanism — Claude decides whether to invoke a skill based on it. Write descriptions that are specific and slightly "pushy" to combat under-triggering.
+The `description` field in YAML frontmatter is the primary triggering mechanism — Claude decides whether to invoke a skill based on it. Write descriptions that are specific about when to trigger. Name the categories of intent that should trigger the skill; calibrated urgency is fine, ideally tuned against real prompts rather than added one phrase per missed trigger.
 
 **Good:** "Scaffold a new CQRS command with handler, validator, and POST endpoint following project conventions. Use this whenever the user wants to add a write operation, mutation endpoint, POST route, or state-changing action to any microservice."
 
@@ -53,12 +53,12 @@ Keep the most important instructions in the SKILL.md body. Put detailed template
 - Include a checklist at the end for verification
 - Add a "Related Skills" section linking to skills commonly used before/after
 - Include realistic code templates grounded in existing project patterns
-- If the skill produces output, show the exact format expected
+- Pin an exact output format only where a consumer parses it
 - For skills that run bash commands, show the actual commands (not pseudocode)
 
 ## Avoiding Common Issues
 
-- Don't duplicate instructions already in rules files — reference them instead ("See the git-conventions rule for branch naming")
+- Don't duplicate instructions already in background skills — reference them instead ("see the git-conventions skill")
 - Don't over-constrain — give Claude room to adapt to the specific context
 - Test with realistic prompts: would a user actually say this? Would the skill trigger?
 - Keep examples concrete and tied to your project's domain concepts

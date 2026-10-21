@@ -115,8 +115,7 @@ Use this for any library in your project's dependency tree — EF Core, Express,
 
 ## Guidelines
 
-- Be thorough but focused on the reported problem
-- Document everything you find, even if it seems irrelevant
+- Include weak or tangential evidence, marked Low relevance
 - Don't draw conclusions — just gather evidence
 - Flag contradictory evidence explicitly
 - Note what you couldn't find (absence of evidence matters)

@@ -10,16 +10,6 @@ argument-hint: "{issue-number}"
 
 Create a feature branch from a GitHub issue and prepare the working context.
 
-## Configuration
-
-Read `cloudstack.json` from the project root at the start of execution. Extract relevant fields:
-- `REPO_OWNER` / `REPO_NAME` = `repository.owner` / `repository.name` (default: detect from `git remote -v`)
-
-If `cloudstack.json` does not exist, auto-detect by parsing the GitHub remote URL:
-```bash
-git remote get-url origin | sed -E 's|.*github\.com[:/]([^/]+)/([^/.]+).*|\1 \2|'
-```
-
 ## Arguments
 
 - `{issue}` -- GitHub issue number (required). Pass as argument: `/start-work 42`
@@ -65,15 +55,15 @@ git checkout -b {branch-name} origin/main
 
 ## After Starting -- Automatic Implementation
 
-Once the branch is created, **do not stop**. Immediately continue with implementation:
+Once the branch is created, continue into implementation:
 
 1. **Analyze the issue** -- Parse acceptance criteria, identify affected services, and determine which layers need changes (Domain, Application, Infrastructure, Endpoints, Frontend, Tests).
 2. **Create a task list** -- Use TodoWrite to track each implementation step derived from the issue.
-3. **Implement** -- Follow the layer order: Domain -> Application -> Infrastructure -> Endpoints -> Frontend -> Tests. Use the appropriate scaffolding skills (`/add-entity`, `/add-command`, `/add-query`, `/add-event-handler`, `/add-migration`, `/add-feature`) where they apply. Commit logically after each meaningful change.
+3. **Implement** -- Follow the layer order: Domain -> Application -> Infrastructure -> Endpoints -> Frontend -> Tests. Use the appropriate scaffolding skills (`/dotnet-architect:add-entity`, `/dotnet-architect:add-command`, `/dotnet-architect:add-query`, `/dotnet-architect:add-event-handler`, `/dotnet-architect:add-migration`, `/react-developer:add-feature`) where they apply. Commit logically after each meaningful change.
 4. **Verify as you go** -- Run tests and architecture checks between steps. Fix issues before moving on.
-5. **When done** -- Run `/complete-task` to go through the full completion workflow (build, lint, tests, review, PR).
+5. **When done** -- Run `/dev-workflow:complete-task` to go through the full completion workflow (build, lint, tests, review, PR).
 
-**Do not ask the user what to do next.** Read the issue, plan the work, and start building. Only ask clarifying questions if the issue has genuine ambiguity that blocks implementation.
+Read the issue, plan the work, and start building; ask only when the issue is ambiguous in a way that blocks the work.
 
 ## Output
 

@@ -39,7 +39,8 @@ git remote get-url origin | sed -E 's|.*github\.com[:/]([^/]+)/([^/.]+).*|\1 \2|
 - Tasks span multiple services or layers
 - A PRD exists with structured sections
 - Tasks could be assigned to different people or done in separate PRs
-- `--epic-only` or `--no-epic` flags override this logic
+
+The `--epic-only` / `--no-epic` flags override this decision.
 
 ## Process
 
