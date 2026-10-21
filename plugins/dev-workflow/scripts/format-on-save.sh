@@ -6,6 +6,7 @@ set -euo pipefail
 
 # Require jq for parsing hook input
 if ! command -v jq &>/dev/null; then
+  echo '{"systemMessage":"cloudstack dev-workflow: jq is not installed, so format-on-save is off. Install it: brew install jq (macOS) or apt install jq (Linux)."}'
   exit 0
 fi
 
