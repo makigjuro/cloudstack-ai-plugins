@@ -3,28 +3,29 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![.NET 10](https://img.shields.io/badge/.NET-10-512BD4)](https://dotnet.microsoft.com/)
 [![React 19](https://img.shields.io/badge/React-19-61DAFB)](https://react.dev/)
-[![Terraform](https://img.shields.io/badge/Terraform-Helm-7B42BC)](https://www.terraform.io/)
+[![Azure Container Apps](https://img.shields.io/badge/Azure-Container%20Apps-0078D4)](https://learn.microsoft.com/azure/container-apps/)
+[![Terraform](https://img.shields.io/badge/Terraform-Terragrunt-7B42BC)](https://www.terraform.io/)
 
 **A reference architecture for cloud web apps, and the Claude Code workflow that builds and ships it.**
 
-You get an architecture that holds up in production: hexagonal .NET services, a React frontend, and Terraform + Helm on Azure/AKS. You also get Claude Code plugins that build within that architecture at every step, from the first requirement to a deployed service. Claude scaffolds code that fits the layers, checks the rules on every change, reviews before every PR, and shows you the plan before anything is applied to the cloud.
+You get an architecture that holds up in production: hexagonal .NET services, a React frontend, and Terraform on Azure Container Apps. You also get Claude Code plugins that build within that architecture at every step, from the first requirement to a deployed service. Claude scaffolds code that fits the layers, checks the rules on every change, reviews before every PR, and shows you the plan before anything is applied to the cloud.
 
 ## The architecture
 
 ```mermaid
 graph LR
-    web["React SPA"] --> ingress["Ingress (AKS)"]
-    ingress --> svc["Hexagonal .NET services<br/>Domain · Application · Infrastructure · Host"]
+    web["React SPA<br/>Static Web Apps"] --> gw["API gateway<br/>Container Apps, external"]
+    gw --> svc["Hexagonal .NET services<br/>Container Apps, internal"]
     svc <--> bus["Messaging<br/>NATS / RabbitMQ"]
-    svc --> db[("PostgreSQL")]
-    svc --> cache[("Redis")]
-    svc --> otel["OpenTelemetry → Grafana"]
-    iac["Terraform + Helm"] -.provisions & deploys.-> ingress
+    svc --> db[("PostgreSQL<br/>private")]
+    svc -.secrets.-> kv["Key Vault<br/>managed identity"]
+    svc --> otel["OpenTelemetry → Log Analytics"]
+    iac["Terraform + Terragrunt"] -.provisions.-> gw
 ```
 
 - **Backend:** each service has strict layers (Domain depends on nothing), CQRS commands and queries, `Result<T>` instead of exceptions, and EF Core with mandatory migrations.
 - **Frontend:** feature modules with a central API client, server state in TanStack Query (or your library), and security defaults.
-- **Cloud:** Terraform/Terragrunt modules, one Helm chart per service, GitHub Actions, trivy security scans, and plan-before-apply.
+- **Cloud:** Azure Container Apps in a VNet with only the gateway public. Images are tagged with the commit SHA and pulled with a managed identity. Key Vault secrets, migrations as jobs, GitHub Actions with OIDC, trivy scans and plan-before-apply. AKS + Helm is supported as an alternative runtime. Container Apps scaffolding and app deploy skills are in progress ([#4](https://github.com/makigjuro/cloudstack-ai-plugins/issues/4)).
 
 The full picture, including layer rules, the CQRS flow and the cloud topology, is in [docs/architecture.md](docs/architecture.md).
 
@@ -36,7 +37,7 @@ The full picture, including layer rules, the CQRS flow and the cloud topology, i
 | **Build** | Branches from the issue and scaffolds code that fits the architecture | `/dev-workflow:start-work 42`, `/dotnet-architect:add-entity`, `/dotnet-architect:add-command`, `/react-developer:add-feature` |
 | **Verify** | Checks architecture rules, runs affected tests, checks pages in a browser | `/dotnet-architect:check-architecture`, `/dev-workflow:run-tests`, `/react-developer:verify-feature` |
 | **Ship** | Builds, lints and tests, runs parallel review agents, fixes issues, opens the PR | `/dev-workflow:complete-task` |
-| **Deploy** | Scaffolds infra, lints and scans it, shows the plan, applies the reviewed plan | `/cloud-infra:add-terraform-module`, `/cloud-infra:add-helm-chart`, `/cloud-infra:complete-infra`, `/cloud-infra:infra-apply` |
+| **Deploy** | Scaffolds infra, lints and scans it, shows the plan, applies the reviewed plan | `/cloud-infra:add-terraform-module`, `/cloud-infra:complete-infra`, `/cloud-infra:infra-apply` |
 
 Each plugin also ships convention skills, such as the domain-layer rules, the endpoint conventions and frontend security. Claude applies them automatically whenever it edits matching files, so the architecture holds even outside the commands.
 
@@ -57,7 +58,7 @@ Then run `/dev-workflow:init` in your project. It detects your layout and writes
 | [dev-workflow](plugins/dev-workflow/) | Requirements → issues → branch → quality gates → PR, plus diagnosis and docs |
 | [dotnet-architect](plugins/dotnet-architect/) | Hexagonal .NET services, CQRS, EF Core migrations, tests, architecture review |
 | [react-developer](plugins/react-developer/) | React + TypeScript feature modules, Playwright smoke tests and screenshots |
-| [cloud-infra](plugins/cloud-infra/) | Terraform/Terragrunt modules, Helm charts, trivy scans, infra review |
+| [cloud-infra](plugins/cloud-infra/) | Terraform/Terragrunt for Azure Container Apps (or AKS + Helm), trivy scans, infra review |
 
 ## What `complete-task` checks
 

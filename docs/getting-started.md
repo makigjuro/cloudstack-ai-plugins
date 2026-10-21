@@ -10,7 +10,7 @@ cloudstack-ai-plugins is a reference architecture for cloud web apps plus the Cl
   - .NET SDK and `dotnet-ef`
   - Node.js
   - Docker (for integration tests and local dev)
-  - `terraform`, `helm`, `trivy` (and `terragrunt`)
+  - `terraform`, `trivy`, `az` CLI (and `terragrunt`; `helm` only for the AKS runtime)
 
 ## 1. Install
 
@@ -45,7 +45,7 @@ Check that the backend matches the architecture:
 3. **Build.** Claude uses the scaffolding skills as it goes:
    - `/dotnet-architect:add-entity`, `add-command`, `add-query`, `add-event-handler`
    - `/react-developer:add-feature`
-   - `/cloud-infra:add-helm-chart` and `add-terraform-module` for new services or resources
+   - `/cloud-infra:add-terraform-module` for new resources (and `add-helm-chart` on the AKS runtime)
 
    The convention skills keep each layer consistent while it edits.
 4. **Verify.** `/dev-workflow:run-tests` runs only the affected tests. `/react-developer:verify-feature` checks changed pages in a browser.
@@ -58,6 +58,8 @@ Check that the backend matches the architecture:
 3. `/cloud-infra:infra-apply dev --apply` applies exactly that reviewed plan after you confirm. If anything changed since planning, it stops so you can re-plan and review again.
 
 For an infra-only branch, `/cloud-infra:complete-infra` runs lint, scan and review, then opens the PR.
+
+The target runtime is Azure Container Apps. A one-command app deploy is in progress ([#4](https://github.com/makigjuro/cloudstack-ai-plugins/issues/4)): build SHA-tagged images, run migrations as a job, roll a new revision and smoke-test it.
 
 ## MCP servers
 
