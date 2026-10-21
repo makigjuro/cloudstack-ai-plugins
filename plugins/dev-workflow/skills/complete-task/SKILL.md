@@ -53,7 +53,7 @@ If `cloudstack.json` does not exist, auto-detect by scanning the project structu
     |
   integration-tests -> browser-verify
     |
-  parallel-agents (reviewer || verifier || doc-checker? || infra-reviewer?)
+  parallel-agents (reviewer || verifier || doc-checker? || infra-reviewer? || frontend-reviewer?)
     |
   [issues?] -> scoped-fix -> [restart affected tracks]
     |
@@ -91,7 +91,7 @@ CHARTS_PATH="deploy/"     # from infrastructure.chartsPath parent
 
 HAS_BACKEND=$(echo "$CHANGED" | grep -q "^${SRC_PATH}" && echo true || echo false)
 HAS_FRONTEND=$(echo "$CHANGED" | grep -q "^${FRONTEND_PATH}" && echo true || echo false)
-HAS_INFRA=$(echo "$CHANGED" | grep -q "^${INFRA_PATH}\|^${CHARTS_PATH}\|^\.github/" && echo true || echo false)
+HAS_INFRA=$(echo "$CHANGED" | grep -q "^${INFRA_PATH}\|^${CHARTS_PATH}\|^\.github/workflows/" && echo true || echo false)
 HAS_ENDPOINTS=$(echo "$CHANGED" | grep -q "Endpoints/" && echo true || echo false)
 HAS_ENTITIES=$(echo "$CHANGED" | grep -q "Domain/Entities/" && echo true || echo false)
 HAS_EVENTS=$(echo "$CHANGED" | grep -q "Domain/Events/" && echo true || echo false)
@@ -180,7 +180,7 @@ curl -sf http://localhost:${FRONTEND_PORT} > /dev/null 2>&1 && echo "Frontend: U
 
 ### Phase 4: Parallel Agent Review (Dynamic Composition)
 
-**Preferred path -- Workflow tool.** If the harness exposes the `Workflow` tool, orchestrate this phase as a workflow script instead of hand-launching agents: findings come back as schema-validated JSON (no report parsing), each finding is adversarially verified before it can block the PR, and a failed run can be resumed without re-running completed agents. Compose the agent list from the change flags and reuse the plugin agent definitions via `agentType`. Plugin agents are registered under their plugin namespace, so use the qualified names: `dotnet-architect:reviewer`, `dev-workflow:verifier`, `dev-workflow:doc-checker`, `cloud-infra:infra-reviewer`. Pass the diff base in `args` so every agent -- including the verifiers -- reviews the same range:
+**Preferred path -- Workflow tool.** If the harness exposes the `Workflow` tool, orchestrate this phase as a workflow script instead of hand-launching agents: findings come back as schema-validated JSON (no report parsing), each finding is adversarially verified before it can block the PR, and a failed run can be resumed without re-running completed agents. Compose the agent list from the change flags and reuse the plugin agent definitions via `agentType`. Plugin agents are registered under their plugin namespace, so use the qualified names: `dotnet-architect:reviewer`, `dev-workflow:verifier`, `dev-workflow:doc-checker`, `cloud-infra:infra-reviewer`, `react-developer:frontend-reviewer`. Pass the diff base in `args` so every agent -- including the verifiers -- reviews the same range:
 
 ```javascript
 export const meta = {
@@ -226,6 +226,8 @@ Only confirmed findings enter the Phase 5 fix loop; suggestions are reported as 
 3. **`dev-workflow:doc-checker`** (run_in_background: true) -- Only if `HAS_ENDPOINTS` OR `HAS_ENTITIES` OR `HAS_EVENTS` OR `HAS_INFRA`. Detects stale documentation relative to code changes.
 
 4. **`cloud-infra:infra-reviewer`** (run_in_background: true) -- Only if `HAS_INFRA`. Dedicated Terraform/Helm/CI review.
+
+5. **`react-developer:frontend-reviewer`** (run_in_background: true) -- Only if `HAS_FRONTEND`. Frontend review for accessibility, performance, React patterns, and security; review `git diff origin/main...HEAD -- ${FRONTEND_PATH}`.
 
 While agents run in the background, begin preparing the PR description (title, summary of changes, test plan). You will be notified as each agent completes -- do not poll or sleep. Once all agents have reported back, proceed to Phase 5.
 
@@ -292,6 +294,7 @@ On success:
 - Task Check: PASS ({x}/{y} criteria met)
 - Doc Check: PASS (no stale docs) / SKIP (no endpoint/entity/event/infra changes)
 - Infra Review: PASS / SKIP (no infra changes)
+- Frontend Review: APPROVED / CHANGES REQUESTED / BLOCKED / SKIP (no frontend changes)
 
 PR is ready for human review.
 ```

@@ -68,7 +68,7 @@ Navigate to `http://localhost:{DEV_PORT}` to establish the origin, then inject a
 For each detected route:
 
 1. **Navigate** — `browser_navigate` to `http://localhost:{DEV_PORT}{route}`
-2. **Wait** — `browser_wait_for` for content to load (network idle or 3 seconds)
+2. **Wait** — wait for the page's main heading or a known element's text to appear with `browser_wait_for` (it accepts text to appear/disappear, or a time in seconds); fall back to a short time wait (2–3 s)
 3. **Snapshot** — `browser_snapshot` to check accessibility tree for meaningful content (not just a loading spinner or error boundary)
 4. **Console** — `browser_console_messages` to flag any `error` level messages
 5. **Network** — `browser_network_requests` to flag 4xx/5xx responses

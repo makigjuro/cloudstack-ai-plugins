@@ -130,6 +130,7 @@ Both `/complete-task` and `/complete-infra` use parallel execution to maximize t
 | `dev-workflow:verifier` | Always | Acceptance criteria verification |
 | `dev-workflow:doc-checker` | `HAS_ENDPOINTS` or `HAS_ENTITIES` or `HAS_EVENTS` or `HAS_INFRA` | Stale documentation detection |
 | `cloud-infra:infra-reviewer` | `HAS_INFRA` | Terraform/Helm/CI-specific review |
+| `react-developer:frontend-reviewer` | `HAS_FRONTEND` | Accessibility, performance, React patterns, frontend security review |
 
 **No worktree isolation for reviewers** — Review agents only read the diff, so they run in parallel against the current working tree. Reserve `isolation: "worktree"` for agents that edit files in parallel.
 

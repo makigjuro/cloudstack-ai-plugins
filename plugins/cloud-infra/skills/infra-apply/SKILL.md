@@ -44,8 +44,10 @@ terragrunt plan -out=tfplan
 All modules:
 ```bash
 cd {TG_PATH}/{environment}
-terragrunt run --all plan
+terragrunt run --all plan -out=tfplan
 ```
+
+With `run --all`, the `tfplan` file is written separately inside each module's directory (or its `.terragrunt-cache` working dir).
 
 **If `IAC_WRAPPER` = `none` (plain Terraform):**
 
@@ -76,6 +78,8 @@ Display the plan summary:
 
 ### Step 4: Apply (only if `--apply` and user confirms)
 
+Apply exactly the plan reviewed in Step 3 by applying the saved `tfplan` file — never run a fresh `apply` without a plan file. If the code, variables, or remote state changed since planning (or Terraform reports the saved plan is stale), STOP and re-run Step 2 so the user reviews the new plan before applying.
+
 **If `IAC_WRAPPER` = `terragrunt`:**
 
 Single module:
@@ -87,7 +91,7 @@ terragrunt apply tfplan
 All modules:
 ```bash
 cd {TG_PATH}/{environment}
-terragrunt run --all apply
+terragrunt run --all apply tfplan
 ```
 
 **If `IAC_WRAPPER` = `none`:**
@@ -110,5 +114,6 @@ done
 - NEVER apply to `prod` without showing the plan first and getting explicit user confirmation
 - ALWAYS run plan before apply
 - If the plan shows unexpected destroys, STOP and ask the user
-- Clean up plan files after apply: `rm -f tfplan`
+- Apply only the saved `tfplan` from the reviewed plan; if it is stale, re-plan and re-confirm
+- Clean up plan files after apply: `rm -f tfplan` (for `--all` runs, remove the per-module `tfplan` files)
 - For `--all` operations with Terragrunt, respect the dependency order defined in configs

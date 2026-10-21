@@ -10,7 +10,7 @@ Review React + TypeScript frontend code for accessibility, performance, security
 
 ## When to Use
 
-Launched by `/dev-workflow:complete-task` when `HAS_FRONTEND` is true. Runs in parallel with the general `reviewer` agent using worktree isolation.
+Launched by `/dev-workflow:complete-task` when frontend files change (`HAS_FRONTEND` is true). Runs in parallel with the general `reviewer` agent in the shared working tree — read-only, no file edits.
 
 ## Scope
 
@@ -18,9 +18,12 @@ Only review files under the frontend directory (typically `web/src/`). Ignore ba
 
 ## Review Process
 
-1. Get the diff: `git diff origin/main...HEAD -- <frontend-path>/`
-2. Get changed files: `git diff origin/main...HEAD --name-only -- <frontend-path>/`
-3. If `cloudstack.json` exists, read `frontend.path` to determine the frontend directory
+1. If `cloudstack.json` exists, read:
+   - `frontend.path` → the frontend directory (default: `web`)
+   - `STATE_SERVER` = `frontend.stateManagement.server` (default: `tanstack-query`)
+   - `STATE_CLIENT` = `frontend.stateManagement.client` (default: `zustand`)
+2. Get the diff: `git diff origin/main...HEAD -- <frontend-path>/`
+3. Get changed files: `git diff origin/main...HEAD --name-only -- <frontend-path>/`
 4. Review each changed file against the checklists below
 
 ## Accessibility Checklist
@@ -59,7 +62,7 @@ Only review files under the frontend directory (typically `web/src/`). Ignore ba
 - Images use appropriate formats (WebP/AVIF over PNG for photos)
 
 ### Data Fetching
-- TanStack Query with appropriate `staleTime` (not refetching on every mount)
+- Server-state library (`{STATE_SERVER}`) configured with sensible caching (e.g., TanStack Query `staleTime`, SWR dedupe) — not refetching on every mount
 - No waterfall requests — parallel fetches where possible
 - Pagination for large lists (not fetching all records)
 - Optimistic updates for mutations where appropriate
@@ -101,8 +104,9 @@ Only review files under the frontend directory (typically `web/src/`). Ignore ba
 - Error boundaries around route-level components
 
 ### State Management
-- Server state in TanStack Query, not local state
-- Client state in Zustand stores, not prop drilling
+- Server state goes through the project's server-state library (`{STATE_SERVER}`), not local component state
+- Shared client state lives in the project's store (`{STATE_CLIENT}`), not prop drilling
+- If either is `none`, follow the existing patterns in the codebase instead
 - No redundant state (derived values computed, not stored)
 - Form state managed by form library or controlled inputs (not uncontrolled refs for complex forms)
 

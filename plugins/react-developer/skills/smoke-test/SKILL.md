@@ -96,7 +96,7 @@ If route detection fails, fall back to testing just `/` and `/login`.
 **For each route:**
 
 1. **Navigate** using `mcp__plugin_react-developer_playwright__browser_navigate`
-2. **Wait** for the page to settle using `mcp__plugin_react-developer_playwright__browser_wait_for` (wait for network idle or a known element)
+2. **Wait** for the page to settle using `mcp__plugin_react-developer_playwright__browser_wait_for` — wait for the page's main heading or a known element's text to appear (it accepts text to appear/disappear, or a time in seconds); fall back to a short time wait (2–3 s)
 3. **Snapshot** the page using `mcp__plugin_react-developer_playwright__browser_snapshot` to check the accessibility tree for content
 4. **Check console** using `mcp__plugin_react-developer_playwright__browser_console_messages` for errors
 5. **Screenshot** (if `--screenshot`) using `mcp__plugin_react-developer_playwright__browser_take_screenshot`

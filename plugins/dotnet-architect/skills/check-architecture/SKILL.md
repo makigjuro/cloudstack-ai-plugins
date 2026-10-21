@@ -115,13 +115,13 @@ Any service with pending changes is a **FAIL** -- entity/configuration changes m
 ### Manual Checks
 | # | Check | Status | Violations |
 |---|-------|--------|------------|
-| 1 | Layer dependencies | {PASS/FAIL} | {count} |
-| 2 | Result pattern | {PASS/FAIL} | {count} |
-| 3 | CQRS conventions | {PASS/FAIL} | {count} |
-| 4 | Domain entities | {PASS/FAIL} | {count} |
-| 5 | Error codes | {PASS/FAIL} | {count} |
-| 6 | Endpoints | {PASS/FAIL} | {count} |
-| 7 | Pending migrations | {PASS/FAIL} | {count} |
+| 2 | Layer dependencies | {PASS/FAIL} | {count} |
+| 3 | Result pattern | {PASS/FAIL} | {count} |
+| 4 | CQRS conventions | {PASS/FAIL} | {count} |
+| 5 | Domain entities | {PASS/FAIL} | {count} |
+| 6 | Error codes | {PASS/FAIL} | {count} |
+| 7 | Endpoints | {PASS/FAIL} | {count} |
+| 8 | Pending migrations | {PASS/FAIL} | {count} |
 
 ### Violations
 - {file}:{line} -- {description} -- **Fix:** {suggestion}

@@ -44,28 +44,28 @@ git log origin/main..HEAD --oneline
 
 Check for OWASP Top 10 vulnerabilities:
 
-**Injection (A03:2021)**
+**Injection**
 - SQL: Look for string concatenation in queries, raw SQL without parameters
 - Command: Look for `Process.Start`, `Bash` with user input
 - Search patterns: `FromSqlRaw`, `ExecuteSqlRaw`, string interpolation in queries
 
-**Broken Authentication (A07:2021)**
+**Broken Authentication**
 - Hardcoded credentials, API keys, connection strings
 - Missing authorization attributes on endpoints
 - Weak password validation
 
-**Sensitive Data Exposure (A02:2021)**
+**Sensitive Data Exposure**
 - Logging sensitive data (passwords, tokens, PII)
 - Returning sensitive fields in API responses
 - Missing encryption for sensitive storage
 
-**Security Misconfiguration (A05:2021)**
+**Security Misconfiguration**
 - Debug mode enabled in non-dev code
 - Overly permissive CORS
 - Missing security headers
 - Default credentials
 
-**XSS (A03:2021)**
+**XSS**
 - React: `dangerouslySetInnerHTML` without sanitization
 - Unescaped user input in responses
 

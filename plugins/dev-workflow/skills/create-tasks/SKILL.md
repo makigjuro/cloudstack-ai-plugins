@@ -272,5 +272,4 @@ Run `/start-work #{number}` to begin implementation.
 
 - **gh not authenticated**: Prompt user to run `gh auth login`
 - **Label doesn't exist**: Create label or skip with warning
-- **Rate limit**: Pause and retry with backoff
 - **Partial failure**: Report which issues were created, which failed

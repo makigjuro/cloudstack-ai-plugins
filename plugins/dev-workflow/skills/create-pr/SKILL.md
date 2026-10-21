@@ -42,7 +42,7 @@ If `cloudstack.json` does not exist, auto-detect by scanning the project structu
    - Identify which layers were modified (Domain, Application, Infrastructure, Host, Frontend, Tests).
    - Detect affected services by checking paths against known service directories:
      ```bash
-     git diff origin/main...HEAD --name-only | grep -oP 'src/\K[^/]+' | sort -u
+     git diff origin/main...HEAD --name-only | sed -nE 's#^src/([^/]+)/.*#\1#p' | sort -u
      ```
    - Detect what was added vs changed vs removed from the diff stat.
    - Check if documentation may need updating (new endpoints, entities, or events).
@@ -103,7 +103,6 @@ If the GitHub MCP server is available in this session, you may use `mcp__github-
 
 ## Guidelines
 
-- Keep the PR title under 70 characters, in imperative mood ("Add user group assignments", not "Added").
+- Keep the PR title under 70 characters: lowercase imperative, matching the primary commit ("add user group assignments", not "Added user group assignments").
 - Use `Closes #{issue}` to auto-close the linked issue on merge.
-- If the branch has many commits, suggest the user consider squashing before creating the PR.
 - Report the PR URL when done.

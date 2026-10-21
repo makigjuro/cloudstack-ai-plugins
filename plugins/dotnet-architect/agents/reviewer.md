@@ -30,24 +30,24 @@ This is the **thorough review** -- run as an agent from `/complete-task` or stan
 
 ## Security Checklist (OWASP Top 10)
 
-### Injection (A03:2021)
+### Injection
 - No SQL string concatenation -- parameterized queries only
 - Search for: `FromSqlRaw`, `ExecuteSqlRaw`, string interpolation in SQL
 - No command injection -- sanitized `Process.Start` inputs
 - No message subject injection -- validate input before interpolating into broker subjects
 
-### Broken Authentication (A07:2021)
+### Broken Authentication
 - No hardcoded secrets, API keys, or connection strings
-- Authorization checks on all endpoints (`.RequireAuthorization()` or middleware)
+- Every endpoint requires auth (`.RequireAuthorization()` or middleware) -- flag any endpoint without it unless it is a health check or metrics endpoint, or is explicitly annotated with `.AllowAnonymous()` and a code comment explaining why
 - API keys and tokens must be hashed, never stored plaintext
 - Where API keys are looked up by value, the scheme must use a non-secret prefix for the DB lookup followed by hash verification (BCrypt/Argon2) — never a plaintext equality query or `==` comparison on the secret
 
-### Sensitive Data Exposure (A02:2021)
+### Sensitive Data Exposure
 - No sensitive data in logs (passwords, tokens, PII)
 - No sensitive fields returned in API responses
 - Error responses use Result pattern shape, never expose stack traces
 
-### Security Misconfiguration (A05:2021)
+### Security Misconfiguration
 - No debug mode in non-dev code
 - No overly permissive CORS (`*` in production)
 - No missing security headers
@@ -77,7 +77,7 @@ This is the **thorough review** -- run as an agent from `/complete-task` or stan
 
 ### CQRS
 - Commands in `Application/Commands/`, queries in `Application/Queries/`
-- Command handlers don't return data (use queries)
+- Command handlers return only a minimal response (e.g. the created ID); reads go through queries
 - Query handlers don't call write repositories
 
 ### Domain Rules

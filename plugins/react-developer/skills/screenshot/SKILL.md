@@ -83,7 +83,7 @@ If `--mobile` is passed, resize the browser to `375, 667`.
 ### Step 4: Navigate and Capture
 
 1. `browser_navigate` to the resolved URL
-2. `browser_wait_for` network idle or 3 seconds
+2. Wait for the page's main heading or a known element's text to appear with `browser_wait_for` (it accepts text to appear/disappear, or a time in seconds); fall back to a short time wait (2–3 s)
 3. `browser_take_screenshot`
 
 ### Step 5: Cleanup

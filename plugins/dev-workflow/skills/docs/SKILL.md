@@ -255,8 +255,8 @@ Create a new resource.
 
 | Resource | Request | Limit |
 |----------|---------|-------|
-| CPU | 100m | 500m |
-| Memory | 256Mi | 512Mi |
+| CPU | {cpu-request} | {cpu-limit} |
+| Memory | {memory-request} | {memory-limit} |
 
 ## Common Issues
 

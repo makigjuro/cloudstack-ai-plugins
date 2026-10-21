@@ -117,7 +117,7 @@ public class {Entity}CreatedEvent : DomainEvent
 }
 ```
 
-## 4. Repository Interface (`Domain/` or `Application/`)
+## 4. Repository Interfaces (`{DOMAIN_PATH}/Repositories/`)
 
 ```csharp
 public interface I{Entity}Repository
@@ -192,7 +192,7 @@ Files created/modified:
 - `{DOMAIN_PATH}/ValueObjects/{Entity}Id.cs`
 - `{DOMAIN_PATH}/Entities/{Entity}.cs`
 - `{DOMAIN_PATH}/Events/{Entity}CreatedEvent.cs`
-- `src/{Service}/{Service}.Application/` -- Repository interfaces
+- `{DOMAIN_PATH}/Repositories/` -- Repository interfaces
 - `src/{Service}/{Service}.Infrastructure/Persistence/Configurations/{Entity}Configuration.cs`
 - `src/{Service}/{Service}.Infrastructure/Persistence/{Service}DbContext.cs` (modified)
 - Migration: `src/{Service}/{Service}.Infrastructure/Persistence/Migrations/{timestamp}_Add{Entity}.cs`
