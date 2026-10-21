@@ -1,6 +1,6 @@
 # Contributing to cloudstack-ai-plugins
 
-Thanks for your interest in contributing! This marketplace is open to new skills, rules, agents, and entire plugins.
+Thanks for your interest! cloudstack-ai-plugins is a reference architecture for cloud web apps plus the Claude Code workflow that builds and ships it. Good contributions make one of those stronger: a skill that scaffolds or checks part of the architecture, a convention that keeps a layer consistent, an agent that reviews it, or a whole new layer (another cloud, another frontend).
 
 ## Quick ways to contribute
 
@@ -47,13 +47,13 @@ Claude Code does not load a `rules/` directory from plugins, so coding conventio
    ---
    name: my-agent
    description: What this agent does
-   model: sonnet
    tools: Bash, Read, Glob, Grep
    ---
    ```
-2. Define clear scope boundaries
-3. Include output format specification
-4. Open a PR
+2. Omit `model` so the agent inherits the session model; pin `haiku` only for fast, advisory checks
+3. Define clear scope boundaries
+4. Include output format specification
+5. Open a PR
 
 ## Creating a new plugin
 

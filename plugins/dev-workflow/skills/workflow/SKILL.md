@@ -6,7 +6,7 @@ user-invocable: false
 
 # Development Workflow
 
-Follow this end-to-end process when building features. Each step has a corresponding skill.
+This is the workflow that builds and ships the cloudstack reference architecture: from requirements to a reviewed PR, then to a deployed change. Each step has a corresponding skill.
 
 ## Workflow Overview
 
@@ -162,11 +162,13 @@ This replaces manually running `/check-architecture`, `/lint`, `/run-tests`, and
 For infrastructure-only changes (Terraform, Helm, CI/CD), use the dedicated infra workflow. This skips application build/tests and frontend lint entirely.
 
 ```
-Plan → Issues → Branch → Implement → Verify → PR
-  │       │        │          │          │      │
-/infra  /create  /start    /add-*    /infra  /complete
--plan   -tasks   -work               -lint   -infra
+Plan → Issues → Branch → Implement → Verify → PR → Apply
+  │       │        │          │          │      │       │
+/infra  /create  /start    /add-*    /infra  /complete /infra
+-plan   -tasks   -work               -lint   -infra   -apply
 ```
+
+After the PR merges, `/cloud-infra:infra-apply {env}` shows the plan and `--apply` applies exactly that reviewed plan.
 
 ### Infra Skills
 

@@ -1,6 +1,6 @@
 {
   "name": "dotnet-architect",
-  "description": "Hexagonal architecture scaffolding and enforcement for .NET microservices — CQRS commands/queries, domain entities, EF Core migrations, architecture validation, and deep code review.",
+  "description": "Backend layer of the cloudstack reference architecture — scaffolds and enforces hexagonal .NET services: CQRS commands and queries, domain entities, EF Core migrations, tests, and architecture review.",
   "version": "0.3.0",
   "author": {
     "name": "Marjan Gjuroski"

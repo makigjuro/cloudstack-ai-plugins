@@ -1,6 +1,6 @@
 # Plugin Development Guide
 
-How to contribute new plugins or extend existing ones in the cloudstack-ai-plugins marketplace.
+How to extend the cloudstack reference architecture: add skills, convention skills and agents to an existing layer, or add a new plugin for a new layer. Each plugin owns one part of the architecture (backend, frontend, cloud, workflow). Keep new work inside the layer it belongs to and configurable through `cloudstack.json`.
 
 ## Plugin Structure
 

@@ -1,67 +1,44 @@
 # cloud-infra
 
-A Claude Code plugin for cloud infrastructure management — Terraform modules, Helm charts, and CI/CD pipelines.
+**The cloud layer of the [cloudstack reference architecture](../../README.md).** It provisions and deploys the app with Terraform/Terragrunt and Helm on Azure/AKS. You see the plan before anything is applied.
 
-## What It Provides
-
-### Skills
-
-| Skill | Description |
-|-------|-------------|
-| `/add-terraform-module` | Scaffold a new Terraform module with variables, main, outputs, and optional IaC wrapper wiring |
-| `/add-helm-chart` | Scaffold a new Helm chart with standard Kubernetes templates and values |
-| `/infra-lint` | Lint Terraform and Helm charts only — fast, skips application/frontend checks. Runs `/trivy-scan` as its final step |
-| `/trivy-scan` | Scan Terraform and Helm charts with [trivy](https://trivy.dev) for security misconfigurations (public access defaults, weak TLS, over-broad IAM). Honours `.trivyignore` with justifying comments |
-| `/infra-apply` | Run `terraform plan` for review and optionally apply infrastructure changes |
-| `/infra-plan` | Plan infrastructure changes with dependency analysis and risk assessment |
-| `/complete-infra` | Full infrastructure completion workflow — parallel lint + security scan, review agent, and PR creation |
-
-### Convention skills
-
-Background skills (`user-invocable: false`) that Claude applies automatically when it works on matching files. They don't appear in the slash menu.
-
-| Skill | Scope |
-|------|-------|
-| `helm-chart-conventions` | Conventions for Helm chart structure, labels, namespaces, and resource definitions |
-
-### Agents
-
-| Agent | Model | Purpose |
-|-------|-------|---------|
-| `infra-reviewer` | inherits session model | Dedicated Terraform/Helm/CI review with security, naming, and best-practice checklists |
-
-## Installation
-
-Add to your project's `.claude/settings.json`:
-
-```json
-{
-  "plugins": [
-    "cloud-infra"
-  ]
-}
+```
+/plugin install cloud-infra@cloudstack-ai-plugins
 ```
 
-Or if using a local path:
+## The architecture it targets
 
-```json
-{
-  "plugins": [
-    { "path": "path/to/cloud-infra" }
-  ]
-}
-```
+- **Terraform modules** for cloud resources (database, cache, storage, AKS), wired per environment with Terragrunt.
+- **One Helm chart per service**, using the release namespace, standard labels and resource limits.
+- **GitHub Actions** for build, image push and deploy.
+- **Security and review:** every change is linted, scanned with trivy and reviewed. Apply runs only on the plan you reviewed.
+
+The cloud topology diagram is in [docs/architecture.md](../../docs/architecture.md#cloud-infrastructure).
+
+## Skills
+
+| Skill | What it does |
+|---|---|
+| `/cloud-infra:infra-plan` | Plans infrastructure changes with dependency and risk analysis |
+| `/cloud-infra:add-terraform-module redis` | Scaffolds a module (variables, main, outputs) and optional Terragrunt wiring |
+| `/cloud-infra:add-helm-chart order-service` | Scaffolds a chart with standard templates and values |
+| `/cloud-infra:infra-lint` | Runs `terraform validate`/`fmt`, `helm lint` and a trivy scan |
+| `/cloud-infra:trivy-scan` | Scans Terraform and Helm for misconfigurations such as public access, weak TLS and broad IAM |
+| `/cloud-infra:infra-apply dev --apply` | Shows the plan, then applies exactly that saved plan after you confirm |
+| `/cloud-infra:complete-infra` | Lint + scan + review + PR for infrastructure-only branches |
+
+**Agent:** `cloud-infra:infra-reviewer` reviews Terraform, Helm and CI for security, naming and best practice. `/dev-workflow:complete-task` runs it when infra files change.
+
+**Convention skill:** `helm-chart-conventions`. Claude applies it automatically to chart files.
 
 ## Configuration
-
-Create a `cloudstack.json` in your project root to customize paths and settings:
 
 ```json
 {
   "infrastructure": {
-    "chartsPath": "deploy/charts",
     "terraformPath": "infra/terraform/modules",
     "terragruntPath": "infra/terragrunt",
+    "chartsPath": "deploy/charts",
     "namespace": "my-project",
     "containerRegistry": "ghcr.io/my-org",
     "iacWrapper": "terragrunt",
@@ -70,28 +47,16 @@ Create a `cloudstack.json` in your project root to customize paths and settings:
 }
 ```
 
-All fields are optional. The plugin auto-detects values by scanning your project structure when `cloudstack.json` is absent.
+| Key | Default | Notes |
+|---|---|---|
+| `infrastructure.terraformPath` | `infra/terraform/modules` | Terraform modules |
+| `infrastructure.terragruntPath` | `infra/terragrunt` | per-environment configs |
+| `infrastructure.chartsPath` | `deploy/charts` | Helm charts |
+| `infrastructure.namespace` | project name | Kubernetes namespace |
+| `infrastructure.containerRegistry` | from chart values | e.g. `ghcr.io/my-org` |
+| `infrastructure.iacWrapper` | `none` | `terragrunt` or `none` |
+| `infrastructure.cloud` | `azure` | `azure`, `aws`, `gcp` |
 
-### Configuration Reference
+The defaults follow Azure conventions. The templates are provider-agnostic, and the skills read your existing modules to match your naming and tagging on any cloud.
 
-| Key | Default | Description |
-|-----|---------|-------------|
-| `infrastructure.chartsPath` | `deploy/charts` | Path to Helm charts directory |
-| `infrastructure.terraformPath` | `infra/terraform/modules` | Path to Terraform modules |
-| `infrastructure.terragruntPath` | `infra/terragrunt` | Path to Terragrunt environment configs |
-| `infrastructure.namespace` | Auto-detect or project name | Kubernetes namespace for deployments |
-| `infrastructure.containerRegistry` | Auto-detect from chart values | Container image registry (e.g., `ghcr.io/my-org`) |
-| `infrastructure.iacWrapper` | `none` | IaC wrapper tool: `terragrunt` or `none` |
-| `infrastructure.cloud` | `azure` | Cloud provider: `azure`, `aws`, `gcp` |
-
-## Supported IaC Wrappers
-
-- **`none`** — Plain Terraform. Modules are planned/applied directly.
-- **`terragrunt`** — Terragrunt manages backend config, environment separation, and dependency ordering. The plugin creates `terragrunt.hcl` wiring files alongside modules.
-
-## Cloud Provider Notes
-
-The plugin defaults to Azure conventions but the Terraform templates are provider-agnostic. When using AWS or GCP:
-- Resource naming patterns may differ (no location short code, different abbreviations)
-- Tagging conventions vary (`tags` for Azure/AWS, `labels` for GCP)
-- The plugin scans existing modules to learn your project's conventions regardless of provider
+**Prerequisites:** `terraform`, `helm`, `trivy`, and `terragrunt` if you use it.

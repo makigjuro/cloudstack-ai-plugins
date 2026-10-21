@@ -1,6 +1,6 @@
 # cloudstack.json Reference
 
-The `cloudstack.json` file is placed at your project root to configure how plugins discover services, paths, and conventions. All fields are optional — plugins auto-detect from your project structure when fields are missing.
+`cloudstack.json` maps the reference architecture onto your project. It lives at the project root and tells the plugins where your services, frontend and infrastructure are and which conventions you follow. Generate it with `/dev-workflow:init`. All fields are optional — plugins auto-detect from your project structure when fields are missing.
 
 ## Schema
 

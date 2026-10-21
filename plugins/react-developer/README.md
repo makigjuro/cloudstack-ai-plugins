@@ -1,30 +1,32 @@
 # react-developer
 
-A Claude Code plugin for React + TypeScript frontend development. Provides skills for scaffolding feature modules, capturing screenshots, smoke testing, and visual verification using Playwright.
+**The frontend layer of the [cloudstack reference architecture](../../README.md).** It builds React + TypeScript feature modules on a consistent structure and checks them in a real browser.
+
+```
+/plugin install react-developer@cloudstack-ai-plugins
+```
+
+## The architecture it follows
+
+- **Feature modules:** each one has its own page, components, API service and hooks.
+- **API access:** one central client.
+- **State:** server state in your configured library (TanStack Query by default) and shared client state in your store (Zustand by default).
+- **Security defaults:** no raw HTML without sanitizing, careful token storage, no secrets in the bundle.
 
 ## Skills
 
-| Skill | Description |
-|-------|-------------|
-| `/add-feature` | Scaffold a new frontend feature module with page, components, API service, and route |
-| `/screenshot` | Capture a screenshot of a URL or route — supports mobile viewport and auth bypass |
-| `/verify-feature` | Auto-detect changed routes, navigate them, take screenshots, check for console/network errors |
-| `/smoke-test` | Smoke test the running app by navigating key routes and checking for breakage |
+| Skill | What it does |
+|---|---|
+| `/react-developer:add-feature orders` | Scaffolds a feature module with page, components, API service, hooks and route |
+| `/react-developer:verify-feature` | Finds routes changed on the branch, opens them, takes screenshots, and checks console and network errors |
+| `/react-developer:smoke-test` | Opens the app's key routes and catches broken pages, auth issues and failing API calls |
+| `/react-developer:screenshot /orders --mobile` | Screenshots one URL or route |
 
-## Convention skills
+**Agent:** `react-developer:frontend-reviewer` reviews accessibility, performance, React patterns and security. `/dev-workflow:complete-task` runs it when frontend files change.
 
-Background skills (`user-invocable: false`) that Claude applies automatically when it works on matching files. They don't appear in the slash menu.
-
-| Skill | Scope |
-|------|-------|
-| `react-conventions` | General React + TypeScript conventions: API client, state management, components, file organization |
-| `frontend-security` | Frontend security: XSS prevention, auth token handling, no hardcoded secrets, CORS |
+**Convention skills:** `react-conventions` and `frontend-security`. Claude applies them automatically to frontend `.ts`/`.tsx` files.
 
 ## Configuration
-
-This plugin reads `cloudstack.json` from the project root to adapt to your project's setup. If the file doesn't exist, it falls back to auto-detection from `package.json`.
-
-### Example `cloudstack.json`
 
 ```json
 {
@@ -32,49 +34,21 @@ This plugin reads `cloudstack.json` from the project root to adapt to your proje
     "path": "web",
     "devPort": 5173,
     "uiLibrary": "shadcn",
-    "stateManagement": {
-      "server": "tanstack-query",
-      "client": "zustand"
-    }
-  },
-  "backend": {
-    "devPort": 5000,
-    "multiTenancy": false
+    "stateManagement": { "server": "tanstack-query", "client": "zustand" }
   },
   "localDev": {
-    "orchestrator": "none",
-    "orchestratorPort": null,
-    "authConfig": {
-      "storageKey": "auth-storage",
-      "state": {
-        "isAuthenticated": true,
-        "token": "dev-token"
-      }
-    }
+    "authConfig": { "storageKey": "auth-storage", "state": { "isAuthenticated": true, "token": "dev-token" } }
   }
 }
 ```
 
-### Configuration Reference
+| Key | Default | Options |
+|---|---|---|
+| `frontend.path` | `web` | path to the frontend root |
+| `frontend.devPort` | `5173` | dev server port |
+| `frontend.uiLibrary` | `shadcn` | `shadcn`, `mui`, `chakra`, `ant` |
+| `frontend.stateManagement.server` | `tanstack-query` | `tanstack-query`, `swr`, `redux-toolkit` |
+| `frontend.stateManagement.client` | `zustand` | `zustand`, `redux`, `jotai` |
+| `localDev.authConfig` | none | auth state injected into localStorage for browser checks |
 
-| Key | Default | Description |
-|-----|---------|-------------|
-| `frontend.path` | `web` | Path to the frontend project root |
-| `frontend.devPort` | `5173` | Dev server port |
-| `frontend.uiLibrary` | `shadcn` | UI library: `shadcn`, `mui`, `chakra`, `ant` |
-| `frontend.stateManagement.server` | `tanstack-query` | Server state: `tanstack-query`, `swr`, `redux-toolkit` |
-| `frontend.stateManagement.client` | `zustand` | Client state: `zustand`, `redux`, `jotai` |
-| `backend.devPort` | `5000` | API server port |
-| `backend.multiTenancy` | `false` | Whether to include tenant scoping in API calls |
-| `localDev.orchestrator` | `none` | Dev orchestrator: `aspire`, `docker-compose`, `none` |
-| `localDev.orchestratorPort` | `null` | Orchestrator dashboard port |
-| `localDev.authConfig` | `null` | Auth config for localStorage injection during dev |
-
-## Prerequisites
-
-- **Playwright MCP server** must be configured for screenshot, verify-feature, and smoke-test skills
-- **context7 MCP server** (optional) enables library documentation lookup in add-feature
-
-## Installation
-
-Add the plugin to your Claude Code project configuration. The plugin's skills will be automatically available.
+**MCP servers:** Playwright (browser checks) and context7 (library docs) are bundled.

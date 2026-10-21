@@ -1,6 +1,6 @@
 {
   "name": "cloud-infra",
-  "description": "Terraform + Helm infrastructure scaffolding, linting, and review — module scaffolding, chart templates, validation pipelines, security scanning (trivy), and infrastructure-specific code review.",
+  "description": "Cloud layer of the cloudstack reference architecture — Terraform/Terragrunt modules and Helm charts for Azure/AKS, with linting, trivy security scans, plan-before-apply, and infrastructure review.",
   "version": "0.3.0",
   "author": {
     "name": "Marjan Gjuroski"
