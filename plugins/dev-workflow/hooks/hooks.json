@@ -4,13 +4,9 @@
       {
         "matcher": "Bash",
         "hooks": [
-          { "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/pre-commit-lint.sh\"" }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          { "type": "command", "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/scan-secrets.sh\"" }
+          { "type": "command", "if": "Bash(git commit*)", "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/pre-commit-lint.sh\"" },
+          { "type": "command", "if": "Bash(git commit*)", "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/scan-secrets.sh\"" },
+          { "type": "command", "if": "Bash(git push*)", "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/scan-secrets.sh\"" }
         ]
       }
     ],

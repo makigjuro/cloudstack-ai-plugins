@@ -51,7 +51,7 @@ Each plugin also ships convention skills, such as the domain-layer rules, the en
 /plugin install cloud-infra@cloudstack-ai-plugins
 ```
 
-Then run `/dev-workflow:init` in your project. It detects your layout and writes a `cloudstack.json` with your paths, namespaces and conventions. Starting from scratch works too: the scaffolding skills create the structure as you go. Each plugin also works on its own.
+Then run `/dev-workflow:doctor` to check your tools, and `/dev-workflow:init` in your project. It detects your layout and writes a `cloudstack.json` with your paths, namespaces and conventions. Starting from scratch works too: the scaffolding skills create the structure as you go. Each plugin also works on its own.
 
 | Plugin | Covers |
 |---|---|
@@ -81,6 +81,7 @@ Only what changed gets checked: a frontend-only change skips the .NET build. The
 - [Reference architecture](docs/architecture.md)
 - [cloudstack.json reference](docs/cloudstack-json-reference.md)
 - [Writing plugins and skills](docs/plugin-development.md)
+- [Changelog](CHANGELOG.md)
 
 ## Contributing
 
