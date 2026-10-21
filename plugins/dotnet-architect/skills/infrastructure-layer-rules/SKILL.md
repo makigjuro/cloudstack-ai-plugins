@@ -1,4 +1,7 @@
 ---
+name: infrastructure-layer-rules
+description: Infrastructure layer rules — repository implementations, EF Core configuration and DbContext, mandatory migrations with zero-downtime patterns, DI registration, and external service clients. Apply whenever writing or editing code in an Infrastructure project.
+user-invocable: false
 paths:
   - "src/**/Infrastructure/**/*.cs"
 ---

@@ -1,7 +1,7 @@
 ---
 name: verify-feature
 description: Auto-detect changed frontend routes, navigate them with Playwright, take screenshots, and check for console/network errors. Use after implementing a frontend feature to verify it works visually — auto-detects routes from git changes or accepts a route argument. Supports --responsive for mobile testing and --interactive for click testing.
-allowed-tools: Bash, Read, Glob, Grep, mcp__playwright__browser_navigate, mcp__playwright__browser_snapshot, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_console_messages, mcp__playwright__browser_wait_for, mcp__playwright__browser_network_requests, mcp__playwright__browser_close, mcp__playwright__browser_click, mcp__playwright__browser_fill_form, mcp__playwright__browser_evaluate, mcp__playwright__browser_resize
+allowed-tools: Bash, Read, Glob, Grep, mcp__plugin_react-developer_playwright__browser_navigate, mcp__plugin_react-developer_playwright__browser_snapshot, mcp__plugin_react-developer_playwright__browser_take_screenshot, mcp__plugin_react-developer_playwright__browser_console_messages, mcp__plugin_react-developer_playwright__browser_wait_for, mcp__plugin_react-developer_playwright__browser_network_requests, mcp__plugin_react-developer_playwright__browser_close, mcp__plugin_react-developer_playwright__browser_click, mcp__plugin_react-developer_playwright__browser_fill_form, mcp__plugin_react-developer_playwright__browser_evaluate, mcp__plugin_react-developer_playwright__browser_resize
 user-invocable: true
 ---
 

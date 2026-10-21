@@ -1,7 +1,7 @@
 ---
 name: analyzer
 description: Codebase analyzer that finds patterns, related code, and integration points before implementing new features.
-tools: Bash, Read, Glob, Grep, mcp__context7__resolve-library-id, mcp__context7__query-docs
+tools: Bash, Read, Glob, Grep, mcp__plugin_dev-workflow_context7__resolve-library-id, mcp__plugin_dev-workflow_context7__query-docs
 ---
 
 # Analyzer Agent
@@ -74,8 +74,8 @@ Search the test directories for how similar features are tested. Note the test s
 
 When the feature involves non-trivial library usage, look up current docs using context7:
 
-1. `mcp__context7__resolve-library-id` with the library name
-2. `mcp__context7__query-docs` with the library ID and a specific question
+1. `mcp__plugin_dev-workflow_context7__resolve-library-id` with the library name
+2. `mcp__plugin_dev-workflow_context7__query-docs` with the library ID and a specific question
 
 This is especially valuable when:
 - The feature uses a library pattern you haven't seen in the existing codebase

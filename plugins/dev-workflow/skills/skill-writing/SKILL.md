@@ -1,4 +1,7 @@
 ---
+name: skill-writing
+description: Principles for writing and editing Claude Code skills — trigger-focused descriptions, writing style, structure, and progressive disclosure. Apply whenever creating or modifying a SKILL.md file.
+user-invocable: false
 paths:
   - ".claude/skills/**/*.md"
   - "plugins/**/skills/**/*.md"

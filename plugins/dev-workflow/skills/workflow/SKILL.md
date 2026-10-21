@@ -1,6 +1,7 @@
 ---
-paths:
-  - "**"
+name: workflow
+description: The end-to-end development workflow — requirements, planning, issue tracking, branching, implementation, verification, PR completion, docs, and diagnosis — and which skill or agent to use at each step. Apply when deciding what to do next on a feature, or which cloudstack skill fits the task.
+user-invocable: false
 ---
 
 # Development Workflow
@@ -125,12 +126,12 @@ Both `/complete-task` and `/complete-infra` use parallel execution to maximize t
 
 | Agent | When | Purpose |
 |-------|------|---------|
-| `reviewer` | Always | Security, architecture, quality review |
-| `verifier` | Always | Acceptance criteria verification |
-| `doc-checker` | `HAS_ENDPOINTS` or `HAS_ENTITIES` or `HAS_EVENTS` or `HAS_INFRA` | Stale documentation detection |
-| `infra-reviewer` | `HAS_INFRA` | Terraform/Helm/CI-specific review |
+| `dotnet-architect:reviewer` | Always | Security, architecture, quality review |
+| `dev-workflow:verifier` | Always | Acceptance criteria verification |
+| `dev-workflow:doc-checker` | `HAS_ENDPOINTS` or `HAS_ENTITIES` or `HAS_EVENTS` or `HAS_INFRA` | Stale documentation detection |
+| `cloud-infra:infra-reviewer` | `HAS_INFRA` | Terraform/Helm/CI-specific review |
 
-**Worktree isolation** — All review agents run with `isolation: "worktree"` so they each get an isolated copy of the repository. This enables safe parallel reads without file contention.
+**No worktree isolation for reviewers** — Review agents only read the diff, so they run in parallel against the current working tree. Reserve `isolation: "worktree"` for agents that edit files in parallel.
 
 **Scoped fix loop** — When agents report issues:
 1. Fix the issues

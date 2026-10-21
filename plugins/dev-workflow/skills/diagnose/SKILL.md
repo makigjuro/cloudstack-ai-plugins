@@ -1,7 +1,7 @@
 ---
 name: diagnose
 description: Investigate and diagnose problems using structured evidence gathering and hypothesis testing. Use whenever something is broken, failing, or behaving unexpectedly -- build errors, test failures, runtime exceptions, deployment issues, or performance problems.
-allowed-tools: Bash, Read, Glob, Grep, Task, WebSearch, mcp__context7__resolve-library-id, mcp__context7__query-docs
+allowed-tools: Bash, Read, Glob, Grep, Agent, WebSearch, mcp__plugin_dev-workflow_context7__resolve-library-id, mcp__plugin_dev-workflow_context7__query-docs
 user-invocable: true
 context: fork
 argument-hint: "{problem description}"

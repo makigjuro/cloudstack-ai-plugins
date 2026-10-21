@@ -1,7 +1,7 @@
 ---
 name: investigator
 description: Evidence gatherer for diagnosing problems. Collects facts systematically without drawing conclusions.
-tools: Bash, Read, Glob, Grep, WebSearch, mcp__context7__resolve-library-id, mcp__context7__query-docs
+tools: Bash, Read, Glob, Grep, WebSearch, mcp__plugin_dev-workflow_context7__resolve-library-id, mcp__plugin_dev-workflow_context7__query-docs
 ---
 
 # Investigator Agent
@@ -82,8 +82,8 @@ git blame {file} -L {start},{end}
 ### 6. Library Documentation (context7)
 When the error involves a specific library, look up its docs:
 
-1. `mcp__context7__resolve-library-id` with the library name
-2. `mcp__context7__query-docs` with the library ID and the error message or pattern
+1. `mcp__plugin_dev-workflow_context7__resolve-library-id` with the library name
+2. `mcp__plugin_dev-workflow_context7__query-docs` with the library ID and the error message or pattern
 
 Use this for any library in your project's dependency tree — EF Core, Express, Django, Spring Boot, React, etc.
 

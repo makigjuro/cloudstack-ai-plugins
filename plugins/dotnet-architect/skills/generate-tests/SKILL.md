@@ -1,7 +1,7 @@
 ---
 name: generate-tests
 description: Generate unit and integration tests for commands, queries, entities, and event handlers. Use when the user wants to add tests, increase coverage, write specs, or test a handler they just created.
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, mcp__context7__resolve-library-id, mcp__context7__query-docs
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, mcp__plugin_dotnet-architect_context7__resolve-library-id, mcp__plugin_dotnet-architect_context7__query-docs
 user-invocable: true
 argument-hint: "{Handler|Entity} [Service]"
 ---

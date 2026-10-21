@@ -91,9 +91,9 @@ Check your app host or docker-compose file for the actual port mappings.
 
 After the services start, optionally verify they're working using Playwright:
 
-1. Navigate to the dashboard URL using `mcp__playwright__browser_navigate`
-2. Take a snapshot with `mcp__playwright__browser_snapshot` to confirm it loaded
-3. Check `mcp__playwright__browser_console_messages` for any errors
+1. Navigate to the dashboard URL using `mcp__plugin_react-developer_playwright__browser_navigate`
+2. Take a snapshot with `mcp__plugin_react-developer_playwright__browser_snapshot` to confirm it loaded
+3. Check `mcp__plugin_react-developer_playwright__browser_console_messages` for any errors
 
 This is optional -- only do it if the user asks to verify, or if there were recent issues with the local setup.
 

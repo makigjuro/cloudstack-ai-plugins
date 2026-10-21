@@ -1,4 +1,7 @@
 ---
+name: helm-chart-conventions
+description: Helm chart conventions — release namespace, standard labels, chart structure, and values conventions. Apply whenever creating or editing Helm templates, values files, or helpers under charts/.
+user-invocable: false
 paths:
   - "**/charts/**/*.yaml"
   - "**/charts/**/*.yml"

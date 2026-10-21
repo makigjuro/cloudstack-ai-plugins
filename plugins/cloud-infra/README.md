@@ -16,11 +16,13 @@ A Claude Code plugin for cloud infrastructure management — Terraform modules, 
 | `/infra-plan` | Plan infrastructure changes with dependency analysis and risk assessment |
 | `/complete-infra` | Full infrastructure completion workflow — parallel lint + security scan, review agent, and PR creation |
 
-### Rules
+### Convention skills
 
-| Rule | Scope |
+Background skills (`user-invocable: false`) that Claude applies automatically when it works on matching files. They don't appear in the slash menu.
+
+| Skill | Scope |
 |------|-------|
-| `helm-charts` | Conventions for Helm chart structure, labels, namespaces, and resource definitions |
+| `helm-chart-conventions` | Conventions for Helm chart structure, labels, namespaces, and resource definitions |
 
 ### Agents
 

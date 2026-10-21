@@ -1,4 +1,7 @@
 ---
+name: csharp-conventions
+description: General C# conventions for the hexagonal .NET services — record commands/queries, Result-based error handling, async, multi-tenancy, DI registration, and naming. Apply whenever writing or editing C# code under src/.
+user-invocable: false
 paths:
   - "src/**/*.cs"
 ---

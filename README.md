@@ -8,7 +8,7 @@
 [![React 19](https://img.shields.io/badge/React-19-61DAFB)](https://react.dev/)
 [![Terraform](https://img.shields.io/badge/Terraform-IaC-7B42BC)](https://www.terraform.io/)
 
-> AI-powered full-stack cloud engineer for Claude Code. 30 skills, 6 agents, 14 rules across 4 plugins.
+> AI-powered full-stack cloud engineer for Claude Code. 32 skills, 14 convention skills, 7 agents across 4 plugins.
 
 ```
 /plugin marketplace add makigjuro/cloudstack-ai-plugins
@@ -31,7 +31,7 @@ graph TB
             d5["add-migration"]
             d6["check-architecture"]
             d7(["reviewer agent"])
-            d8[/"7 rules"/]
+            d8[/"7 convention skills"/]
         end
 
         subgraph react["react-developer"]
@@ -39,7 +39,7 @@ graph TB
             r2["screenshot"]
             r3["verify-feature"]
             r4["smoke-test"]
-            r5[/"2 rules"/]
+            r5[/"2 convention skills"/]
         end
 
         subgraph infra["cloud-infra"]
@@ -50,7 +50,7 @@ graph TB
             i5["infra-plan"]
             i6["complete-infra"]
             i7(["infra-reviewer agent"])
-            i8[/"1 rule"/]
+            i8[/"1 convention skill"/]
         end
 
         subgraph workflow["dev-workflow"]
@@ -63,7 +63,7 @@ graph TB
             w7["run-tests / lint / docs"]
             w8["code-review / diagnose"]
             w9(["4 agents"])
-            w10[/"4 rules + 3 hooks"/]
+            w10[/"4 convention skills + 3 hooks"/]
         end
     end
 

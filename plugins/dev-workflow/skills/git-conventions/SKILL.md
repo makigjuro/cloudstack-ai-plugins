@@ -1,6 +1,7 @@
 ---
-paths:
-  - "**"
+name: git-conventions
+description: Git conventions for branch naming, commit messages, protected branches, staging, and PRs. Apply whenever creating a branch, staging files, writing a commit message, or opening a pull request.
+user-invocable: false
 ---
 
 # Git Conventions

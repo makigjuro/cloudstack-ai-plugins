@@ -1,4 +1,7 @@
 ---
+name: backend-security
+description: Backend security rules to apply while writing code — injection prevention, secrets, endpoint authentication, JWT/OIDC, API keys, input validation, error responses, and dependencies. Apply whenever writing or editing C# code under src/.
+user-invocable: false
 paths:
   - "src/**/*.cs"
 ---

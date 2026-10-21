@@ -1,7 +1,7 @@
 ---
 name: complete-task
 description: Complete current task with all quality gates, code review, QA check, and submit PR. Use when implementation is done and you want to run the full verification pipeline (build, lint, tests, review, QA) and create the pull request.
-allowed-tools: Bash, Read, Glob, Grep, Task, Skill
+allowed-tools: Bash, Read, Glob, Grep, Agent, Skill, Workflow
 user-invocable: true
 argument-hint: "[issue-number] [--skip-integration] [--auto-fix]"
 ---
@@ -180,7 +180,7 @@ curl -sf http://localhost:${FRONTEND_PORT} > /dev/null 2>&1 && echo "Frontend: U
 
 ### Phase 4: Parallel Agent Review (Dynamic Composition)
 
-**Preferred path -- Workflow tool.** If the harness exposes the `Workflow` tool, orchestrate this phase as a workflow script instead of hand-launching agents: findings come back as schema-validated JSON (no report parsing), each finding is adversarially verified before it can block the PR, and a failed run can be resumed without re-running completed agents. Compose the agent list from the change flags and reuse the plugin agent definitions via `agentType`:
+**Preferred path -- Workflow tool.** If the harness exposes the `Workflow` tool, orchestrate this phase as a workflow script instead of hand-launching agents: findings come back as schema-validated JSON (no report parsing), each finding is adversarially verified before it can block the PR, and a failed run can be resumed without re-running completed agents. Compose the agent list from the change flags and reuse the plugin agent definitions via `agentType`. Plugin agents are registered under their plugin namespace, so use the qualified names: `dotnet-architect:reviewer`, `dev-workflow:verifier`, `dev-workflow:doc-checker`, `cloud-infra:infra-reviewer`. Pass the diff base in `args` so every agent -- including the verifiers -- reviews the same range:
 
 ```javascript
 export const meta = {
@@ -196,14 +196,16 @@ const FINDINGS = { type: 'object', required: ['pass', 'findings'], properties: {
       file: { type: 'string' }, line: { type: 'integer' }, summary: { type: 'string' } } } } } }
 const VERDICT = { type: 'object', required: ['isReal'], properties: {
   isReal: { type: 'boolean' }, reason: { type: 'string' } } }
-// args = { reviewers: [{ agentType: 'reviewer', prompt: '...' }, ...] } built from the change flags
+// args = { base: 'origin/main', reviewers: [{ agentType: 'dotnet-architect:reviewer', prompt: '...' }, ...] }
+// built from the change flags. Reviewers only read, so they share the working tree (no worktree isolation).
 const results = await pipeline(
   args.reviewers,
-  r => agent(r.prompt, { agentType: r.agentType, isolation: 'worktree', phase: 'Review', schema: FINDINGS }),
+  r => agent(`${r.prompt}\n\nReview \`git diff ${args.base}...HEAD\`.`,
+    { agentType: r.agentType, label: r.agentType, phase: 'Review', schema: FINDINGS }),
   review => parallel((review?.findings ?? [])
     .filter(f => f.severity !== 'suggestion')
     .map(f => () => agent(
-      `Adversarially verify this finding against the diff; default to isReal=false if it does not hold up: ${JSON.stringify(f)}`,
+      `Adversarially verify this finding against \`git diff ${args.base}...HEAD\` and the surrounding code; default to isReal=false if it does not hold up: ${JSON.stringify(f)}`,
       { phase: 'Verify', schema: VERDICT }).then(v => ({ ...f, verdict: v })))))
 const confirmed = results.filter(Boolean).flat().filter(Boolean).filter(f => f.verdict?.isReal)
 return { confirmed }
@@ -211,19 +213,19 @@ return { confirmed }
 
 Only confirmed findings enter the Phase 5 fix loop; suggestions are reported as advisory. The verifier agent's acceptance-criteria check keeps its MET/UNMET/PARTIAL shape -- give it its own schema rather than forcing it into the findings shape.
 
-**Fallback path -- Agent tool fan-out.** Without the Workflow tool, launch all applicable agents in parallel in a single response. Each agent uses `isolation: "worktree"` for safe parallel reads and `run_in_background: true` so you can begin drafting the PR summary while agents work.
+**Fallback path -- Agent tool fan-out.** Without the Workflow tool, launch all applicable agents in parallel in a single response. Use the namespaced `subagent_type` for each (shown below) and `run_in_background: true` so you can begin drafting the PR summary while agents work. The agents only read the diff, so they run in the current working tree -- do not use worktree isolation.
 
 **Always launch:**
 
-1. **`reviewer`** (isolation: worktree, run_in_background: true) -- Code review for security, architecture, and quality issues. Uses the `reviewer` agent definition. The agent should review `git diff origin/main...HEAD` and return a structured report with Critical/Warning/Suggestion categories and a PASS/FAIL summary.
+1. **`dotnet-architect:reviewer`** (run_in_background: true) -- Code review for security, architecture, and quality issues. Uses the `reviewer` agent definition. The agent should review `git diff origin/main...HEAD` and return a structured report with Critical/Warning/Suggestion categories and a PASS/FAIL summary.
 
-2. **`verifier`** (isolation: worktree, run_in_background: true) -- QA verification that implementation matches the GitHub issue acceptance criteria. Uses the `verifier` agent definition. The agent should fetch the issue via `gh issue view`, compare against the diff, and return MET/UNMET/PARTIAL status for each criterion with a PASS/FAIL summary.
+2. **`dev-workflow:verifier`** (run_in_background: true) -- QA verification that implementation matches the GitHub issue acceptance criteria. Uses the `verifier` agent definition. The agent should fetch the issue via `gh issue view`, compare against the diff, and return MET/UNMET/PARTIAL status for each criterion with a PASS/FAIL summary.
 
 **Conditionally launch:**
 
-3. **`doc-checker`** (isolation: worktree, run_in_background: true) -- Only if `HAS_ENDPOINTS` OR `HAS_ENTITIES` OR `HAS_EVENTS` OR `HAS_INFRA`. Detects stale documentation relative to code changes.
+3. **`dev-workflow:doc-checker`** (run_in_background: true) -- Only if `HAS_ENDPOINTS` OR `HAS_ENTITIES` OR `HAS_EVENTS` OR `HAS_INFRA`. Detects stale documentation relative to code changes.
 
-4. **`infra-reviewer`** (isolation: worktree, run_in_background: true) -- Only if `HAS_INFRA`. Dedicated Terraform/Helm/CI review using the `infra-reviewer` agent definition.
+4. **`cloud-infra:infra-reviewer`** (run_in_background: true) -- Only if `HAS_INFRA`. Dedicated Terraform/Helm/CI review using the `infra-reviewer` agent definition.
 
 While agents run in the background, begin preparing the PR description (title, summary of changes, test plan). You will be notified as each agent completes -- do not poll or sleep. Once all agents have reported back, proceed to Phase 5.
 
@@ -314,7 +316,7 @@ Reason: {error details}
 
 - This skill is idempotent -- safe to run multiple times
 - All bash commands use explicit paths relative to repo root
-- Subagents run with worktree isolation to avoid polluting main conversation and enable safe parallel reads
+- Review subagents keep their file reads out of the main conversation; they only read, so they share the working tree instead of paying for worktree isolation
 - Never force-push or amend commits during this process
 - If unsure about a fix, ask the user rather than guessing
 - Parallel tracks are launched as multiple tool calls in a single response for maximum throughput

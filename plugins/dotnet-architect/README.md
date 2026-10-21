@@ -4,7 +4,7 @@ A Claude Code plugin for .NET projects following hexagonal architecture with CQR
 
 ## What it provides
 
-Scaffolding skills, architecture rules, and a code review agent for .NET microservice projects that use:
+Scaffolding skills, architecture convention skills, and a code review agent for .NET microservice projects that use:
 
 - Hexagonal architecture (Domain / Application / Infrastructure / Host layers)
 - CQRS with WolverineFx
@@ -25,17 +25,19 @@ Scaffolding skills, architecture rules, and a code review agent for .NET microse
 | `/add-migration` | Create an EF Core migration for a microservice |
 | `/check-architecture` | Verify hexagonal layer rules, Result pattern usage, CQRS conventions, and pending migrations |
 
-## Rules
+## Convention skills
 
-| Rule | Applies to | Description |
+Background skills (`user-invocable: false`) that Claude applies automatically when it works on matching files. They don't appear in the slash menu.
+
+| Skill | Applies to | Description |
 |------|-----------|-------------|
-| `csharp-general` | `src/**/*.cs` | Commands, queries, error handling, async, DI, naming |
-| `domain-layer` | `src/**/Domain/**/*.cs` | Zero dependencies, entities, aggregates, value objects, events |
-| `endpoints` | `src/**/Endpoints/**/*.cs` | Minimal API structure, OpenAPI metadata, Result-to-HTTP |
-| `validators` | `src/**/*Validator*.cs` | FluentValidation conventions |
-| `infrastructure` | `src/**/Infrastructure/**/*.cs` | Repositories, EF Core, migrations, DI registration |
-| `testing` | `tests/**/*.cs` | xUnit, NSubstitute, FluentAssertions, integration tests |
-| `security-backend` | `src/**/*.cs` | Injection prevention, secrets, auth, JWT, input validation |
+| `csharp-conventions` | `src/**/*.cs` | Commands, queries, error handling, async, DI, naming |
+| `domain-layer-rules` | `src/**/Domain/**/*.cs` | Zero dependencies, entities, aggregates, value objects, events |
+| `endpoint-conventions` | `src/**/Endpoints/**/*.cs` | Minimal API structure, OpenAPI metadata, Result-to-HTTP |
+| `validator-conventions` | `src/**/*Validator*.cs` | FluentValidation conventions |
+| `infrastructure-layer-rules` | `src/**/Infrastructure/**/*.cs` | Repositories, EF Core, migrations, DI registration |
+| `dotnet-testing-conventions` | `tests/**/*.cs` | xUnit, NSubstitute, FluentAssertions, integration tests |
+| `backend-security` | `src/**/*.cs` | Injection prevention, secrets, auth, JWT, input validation |
 
 ## Agents
 
@@ -70,7 +72,7 @@ If `cloudstack.json` is absent, skills will:
 
 ## Installation
 
-Add this plugin to your Claude Code project configuration. The skills, rules, and agents will be available automatically.
+Add this plugin to your Claude Code project configuration. The skills and agents will be available automatically.
 
 ## Prerequisites
 

@@ -31,13 +31,15 @@ End-to-end development workflow plugin for Claude Code. Provides PRD generation,
 | `analyzer` | inherits session model | Codebase analyzer — finds patterns, related code, and integration points before new features |
 | `doc-checker` | Haiku | Fast advisory check — detects stale documentation relative to code changes |
 
-### Rules (4)
+### Convention skills (4)
 
-| Rule | Scope | Description |
+Background skills (`user-invocable: false`) that Claude applies automatically when it works on matching files. They don't appear in the slash menu.
+
+| Skill | Scope | Description |
 |------|-------|-------------|
 | `git-conventions` | `**` | Branch naming, commit messages, staging, PR conventions |
 | `workflow` | `**` | Master workflow doc — end-to-end development process with all skill references |
-| `mcp-tools` | — | Guidance for optional MCP servers (context7, playwright, Mermaid Chart, GitHub) |
+| `mcp-tools` | — | Guidance for bundled and optional MCP servers (context7, playwright, Mermaid Chart, GitHub) |
 | `skill-writing` | — | Principles for writing effective Claude Code skills |
 
 ### Hooks (3)

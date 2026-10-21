@@ -11,12 +11,14 @@ A Claude Code plugin for React + TypeScript frontend development. Provides skill
 | `/verify-feature` | Auto-detect changed routes, navigate them, take screenshots, check for console/network errors |
 | `/smoke-test` | Smoke test the running app by navigating key routes and checking for breakage |
 
-## Rules
+## Convention skills
 
-| Rule | Scope |
+Background skills (`user-invocable: false`) that Claude applies automatically when it works on matching files. They don't appear in the slash menu.
+
+| Skill | Scope |
 |------|-------|
-| `react-frontend` | General React + TypeScript conventions: API client, state management, components, file organization |
-| `security-frontend` | Frontend security: XSS prevention, auth token handling, no hardcoded secrets, CORS |
+| `react-conventions` | General React + TypeScript conventions: API client, state management, components, file organization |
+| `frontend-security` | Frontend security: XSS prevention, auth token handling, no hardcoded secrets, CORS |
 
 ## Configuration
 
@@ -75,4 +77,4 @@ This plugin reads `cloudstack.json` from the project root to adapt to your proje
 
 ## Installation
 
-Add the plugin to your Claude Code project configuration. The plugin's skills and rules will be automatically available.
+Add the plugin to your Claude Code project configuration. The plugin's skills will be automatically available.

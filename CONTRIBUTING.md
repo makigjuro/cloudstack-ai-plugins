@@ -23,16 +23,21 @@ Thanks for your interest in contributing! This marketplace is open to new skills
 
 See [Plugin Development Guide](docs/plugin-development.md) for detailed instructions.
 
-## Adding a new rule
+## Adding a new convention skill
 
-1. Create `plugins/<plugin>/rules/<rule-name>.md` with YAML frontmatter:
+Claude Code does not load a `rules/` directory from plugins, so coding conventions ship as background skills.
+
+1. Create `plugins/<plugin>/skills/<convention-name>/SKILL.md` with YAML frontmatter:
    ```yaml
    ---
+   name: my-conventions
+   description: What the conventions cover. Apply whenever writing or editing <files>.
+   user-invocable: false
    paths:
      - "src/**/*.cs"
    ---
    ```
-2. Keep rules focused -- one concern per file
+2. Keep each skill focused -- one concern per file
 3. Open a PR
 
 ## Adding a new agent

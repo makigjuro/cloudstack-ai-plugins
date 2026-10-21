@@ -1,7 +1,7 @@
 ---
 name: smoke-test
 description: Smoke test the running frontend and API by navigating key routes with Playwright, checking for console errors and broken pages. Use after starting the dev server or to verify the app works before creating a PR.
-allowed-tools: Bash, Read, Glob, Grep, mcp__playwright__browser_navigate, mcp__playwright__browser_snapshot, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_console_messages, mcp__playwright__browser_wait_for, mcp__playwright__browser_network_requests, mcp__playwright__browser_close, mcp__playwright__browser_click, mcp__playwright__browser_fill_form, mcp__playwright__browser_evaluate
+allowed-tools: Bash, Read, Glob, Grep, mcp__plugin_react-developer_playwright__browser_navigate, mcp__plugin_react-developer_playwright__browser_snapshot, mcp__plugin_react-developer_playwright__browser_take_screenshot, mcp__plugin_react-developer_playwright__browser_console_messages, mcp__plugin_react-developer_playwright__browser_wait_for, mcp__plugin_react-developer_playwright__browser_network_requests, mcp__plugin_react-developer_playwright__browser_close, mcp__plugin_react-developer_playwright__browser_click, mcp__plugin_react-developer_playwright__browser_fill_form, mcp__plugin_react-developer_playwright__browser_evaluate
 user-invocable: true
 ---
 
@@ -97,11 +97,11 @@ If route detection fails, fall back to testing just `/` and `/login`.
 
 **For each route:**
 
-1. **Navigate** using `mcp__playwright__browser_navigate`
-2. **Wait** for the page to settle using `mcp__playwright__browser_wait_for` (wait for network idle or a known element)
-3. **Snapshot** the page using `mcp__playwright__browser_snapshot` to check the accessibility tree for content
-4. **Check console** using `mcp__playwright__browser_console_messages` for errors
-5. **Screenshot** (if `--screenshot`) using `mcp__playwright__browser_take_screenshot`
+1. **Navigate** using `mcp__plugin_react-developer_playwright__browser_navigate`
+2. **Wait** for the page to settle using `mcp__plugin_react-developer_playwright__browser_wait_for` (wait for network idle or a known element)
+3. **Snapshot** the page using `mcp__plugin_react-developer_playwright__browser_snapshot` to check the accessibility tree for content
+4. **Check console** using `mcp__plugin_react-developer_playwright__browser_console_messages` for errors
+5. **Screenshot** (if `--screenshot`) using `mcp__plugin_react-developer_playwright__browser_take_screenshot`
 
 ### Step 3.5: Interactive CRUD Flows (only when --interactive)
 
@@ -129,7 +129,7 @@ Auto-detect CRUD opportunities from the current page:
 
 Flag issues:
 - **Console errors** — any `error` level messages in the browser console
-- **Network failures** — check `mcp__playwright__browser_network_requests` for failed requests (4xx/5xx)
+- **Network failures** — check `mcp__plugin_react-developer_playwright__browser_network_requests` for failed requests (4xx/5xx)
 - **Empty pages** — snapshot shows no meaningful content
 - **Auth redirects** — unexpected redirects to /login
 
@@ -137,7 +137,7 @@ Flag issues:
 
 Close the browser session:
 ```
-mcp__playwright__browser_close
+mcp__plugin_react-developer_playwright__browser_close
 ```
 
 ## Output Format

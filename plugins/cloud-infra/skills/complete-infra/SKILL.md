@@ -1,7 +1,7 @@
 ---
 name: complete-infra
 description: Complete infrastructure task — lint, validate, review, and submit PR. Use when an infrastructure-only branch is ready for submission — runs Terraform/Helm validation and creates the PR, skipping application/frontend checks.
-allowed-tools: Bash, Read, Glob, Grep, Task, Skill
+allowed-tools: Bash, Read, Glob, Grep, Agent, Skill
 user-invocable: true
 ---
 
@@ -102,9 +102,9 @@ If any lint or scan track fails, STOP and report. Treat `trivy` missing as a FAI
 
 ### Phase 2: Infrastructure Review (Parallel Agents)
 
-Launch the review agent with worktree isolation:
+Launch the review agent (it only reads, so no worktree isolation is needed):
 
-**Agent: `infra-reviewer`** (isolation: worktree) — Dedicated Terraform/Helm/CI review using the `infra-reviewer` agent definition. Reviews `git diff origin/main...HEAD -- {TF_PARENT}/ {CHARTS_PATH}/ .github/workflows/` and returns PASS/FAIL with findings covering security, naming, resource limits, and CI best practices.
+**Agent: `cloud-infra:infra-reviewer`** — Dedicated Terraform/Helm/CI review using the `infra-reviewer` agent definition. Reviews `git diff origin/main...HEAD -- {TF_PARENT}/ {CHARTS_PATH}/ .github/workflows/` and returns PASS/FAIL with findings covering security, naming, resource limits, and CI best practices.
 
 ### Phase 3: Evaluate
 

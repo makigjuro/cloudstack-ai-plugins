@@ -1,4 +1,7 @@
 ---
+name: domain-layer-rules
+description: Domain layer rules — zero external dependencies, entities, aggregate roots, value objects, domain events, and repository interfaces. Apply whenever writing or editing code in a Domain project.
+user-invocable: false
 paths:
   - "src/**/Domain/**/*.cs"
 ---

@@ -1,4 +1,7 @@
 ---
+name: validator-conventions
+description: FluentValidation conventions — AbstractValidator structure, registration, and rule conventions. Apply whenever writing or editing a validator class.
+user-invocable: false
 paths:
   - "src/**/*Validator*.cs"
 ---
