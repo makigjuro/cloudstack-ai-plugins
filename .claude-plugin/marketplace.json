@@ -35,11 +35,11 @@
     {
       "name": "cloud-infra",
       "source": "./plugins/cloud-infra",
-      "description": "Terraform + Helm infrastructure scaffolding, linting, and review — module scaffolding, chart templates, validation pipelines, and infrastructure-specific code review.",
+      "description": "Terraform + Helm infrastructure scaffolding, linting, and review — module scaffolding, chart templates, validation pipelines, security scanning (trivy), and infrastructure-specific code review.",
       "version": "0.3.0",
       "author": { "name": "Marjan Gjuroski" },
       "category": "productivity",
-      "tags": ["terraform", "helm", "azure", "kubernetes", "infrastructure", "aks"],
+      "tags": ["terraform", "helm", "azure", "kubernetes", "infrastructure", "aks", "trivy"],
       "repository": "https://github.com/makigjuro/cloudstack-ai-plugins",
       "license": "MIT"
     },

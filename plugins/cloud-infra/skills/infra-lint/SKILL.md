@@ -66,6 +66,18 @@ done
 
 If `{CHARTS_PATH}/` doesn't exist, skip Helm linting and note it.
 
+## Security Scan
+
+After lint passes, invoke the `trivy-scan` skill as the final verification step. This catches security misconfigurations that `terraform validate` and `helm lint` don't see (public access defaults, weak TLS, over-broad IAM, missing encryption).
+
+```
+Skill(skill="cloud-infra:trivy-scan")
+```
+
+Findings suppressed by a committed `.trivyignore` (with justifying comments) don't block — only unsuppressed CRITICAL/HIGH/MEDIUM fail the gate.
+
+If trivy isn't installed, the skill prints the install command and exits non-zero. Treat that as a FAIL for this skill's output but print the install hint so the user can remediate.
+
 ## Output
 
 Report pass/fail per category:
@@ -75,4 +87,5 @@ Report pass/fail per category:
 - Terragrunt Validate: PASS/FAIL (or SKIPPED if IAC_WRAPPER != terragrunt)
 - Helm Lint: PASS/FAIL (or SKIPPED)
 - Helm Template: PASS/FAIL (or SKIPPED)
+- Security Scan (trivy): PASS/FAIL (or SKIPPED if trivy missing)
 ```

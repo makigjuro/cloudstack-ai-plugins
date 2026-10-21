@@ -10,10 +10,11 @@ A Claude Code plugin for cloud infrastructure management — Terraform modules, 
 |-------|-------------|
 | `/add-terraform-module` | Scaffold a new Terraform module with variables, main, outputs, and optional IaC wrapper wiring |
 | `/add-helm-chart` | Scaffold a new Helm chart with standard Kubernetes templates and values |
-| `/infra-lint` | Lint Terraform and Helm charts only — fast, skips application/frontend checks |
+| `/infra-lint` | Lint Terraform and Helm charts only — fast, skips application/frontend checks. Runs `/trivy-scan` as its final step |
+| `/trivy-scan` | Scan Terraform and Helm charts with [trivy](https://trivy.dev) for security misconfigurations (public access defaults, weak TLS, over-broad IAM). Honours `.trivyignore` with justifying comments |
 | `/infra-apply` | Run `terraform plan` for review and optionally apply infrastructure changes |
 | `/infra-plan` | Plan infrastructure changes with dependency analysis and risk assessment |
-| `/complete-infra` | Full infrastructure completion workflow — lint, validate, review agent, and PR creation |
+| `/complete-infra` | Full infrastructure completion workflow — parallel lint + security scan, review agent, and PR creation |
 
 ### Rules
 
