@@ -1,0 +1,15 @@
+# Terraform / Terragrunt working files
+.terraform/
+.terragrunt-cache/
+.terragrunt-offline/
+*.tfstate
+*.tfstate.*
+tfplan
+*.tfplan
+crash.log
+# Lock files are generated per unit by `terragrunt init`; modules do not pin them.
+.terraform.lock.hcl
+# Local overrides that may contain secrets
+*.auto.tfvars
+*.tfvars
+.env*

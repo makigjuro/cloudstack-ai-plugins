@@ -27,7 +27,7 @@ graph LR
 - **Frontend:** feature modules with a central API client, server state in TanStack Query (or your library), and security defaults.
 - **Cloud:** Azure Container Apps in a VNet with only the gateway public. Images are tagged with the commit SHA and pulled with a managed identity. Key Vault secrets, migrations as jobs, GitHub Actions with OIDC, trivy scans and plan-before-apply. AKS + Helm is supported as an alternative runtime. Container Apps scaffolding and app deploy skills are in progress ([#4](https://github.com/makigjuro/cloudstack-ai-plugins/issues/4)).
 
-The full picture, including layer rules, the CQRS flow and the cloud topology, is in [docs/architecture.md](docs/architecture.md).
+The full picture, including layer rules, the CQRS flow and the cloud topology, is in [docs/architecture.md](docs/architecture.md). To see it as running code, look at the [starter app](examples/starter/): one service, a gateway, a React app and Terraform for Container Apps. You can run it locally with `docker compose up`.
 
 ## The workflow
 
@@ -78,6 +78,7 @@ Only what changed gets checked: a frontend-only change skips the .NET build. The
 ## Docs
 
 - [Getting started](docs/getting-started.md)
+- [Starter app](examples/starter/)
 - [Reference architecture](docs/architecture.md)
 - [cloudstack.json reference](docs/cloudstack-json-reference.md)
 - [Writing plugins and skills](docs/plugin-development.md)

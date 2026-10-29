@@ -1,0 +1,19 @@
+root = true
+
+[*]
+indent_style = space
+insert_final_newline = true
+charset = utf-8
+
+[*.cs]
+indent_size = 4
+csharp_style_namespace_declarations = file_scoped:warning
+dotnet_sort_system_directives_first = true
+
+# EF Core migrations are generated code.
+[**/Persistence/Migrations/*.cs]
+generated_code = true
+dotnet_analyzer_diagnostic.severity = none
+
+[*.{json,yml,yaml,props,csproj}]
+indent_size = 2

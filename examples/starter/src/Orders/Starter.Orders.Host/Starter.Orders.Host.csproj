@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!-- Host layer: endpoints + DI wiring; depends on Application + Infrastructure, never on Domain directly. -->
+  <PropertyGroup>
+    <RootNamespace>Starter.Orders.Host</RootNamespace>
+    <UserSecretsId>starter-orders-host</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="WolverineFx.RuntimeCompilation" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Starter.ServiceDefaults\Starter.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\Starter.Orders.Application\Starter.Orders.Application.csproj" />
+    <ProjectReference Include="..\Starter.Orders.Infrastructure\Starter.Orders.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Application layer: depends on Domain (+ shared Result types); never on Host. -->
+  <PropertyGroup>
+    <RootNamespace>Starter.Orders.Application</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Shared\Starter.Domain\Starter.Domain.csproj" />
+    <ProjectReference Include="..\..\Shared\Starter.Shared.Infrastructure\Starter.Shared.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

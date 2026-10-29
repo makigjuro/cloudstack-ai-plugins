@@ -1,0 +1,67 @@
+{
+  "$schema": "https://raw.githubusercontent.com/makigjuro/cloudstack-ai-plugins/main/schema/cloudstack.schema.json",
+  "project": {
+    "name": "Starter",
+    "namespace": "Starter",
+    "description": "Reference starter for the cloudstack architecture: hexagonal .NET services, React, Terraform on Azure Container Apps"
+  },
+  "backend": {
+    "framework": "dotnet",
+    "dotnetVersion": "10.0",
+    "solutionPath": "src/Starter.sln",
+    "sharedDomainPath": "src/Shared/Starter.Domain",
+    "sharedInfraPath": "src/Shared/Starter.Shared.Infrastructure",
+    "sharedPaths": [
+      "src/Shared/Starter.Domain",
+      "src/Shared/Starter.Shared.Infrastructure",
+      "src/Starter.ServiceDefaults"
+    ],
+    "services": [
+      {
+        "name": "Orders",
+        "path": "src/Orders",
+        "projectPrefix": "Starter.Orders",
+        "dbContext": "OrdersDbContext",
+        "schema": "orders",
+        "aliases": ["orders"],
+        "testProjects": {
+          "unit": ["tests/Starter.Domain.Tests"],
+          "integration": ["tests/Starter.Orders.Tests.Integration"]
+        }
+      }
+    ],
+    "orm": "efcore",
+    "readQueryTool": "efcore",
+    "messaging": "wolverinefx",
+    "messageBroker": "none",
+    "resultPattern": true,
+    "multiTenancy": true
+  },
+  "frontend": {
+    "path": "web",
+    "devPort": 5173,
+    "stateManagement": { "server": "tanstack-query", "client": "zustand" },
+    "uiLibrary": "shadcn",
+    "smokeRoutes": ["/orders", "/orders/new"]
+  },
+  "infrastructure": {
+    "cloud": "azure",
+    "iac": "terraform",
+    "iacWrapper": "terragrunt",
+    "terraformPath": "infra/terraform/modules",
+    "terragruntPath": "infra/terragrunt",
+    "kubernetes": "none",
+    "charts": "none",
+    "cicd": "github-actions"
+  },
+  "localDev": {
+    "orchestrator": "docker-compose",
+    "composePath": "docker-compose.yml",
+    "apiPort": 5080
+  },
+  "conventions": {
+    "commitStyle": "lowercase-imperative",
+    "errorCodeStyle": "SCREAMING_SNAKE_CASE",
+    "locationShort": { "westeurope": "weu" }
+  }
+}
