@@ -46,9 +46,9 @@
 |---|---|---|
 | `frontend.path` | `web` | path to the frontend root |
 | `frontend.devPort` | `5173` | dev server port |
-| `frontend.uiLibrary` | `shadcn` | `shadcn`, `mui`, `chakra`, `ant` |
-| `frontend.stateManagement.server` | `tanstack-query` | `tanstack-query`, `swr`, `redux-toolkit` |
-| `frontend.stateManagement.client` | `zustand` | `zustand`, `redux`, `jotai` |
+| `frontend.uiLibrary` | `shadcn` | `shadcn`, `mui`, `antd`, `none` |
+| `frontend.stateManagement.server` | `tanstack-query` | `tanstack-query`, `swr`, `none` |
+| `frontend.stateManagement.client` | `zustand` | `zustand`, `redux`, `none` |
 | `localDev.authConfig` | none | auth state injected into localStorage for browser checks |
 
 **MCP servers:** Playwright (browser checks) and context7 (library docs) are bundled.

@@ -14,7 +14,7 @@
 | Build | `/dev-workflow:start-work 42` branches from the issue and starts implementing |
 | Verify | `/dev-workflow:run-tests` (only affected test projects), `/dev-workflow:lint`, `/dev-workflow:run-local` (Aspire or Docker Compose) |
 | Ship | `/dev-workflow:complete-task` builds, lints, tests, runs parallel review agents, fixes issues (max 3 rounds) and opens the PR |
-| Support | `/dev-workflow:code-review`, `/dev-workflow:task-check`, `/dev-workflow:create-pr`, `/dev-workflow:docs`, `/dev-workflow:diagnose`, `/dev-workflow:init` |
+| Support | `/dev-workflow:code-review`, `/dev-workflow:task-check`, `/dev-workflow:create-pr`, `/dev-workflow:docs`, `/dev-workflow:diagnose`, `/dev-workflow:init`, `/dev-workflow:doctor` (checks prerequisites) |
 
 `complete-task` checks only what changed and uses whichever other plugins are installed:
 - With dotnet-architect: .NET build, migrations check, architecture review.
@@ -39,7 +39,7 @@ Without them, it still handles tests, review, acceptance criteria and the PR.
   - `workflow`: which skill fits each step
   - `mcp-tools`: when to use the MCP servers
   - `skill-writing`: how to write skills
-- **Hooks:**
+- **Hooks** (lint and secret scan start only on `git commit` / `git push`; they need `jq` and warn visibly if it's missing):
   - `format-on-save.sh` formats C#, TS/JS, Terraform, Python and Go after edits.
   - `pre-commit-lint.sh` lints staged files before `git commit`.
   - `scan-secrets.sh` blocks leaked keys and tokens before commit or push.
