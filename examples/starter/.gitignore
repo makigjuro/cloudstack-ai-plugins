@@ -1,0 +1,14 @@
+# .NET build output
+bin/
+obj/
+*.user
+*.suo
+.vs/
+.idea/
+TestResults/
+*.trx
+coverage*.xml
+
+# Local secrets -- copy .env.example to .env
+.env
+appsettings.*.local.json

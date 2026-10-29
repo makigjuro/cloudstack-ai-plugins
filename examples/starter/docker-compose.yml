@@ -1,0 +1,64 @@
+# Local development stack: cp .env.example .env && docker compose up --build
+# Gateway: http://localhost:5080  (e.g. GET http://localhost:5080/api/orders)
+# Auth: dev bypass (fixed dev user + tenant) -- only honoured because ASPNETCORE_ENVIRONMENT=Development.
+name: starter
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-starter}
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  orders-migrate:
+    image: starter-orders
+    build:
+      context: .
+      dockerfile: src/Orders/Dockerfile
+    command: ["--migrate"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Orders: Host=postgres;Port=5432;Database=${POSTGRES_DB:-starter};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  orders:
+    image: starter-orders
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ConnectionStrings__Orders: Host=postgres;Port=5432;Database=${POSTGRES_DB:-starter};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      Auth__DevBypass: "true"
+    depends_on:
+      orders-migrate:
+        condition: service_completed_successfully
+
+  gateway:
+    image: starter-gateway
+    build:
+      context: .
+      dockerfile: src/Starter.ApiGateway/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ReverseProxy__Clusters__orders__Destinations__d1__Address: http://orders:8080
+      Cors__AllowedOrigins__0: http://localhost:5173
+    ports:
+      - "5080:8080"
+    depends_on:
+      - orders
+
+volumes:
+  postgres-data:

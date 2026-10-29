@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Infrastructure layer: implements Domain ports; depends on Domain + Application. -->
+  <PropertyGroup>
+    <RootNamespace>Starter.Orders.Infrastructure</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Shared\Starter.Domain\Starter.Domain.csproj" />
+    <ProjectReference Include="..\..\Shared\Starter.Shared.Infrastructure\Starter.Shared.Infrastructure.csproj" />
+    <ProjectReference Include="..\Starter.Orders.Application\Starter.Orders.Application.csproj" />
+  </ItemGroup>
+
+</Project>
