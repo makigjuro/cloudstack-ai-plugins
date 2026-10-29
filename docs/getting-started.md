@@ -14,6 +14,8 @@ cloudstack-ai-plugins is a reference architecture for cloud web apps plus the Cl
 
 Starting from scratch? Copy [`examples/starter`](../examples/starter/). It's a working app in the reference architecture with its own `cloudstack.json`, so every step below works on it straight away.
 
+Check your machine with `/dev-workflow:doctor` once the plugins are installed. It lists what's missing and how to install it.
+
 ## 1. Install
 
 ```
@@ -62,6 +64,34 @@ Check that the backend matches the architecture:
 For an infra-only branch, `/cloud-infra:complete-infra` runs lint, scan and review, then opens the PR.
 
 The target runtime is Azure Container Apps. A one-command app deploy is in progress ([#4](https://github.com/makigjuro/cloudstack-ai-plugins/issues/4)): build SHA-tagged images, run migrations as a job, roll a new revision and smoke-test it.
+
+## Cost and speed
+
+`/dev-workflow:complete-task` is the most expensive command. After the build, lint and test gates it launches review agents in parallel:
+- **Always:** `dotnet-architect:reviewer` and `dev-workflow:verifier`.
+- **When relevant:** `doc-checker` (Haiku), `infra-reviewer` and `frontend-reviewer`.
+
+With the Workflow tool, each critical or warning finding also gets its own verification agent. Each review agent runs on your session model, so cost scales with the model, the size of the diff and the number of findings.
+
+For a lighter pass:
+- Run `/dotnet-architect:check-architecture`, `/dev-workflow:run-tests` and `/dev-workflow:lint` while you work. Save `complete-task` for when the branch is ready.
+- Use `/dev-workflow:complete-task --skip-integration` for work-in-progress checks.
+- Keep branches small. Every agent reviews the whole diff.
+
+## What's tested
+
+The reference path is the one the plugins are built and used against:
+- .NET 10 with WolverineFx, EF Core and PostgreSQL
+- React with TanStack Query, Zustand and shadcn/ui
+- Terraform + Terragrunt on Azure, GitHub Actions
+
+Other values in `cloudstack.json` are accepted, and the skills adapt by reading your existing code, but they haven't been tested end to end:
+- `cloud: aws | gcp`
+- `uiLibrary: mui | antd`
+- `stateManagement: swr | redux`
+- `messageBroker: rabbitmq`
+
+Reports are welcome in the [issues](https://github.com/makigjuro/cloudstack-ai-plugins/issues).
 
 ## MCP servers
 

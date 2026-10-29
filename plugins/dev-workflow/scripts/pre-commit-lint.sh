@@ -6,7 +6,8 @@ set -euo pipefail
 
 # Require jq for parsing hook input
 if ! command -v jq &>/dev/null; then
-  echo "WARNING: jq not installed — pre-commit lint skipped. Install: brew install jq (macOS) or apt install jq (Linux)" >&2
+  # stdout JSON systemMessage is shown to the user; stderr on exit 0 is not
+  echo '{"systemMessage":"cloudstack dev-workflow: jq is not installed, so pre-commit lint was skipped. Install it: brew install jq (macOS) or apt install jq (Linux)."}'
   exit 0
 fi
 
