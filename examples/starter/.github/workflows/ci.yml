@@ -1,0 +1,143 @@
+# CI for the starter: backend, web and infra checks, each only when its files change.
+#
+# NOTE: this starter lives in examples/starter of the cloudstack-ai-plugins repo, so
+# GitHub never runs these workflows there. Paths are written as if examples/starter
+# were the repository root: copy the starter out to use them as-is.
+# Generated shape: /cloud-infra:add-ci-pipeline
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  DOTNET_NOLOGO: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+  TERRAGRUNT_VERSION: "0.93.13"
+  TRIVY_IMAGE: aquasec/trivy:0.70.0
+
+jobs:
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      web: ${{ steps.filter.outputs.web }}
+      infra: ${{ steps.filter.outputs.infra }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'src/**'
+              - 'tests/**'
+              - 'Directory.Build.props'
+              - 'Directory.Packages.props'
+              - 'global.json'
+              - '.editorconfig'
+              - '.github/workflows/ci.yml'
+            web:
+              - 'web/**'
+              - '.github/workflows/ci.yml'
+            infra:
+              - 'infra/**'
+              - '.github/workflows/ci.yml'
+
+  backend:
+    name: Backend (.NET)
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - name: Restore
+        run: dotnet restore src/Starter.sln
+      - name: Build
+        run: dotnet build src/Starter.sln --configuration Release --no-restore
+      - name: Unit tests
+        run: dotnet test src/Starter.sln --configuration Release --no-build --filter "Category!=Integration"
+      - name: Integration tests (Testcontainers, uses the runner's Docker)
+        run: dotnet test src/Starter.sln --configuration Release --no-build --filter "Category=Integration"
+
+  web:
+    name: Web (React)
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run type-check
+      - run: npm run lint
+      - run: npm test -- --run
+      - run: npm run build
+
+  infra:
+    name: Infra (Terraform / Terragrunt)
+    needs: changes
+    if: needs.changes.outputs.infra == 'true'
+    runs-on: ubuntu-latest
+    env:
+      # Offline validation: no Azure credentials, root.hcl uses a throwaway local
+      # backend and dependency mock_outputs. plan/apply are refused in this mode.
+      TG_OFFLINE: "true"
+      TG_NON_INTERACTIVE: "true"
+      TG_TF_PATH: terraform
+      IMAGE_TAG: ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.5.x"
+          terraform_wrapper: false
+      - name: Install Terragrunt ${{ env.TERRAGRUNT_VERSION }}
+        run: |
+          base="https://github.com/gruntwork-io/terragrunt/releases/download/v${TERRAGRUNT_VERSION}"
+          cd "$RUNNER_TEMP"
+          curl -fsSLo terragrunt_linux_amd64 "$base/terragrunt_linux_amd64"
+          curl -fsSLo SHA256SUMS "$base/SHA256SUMS"
+          grep ' terragrunt_linux_amd64$' SHA256SUMS | sha256sum -c -
+          sudo install -m 0755 terragrunt_linux_amd64 /usr/local/bin/terragrunt
+          terragrunt --version
+      - name: terraform fmt
+        run: terraform fmt -check -recursive infra/terraform
+      - name: terragrunt hcl format
+        working-directory: infra/terragrunt
+        run: terragrunt hcl format --check
+      - name: terragrunt validate (dev, offline mocks)
+        working-directory: infra/terragrunt/dev
+        run: terragrunt run --all validate --provider-cache
+      - name: trivy config
+        run: |
+          docker run --rm -v "$PWD:/src" -w /src "$TRIVY_IMAGE" config \
+            --exit-code 1 --severity HIGH,CRITICAL \
+            --ignorefile infra/terraform/.trivyignore infra/terraform

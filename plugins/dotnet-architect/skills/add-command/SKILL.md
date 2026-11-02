@@ -53,16 +53,22 @@ namespace {Namespace}.{Service}.Application.Commands;
 
 public class {Name}Handler
 {
-    // Constructor-inject repositories and services
+    // Constructor-inject repositories, services and IValidator<{Name}Command>
 
     public async Task<Result<{Name}Response>> Handle({Name}Command command, CancellationToken cancellationToken)
     {
-        // 1. Validate business rules
-        // 2. Create/modify domain entities via factory methods or aggregate methods
-        // 3. Persist via repository
-        // 4. Return Result.Success or Result.Failure with SCREAMING_SNAKE error code
+        // 1. Validate input: run the FluentValidation validator and return
+        //    Result.Failure<{Name}Response>(validation.ToValidationError()) if invalid
+        // 2. Check business rules (e.g. uniqueness -> Error.Conflict)
+        // 3. Create/modify domain entities via factory methods or aggregate methods
+        //    (domain guards throw ArgumentException only for programmer errors -- input is already validated)
+        // 4. Persist via repository
+        // 5. Return Result.Success or Result.Failure with SCREAMING_SNAKE error code
     }
 }
+```
+
+`Result`/`Error` live in the shared infrastructure project (`{Namespace}.Shared.Infrastructure.Results`), not in Domain -- Domain has zero dependencies.
 ```
 
 ## 4. Validator (`Application/Validators/{Name}Validator.cs`)
@@ -93,11 +99,28 @@ group.MapPost("/{route}", {Name})
 private static async Task<IResult> {Name}(
     [FromBody] {Name}Request request,
     [FromServices] {Name}Handler handler,
+    ClaimsPrincipal user,
     CancellationToken cancellationToken)
 {
-    var command = new {Name}Command(...);
+    // TenantId comes from the token claim, never from the request body
+    var command = new {Name}Command(user.GetTenantId(), ...);
     var result = await handler.Handle(command, cancellationToken);
-    return result.ToHttpResult();
+    return result.ToHttpResult(created => $"/api/{route}/{created.Id}"); // 201 + Location
+}
+```
+
+For non-creating commands (PUT/DELETE) use `result.ToHttpResult()` (200, or 204 for a non-generic `Result`). Do not add `.WithOpenApi()` -- it is deprecated in .NET 10.
+
+If the shared `ResultExtensions` lacks the Created overload, add it next to the existing `ToHttpResult` methods:
+```csharp
+// using HttpResults = Microsoft.AspNetCore.Http.Results; (avoids clashing with the .Results namespace)
+/// <summary>201 Created with a Location header built from the created value.</summary>
+public static IResult ToHttpResult<T>(this Result<T> result, Func<T, string> createdLocation)
+{
+    ArgumentNullException.ThrowIfNull(createdLocation);
+    return result.IsSuccess
+        ? HttpResults.Created(createdLocation(result.Value), result.Value)
+        : result.Error.ToProblem();
 }
 ```
 
@@ -113,7 +136,8 @@ services.AddScoped<{Name}Handler>();
 - [ ] Handler returns `Result<T>`, no thrown exceptions for business logic
 - [ ] Error codes are SCREAMING_SNAKE_CASE
 - [ ] Validator uses FluentValidation
-- [ ] Endpoint has OpenAPI metadata (WithName, WithSummary, Produces)
+- [ ] Endpoint has OpenAPI metadata (WithName, WithSummary, WithDescription, Produces) -- no `.WithOpenApi()`
+- [ ] Creating POST returns 201 with Location via `ToHttpResult(locationFn)`
 - [ ] Handler registered in DI
 - [ ] CancellationToken propagated through all async calls
 

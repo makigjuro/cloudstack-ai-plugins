@@ -36,7 +36,7 @@ Run each command, and treat a non-zero exit or "command not found" as missing.
 | infra | `terragrunt` | `terragrunt --version` | only if `infrastructure.iacWrapper` is `terragrunt` or `terragrunt.hcl` files exist |
 | infra | `trivy` | `trivy --version` | `trivy-scan`, `infra-lint`, `complete-infra` (a missing trivy fails those gates) |
 | infra | Azure CLI | `az account show` | plan/apply against Azure; reports whether you are logged in and to which subscription |
-| infra | `helm` | `helm version` | only for the AKS runtime or if `deploy/charts/` exists |
+| infra | `helm` | `helm version` | only when `infrastructure.runtime` is `aks` or `infrastructure.chartsPath` (default `deploy/charts/`) exists — not needed for Container Apps |
 
 Report the subscription name from `az account show`, but not IDs or tokens.
 

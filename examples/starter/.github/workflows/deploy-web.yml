@@ -1,0 +1,48 @@
+# Deploy the React SPA (web/) to Azure Static Web Apps: dev -> staging -> prod.
+#
+# NOTE: this starter lives in examples/starter of the cloudstack-ai-plugins repo, so
+# GitHub never runs these workflows there. Paths are written as if examples/starter
+# were the repository root: copy the starter out to use them as-is.
+# Generated shape: /cloud-infra:add-ci-pipeline
+#
+# VITE_API_BASE_URL is baked in at build time, so the SPA is built per environment
+# from the same commit (container images, by contrast, are promoted, never rebuilt).
+# The SWA deployment token is fetched at run time after OIDC login
+# (az staticwebapp secrets list), masked, and never stored as a repository secret.
+# staging and prod wait for the GitHub environment's required reviewers.
+
+name: Deploy web
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'web/**'
+      - '.github/workflows/deploy-web.yml'
+      - '.github/workflows/reusable-deploy-web.yml'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  web-dev:
+    name: Web dev
+    uses: ./.github/workflows/reusable-deploy-web.yml
+    with:
+      environment: dev
+
+  web-staging:
+    name: Web staging
+    needs: web-dev
+    uses: ./.github/workflows/reusable-deploy-web.yml
+    with:
+      environment: staging
+
+  web-prod:
+    name: Web prod
+    needs: web-staging
+    uses: ./.github/workflows/reusable-deploy-web.yml
+    with:
+      environment: prod

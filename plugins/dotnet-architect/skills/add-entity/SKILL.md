@@ -79,9 +79,13 @@ public class {Entity} : AggregateRoot<{Entity}Id>
         // Set properties
     }
 
-    // Factory method - the ONLY way to create instances
+    // Factory method - the ONLY way to create instances.
+    // Input is validated in the command's FluentValidation validator; these guards only
+    // protect invariants against programmer errors (Domain has no Result type).
     public static {Entity} Create(TenantId tenantId, ...)
     {
+        ArgumentNullException.ThrowIfNull(tenantId);
+        // e.g. ArgumentException.ThrowIfNullOrWhiteSpace(name);
         var id = {Entity}Id.New();
         var entity = new {Entity}(id, tenantId, ...);
         entity.RaiseDomainEvent(new {Entity}CreatedEvent(id, tenantId, DateTimeOffset.UtcNow));

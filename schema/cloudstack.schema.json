@@ -120,11 +120,32 @@
         "iacWrapper": { "type": "string", "enum": ["terragrunt", "none"], "default": "none" },
         "terraformPath": { "type": "string", "default": "infra/terraform/modules", "description": "Path to Terraform modules" },
         "terragruntPath": { "type": "string", "description": "Path to Terragrunt configuration" },
+        "runtime": { "type": "string", "enum": ["container-apps", "aks", "none"], "default": "container-apps", "description": "Where services run: 'container-apps' (Azure Container Apps, one Terragrunt unit per app — the default), 'aks' (Kubernetes + Helm charts under chartsPath), or 'none'. Skills use this to decide between Container Apps checks and Helm linting." },
+        "frontendHosting": { "type": "string", "enum": ["static-web-app", "container-app", "none"], "default": "static-web-app", "description": "How the frontend is hosted: Azure Static Web Apps (default), as a Container App, or not deployed" },
+        "containerApps": {
+          "type": "object",
+          "description": "Azure Container Apps layout (used when runtime is 'container-apps')",
+          "properties": {
+            "appUnitsPath": { "type": "string", "default": "infra/terragrunt/{env}", "description": "Where per-app Terragrunt units live; {env} is replaced with each environment name" },
+            "gatewayApp": { "type": "string", "default": "gateway", "description": "Name of the only app with external ingress; all other apps are internal" },
+            "migrationJobs": {
+              "type": "object",
+              "additionalProperties": { "type": "string" },
+              "description": "Service name → Container Apps Job unit that runs its database migrations before the app rolls out (e.g., { \"Orders\": \"orders-migrate\" })"
+            },
+            "environments": {
+              "type": "array",
+              "items": { "type": "string" },
+              "default": ["dev", "staging", "prod"],
+              "description": "Environment names, in promotion order"
+            }
+          }
+        },
         "kubernetes": { "type": "string", "enum": ["aks", "eks", "gke", "none"], "default": "none" },
-        "charts": { "type": "string", "enum": ["helm", "kustomize", "none"], "default": "helm" },
-        "chartsPath": { "type": "string", "default": "deploy/charts", "description": "Path to Helm charts" },
-        "containerRegistry": { "type": "string", "description": "Container registry URL (e.g., 'ghcr.io/myorg')" },
-        "namespace": { "type": "string", "description": "Kubernetes namespace for deployments" },
+        "charts": { "type": "string", "enum": ["helm", "kustomize", "none"], "default": "helm", "description": "Chart tool (used when runtime is 'aks')" },
+        "chartsPath": { "type": "string", "default": "deploy/charts", "description": "Path to Helm charts (used when runtime is 'aks')" },
+        "containerRegistry": { "type": "string", "description": "Container registry login server. Defaults to the Azure Container Registry provisioned by the IaC (e.g., 'myprojectacrdevweu.azurecr.io'); set it only to use another registry (e.g., 'ghcr.io/myorg')" },
+        "namespace": { "type": "string", "description": "Kubernetes namespace for deployments (used when runtime is 'aks')" },
         "cicd": { "type": "string", "enum": ["github-actions", "azure-devops", "gitlab-ci"], "default": "github-actions" }
       }
     },

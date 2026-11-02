@@ -20,7 +20,7 @@
 - **AKS + Helm (alternative):** one chart per service, with the release namespace, standard labels and resource limits.
 - **Security and review:** every change is linted, scanned with trivy and reviewed. Apply runs only on the plan you reviewed.
 
-> Container Apps–specific skills (`add-container-app`, migration jobs, app deploy, CI scaffold) are in progress in [#4](https://github.com/makigjuro/cloudstack-ai-plugins/issues/4). Today, Terraform modules for Container Apps are scaffolded with `add-terraform-module`.
+The runtime comes from `infrastructure.runtime` in `cloudstack.json`: `container-apps` (default) or `aks`. Lint, review and the doctor check adapt to it.
 
 The cloud topology diagram is in [docs/architecture.md](../../docs/architecture.md#cloud-infrastructure).
 
@@ -30,21 +30,26 @@ The cloud topology diagram is in [docs/architecture.md](../../docs/architecture.
 |---|---|
 | `/cloud-infra:infra-plan` | Plans infrastructure changes with dependency and risk analysis |
 | `/cloud-infra:add-terraform-module redis` | Scaffolds a module (variables, main, outputs) and optional Terragrunt wiring |
+| `/cloud-infra:add-container-app notifications` | Adds a Container App for a service in every environment: internal ingress, managed identity, Key Vault refs, probes, Dockerfile and gateway route |
+| `/cloud-infra:add-container-app-job orders-migrate --service orders` | Adds an ACA Job, for example the EF Core migration job, running the service image with `--migrate` |
+| `/cloud-infra:deploy dev --apply` | Builds or promotes SHA-tagged images, runs migrations, rolls out the apps with the gateway last, smoke-tests, and rolls back on failure. It previews by default |
+| `/cloud-infra:add-ci-pipeline` | Writes the GitHub Actions workflows: CI, then deploy to dev and promote to staging/prod with OIDC, plus Static Web Apps |
 | `/cloud-infra:add-helm-chart order-service` | AKS runtime: scaffolds a chart with standard templates and values |
-| `/cloud-infra:infra-lint` | Runs `terraform validate`/`fmt`, `helm lint` and a trivy scan |
+| `/cloud-infra:infra-lint` | Runs `terraform fmt`/`validate` and `terragrunt validate`, plus `helm lint` on AKS, and a trivy scan |
 | `/cloud-infra:trivy-scan` | Scans Terraform and Helm for misconfigurations such as public access, weak TLS and broad IAM |
 | `/cloud-infra:infra-apply dev --apply` | Shows the plan, then applies exactly that saved plan after you confirm |
 | `/cloud-infra:complete-infra` | Lint + scan + review + PR for infrastructure-only branches |
 
 **Agent:** `cloud-infra:infra-reviewer` reviews Terraform, Helm and CI for security, naming and best practice. `/dev-workflow:complete-task` runs it when infra files change.
 
-**Convention skill:** `helm-chart-conventions`. Claude applies it automatically to chart files.
+**Convention skills:** `container-apps-conventions` and `helm-chart-conventions`. Claude applies them automatically to Container Apps Terraform/Terragrunt and to chart files.
 
 ## Configuration
 
 ```json
 {
   "infrastructure": {
+    "runtime": "container-apps",
     "terraformPath": "infra/terraform/modules",
     "terragruntPath": "infra/terragrunt",
     "chartsPath": "deploy/charts",
@@ -58,6 +63,8 @@ The cloud topology diagram is in [docs/architecture.md](../../docs/architecture.
 
 | Key | Default | Notes |
 |---|---|---|
+| `infrastructure.runtime` | `container-apps` | `container-apps` or `aks` |
+| `infrastructure.containerApps` | see the [reference](../../docs/cloudstack-json-reference.md) | Units path, gateway app, migration jobs, environments |
 | `infrastructure.terraformPath` | `infra/terraform/modules` | Terraform modules |
 | `infrastructure.terragruntPath` | `infra/terragrunt` | per-environment configs |
 | `infrastructure.chartsPath` | `deploy/charts` | Helm charts (AKS runtime) |

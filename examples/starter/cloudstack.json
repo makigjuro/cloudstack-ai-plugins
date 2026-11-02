@@ -50,6 +50,14 @@
     "iacWrapper": "terragrunt",
     "terraformPath": "infra/terraform/modules",
     "terragruntPath": "infra/terragrunt",
+    "runtime": "container-apps",
+    "frontendHosting": "static-web-app",
+    "containerApps": {
+      "appUnitsPath": "infra/terragrunt/{env}",
+      "gatewayApp": "gateway",
+      "migrationJobs": { "Orders": "orders-migrate" },
+      "environments": ["dev", "staging", "prod"]
+    },
     "kubernetes": "none",
     "charts": "none",
     "cicd": "github-actions"

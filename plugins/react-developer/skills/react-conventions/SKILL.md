@@ -26,9 +26,9 @@ These rules apply to React + TypeScript frontend code. Adapt paths based on the 
 - Organize by domain: one file per resource (e.g., `users.api.ts`, `orders.api.ts`, `products.api.ts`)
 - Functions return typed `Promise<T>`
 - Use `URLSearchParams` for query parameters
-- Pagination via standard params (e.g., `pageNumber` and `pageSize` or `page` and `limit`)
+- Pagination via `pageNumber` and `pageSize` query params; list responses are `{ items, totalCount, pageNumber, pageSize }` (matches the .NET `{Name}ListResponse`)
 - Response mapping functions to convert API shapes to frontend types when needed
-- If the project uses multi-tenancy, apply tenant scoping consistently across all API calls
+- If the project uses multi-tenancy, the backend derives the tenant from the token claim -- do not send a tenant ID unless the existing API explicitly expects one
 
 ## State Management
 
@@ -55,8 +55,8 @@ Use TanStack Query (React Query), SWR, or RTK Query — whichever the project us
 
 Use Zustand, Redux, Jotai, or whatever the project uses:
 
-- Auth store: stores user info, tokens, authentication state
-- Persist to localStorage with selective field storage (don't persist sensitive data unnecessarily)
+- Auth store: holds the access token in memory only (never written to browser storage) plus auth state; the auth library (OIDC/MSAL) owns token storage and silent renewal, the store just hands the token to the API client
+- Persist only non-sensitive UI preferences (e.g. page size) to localStorage, with `persist` + `partialize`
 - Keep client state minimal — prefer server state for anything fetched from APIs
 
 ## Components
@@ -73,5 +73,5 @@ Use Zustand, Redux, Jotai, or whatever the project uses:
 - Feature-based structure: `features/{name}/pages/`, `features/{name}/components/`
 - Shared components in `components/` at the root level
 - API services in `api/services/`
-- Hooks in `hooks/` or co-located with features
+- Server-state hooks in `hooks/api/use-{feature}.ts` (query-key factory + `use{Feature}s`, `use{Feature}`, `useCreate{Feature}`); components import the hooks, not `useQuery` directly
 - Types in `types/` or co-located with the code that uses them

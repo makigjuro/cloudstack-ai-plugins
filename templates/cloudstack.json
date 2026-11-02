@@ -34,8 +34,18 @@
     "smokeRoutes": ["/", "/dashboard"]
   },
   "infrastructure": {
-    "chartsPath": "deploy/charts",
-    "terraformPath": "infra/terraform/modules"
+    "runtime": "container-apps",
+    "frontendHosting": "static-web-app",
+    "terraformPath": "infra/terraform/modules",
+    "iacWrapper": "terragrunt",
+    "terragruntPath": "infra/terragrunt",
+    "containerApps": {
+      "appUnitsPath": "infra/terragrunt/{env}",
+      "gatewayApp": "gateway",
+      "migrationJobs": { "ServiceOne": "service-one-migrate" },
+      "environments": ["dev", "staging", "prod"]
+    },
+    "chartsPath": "deploy/charts"
   },
   "localDev": {
     "authConfig": {

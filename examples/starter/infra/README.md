@@ -140,7 +140,7 @@ Notes:
 The SPA is deployed to the Static Web App by CI with a deployment token fetched at deploy time
 (`az staticwebapp secrets list -n starter-swa-<env>-weu`), not stored as a GitHub secret.
 
-## 5. GitHub Actions OIDC (setup notes, workflows come later)
+## 5. GitHub Actions OIDC (setup for the workflows in `../.github/workflows/`)
 
 Create one Entra app registration (or user-assigned identity) per environment, with no client
 secret, and add federated credentials bound to GitHub **environments**:

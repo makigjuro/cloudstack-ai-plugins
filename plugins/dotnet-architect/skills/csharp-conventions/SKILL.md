@@ -14,7 +14,7 @@ paths:
 - Handler signature: `public async Task<Result<TResponse>> Handle(TCommand command, CancellationToken cancellationToken)`
 
 ## Error Handling
-- Use `Result<T>` from the shared infrastructure layer
+- Use `Result<T>` from the shared infrastructure layer (`Shared.Infrastructure/Results/`), never from Domain
 - Error codes in SCREAMING_SNAKE_CASE: `"ORDER_ALREADY_EXISTS"`, `"CUSTOMER_NOT_FOUND"`
 - Use typed `ErrorType` enum: Validation, NotFound, Conflict, Unauthorized, Forbidden, Failure, Unexpected
 - Never throw exceptions for expected business failures
@@ -26,6 +26,7 @@ paths:
 
 ## Multi-tenancy
 - `TenantId` is a first-class value object, present on commands and entities
+- The endpoint fills the command's `TenantId` from the authenticated user's tenant claim (`user.GetTenantId()`), never from the request body or query string
 - Filter queries by tenant where applicable
 
 ## DI Registration

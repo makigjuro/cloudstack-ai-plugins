@@ -1,0 +1,123 @@
+# Deploy the backend to Azure Container Apps: build once in dev, promote the same
+# image to staging and prod.
+#
+# NOTE: this starter lives in examples/starter of the cloudstack-ai-plugins repo, so
+# GitHub never runs these workflows there. Paths are written as if examples/starter
+# were the repository root: copy the starter out to use them as-is.
+# Generated shape: /cloud-infra:add-ci-pipeline
+#
+# Flow:  build (dev ACR, tag = short SHA)
+#          -> deploy-dev      (environment: dev)
+#          -> promote-staging (environment: staging, az acr import from dev, no rebuild)
+#          -> promote-prod    (environment: prod,    az acr import from staging, no rebuild)
+# Each rollout is Terraform-native (reusable-rollout.yml): apply the migration job unit,
+# run the job and wait for Succeeded, apply the app units (gateway last), wait for healthy
+# revisions, smoke test through the gateway, and re-apply the previous tag on failure.
+#
+# One-time setup (see infra/README.md "GitHub Actions OIDC"):
+#   - GitHub environments dev, staging, prod. Protect staging and prod with
+#     Settings -> Environments -> Required reviewers, so promotion waits for approval.
+#   - Per environment, variables (not secrets): AZURE_CLIENT_ID, AZURE_TENANT_ID,
+#     AZURE_SUBSCRIPTION_ID. Optional: SOURCE_ACR_RESOURCE_ID on staging/prod when the
+#     source ACR is in another subscription.
+#   - Each environment's identity has a federated credential for
+#     repo:<owner>/<repo>:environment:<env>; no client secrets anywhere.
+
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'Directory.Build.props'
+      - 'Directory.Packages.props'
+      - 'global.json'
+      - 'infra/**'
+      - '.github/workflows/deploy.yml'
+      - '.github/workflows/reusable-rollout.yml'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  PROJECT: starter
+  LOCATION_SHORT: weu
+
+jobs:
+  meta:
+    name: Resolve image tag
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - id: tag
+        run: echo "tag=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Build ${{ matrix.image }}
+    needs: meta
+    runs-on: ubuntu-latest
+    environment: dev
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - image: starter-orders
+            dockerfile: src/Orders/Dockerfile
+          - image: starter-gateway
+            dockerfile: src/Starter.ApiGateway/Dockerfile
+    env:
+      TAG: ${{ needs.meta.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Build and push to the dev ACR
+        run: |
+          acr="${PROJECT}acrdev${LOCATION_SHORT}"   # {project}acr{env}{location_short}
+          if az acr repository show --name "$acr" --image "${{ matrix.image }}:$TAG" --output none 2>/dev/null; then
+            echo "$acr.azurecr.io/${{ matrix.image }}:$TAG already exists; tags are immutable, skipping build."
+            exit 0
+          fi
+          az acr login --name "$acr"
+          ref="$acr.azurecr.io/${{ matrix.image }}:$TAG"
+          # Build context is the repository root (the Dockerfiles copy global.json, Directory.*.props, src/...).
+          docker build --file "${{ matrix.dockerfile }}" --tag "$ref" \
+            --label "org.opencontainers.image.revision=$GITHUB_SHA" .
+          docker push "$ref"
+
+  deploy-dev:
+    name: Deploy dev
+    needs: [meta, build]
+    uses: ./.github/workflows/reusable-rollout.yml
+    with:
+      environment: dev
+      image_tag: ${{ needs.meta.outputs.tag }}
+
+  promote-staging:
+    name: Promote to staging
+    needs: [meta, deploy-dev]
+    uses: ./.github/workflows/reusable-rollout.yml
+    with:
+      environment: staging
+      image_tag: ${{ needs.meta.outputs.tag }}
+      promote_from: dev
+
+  promote-prod:
+    name: Promote to prod
+    needs: [meta, promote-staging]
+    uses: ./.github/workflows/reusable-rollout.yml
+    with:
+      environment: prod
+      image_tag: ${{ needs.meta.outputs.tag }}
+      promote_from: staging

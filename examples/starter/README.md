@@ -70,7 +70,12 @@ Each deploy follows the same rules:
 - Apps pull from ACR and read Key Vault secrets with a managed identity, so no credentials are stored.
 - Only the gateway is public.
 
-A one-command `/cloud-infra:deploy` and a CI scaffold are on the [roadmap](https://github.com/makigjuro/cloudstack-ai-plugins/issues/4).
+With the plugins installed, `/cloud-infra:deploy dev` previews a release and `--apply` runs it in that order. The GitHub Actions workflows in [`.github/workflows/`](.github/workflows/) do the same from CI:
+- `ci.yml`: build, test, lint and validate on every PR.
+- `deploy.yml`: deploys to dev on merge, then promotes to staging and prod behind environment approvals.
+- `deploy-web.yml`: deploys the frontend to Static Web Apps.
+
+The workflows are written as if `examples/starter` were the repo root, so copy the starter out before using them.
 
 ## Use it with the plugins
 

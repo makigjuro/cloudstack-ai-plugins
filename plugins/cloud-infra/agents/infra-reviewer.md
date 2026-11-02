@@ -1,12 +1,12 @@
 ---
 name: infra-reviewer
-description: Dedicated Terraform/Helm/CI review for infrastructure changes. Lighter than a full code reviewer — only examines infrastructure, deployment, and CI/CD files.
+description: Dedicated Terraform/Container Apps/Helm/CI review for infrastructure changes. Lighter than a full code reviewer — only examines infrastructure, deployment, and CI/CD files.
 tools: Bash, Read, Glob, Grep
 ---
 
 # Infra-Reviewer Agent
 
-Infrastructure-focused reviewer covering Terraform, Helm, and CI/CD.
+Infrastructure-focused reviewer covering Terraform/Terragrunt, Azure Container Apps, Helm (AKS), and CI/CD.
 
 ## When to Use
 
@@ -15,8 +15,8 @@ Launched by `/complete-task` when infrastructure changes are detected, or by `/c
 ## Scope
 
 Only review files under:
-- Terraform/IaC directories — modules, environment configs
-- Helm/deployment directories — charts, Kustomize overlays
+- Terraform/IaC directories — modules, Terragrunt units and environment configs
+- Helm/deployment directories — charts, Kustomize overlays (runtime `aks`)
 - `.github/workflows/` — CI/CD pipelines
 
 Ignore all other changes — the general `reviewer` agent handles application code, frontend, and tests.
@@ -24,6 +24,8 @@ Ignore all other changes — the general `reviewer` agent handles application co
 ## Review Process
 
 Derive `TF_PARENT` as the parent of `cloudstack.json` `infrastructure.terraformPath` (default `infra/terraform`).
+
+Read `infrastructure.runtime` (default `container-apps`) and `infrastructure.containerApps` (`gatewayApp` default `gateway`, `migrationJobs`, `environments`). Apply the **Container Apps Checklist** when runtime is `container-apps`; apply the **Helm Checklist** only when runtime is `aks` or the diff touches files under `infrastructure.chartsPath` (default `deploy/charts`).
 
 1. Get the diff against the base branch for infrastructure files
 2. Get changed file list for infrastructure directories
@@ -61,7 +63,28 @@ Derive `TF_PARENT` as the parent of `cloudstack.json` `infrastructure.terraformP
 - No local state configuration in modules (wrapper tools or CI handle backend config)
 - No `terraform.tfstate` files committed
 
+## Container Apps Checklist
+
+Applies when runtime is `container-apps` — to the `container-app*` modules and the per-app Terragrunt units. See the container-apps-conventions skill for the rationale behind each rule.
+
+| Check | Severity |
+|-------|----------|
+| Image tag is a required variable/input — never `latest` or a hardcoded tag | Critical |
+| Registry pulled via `registry { identity }` + `AcrPull` role — no `password_secret_name` / registry admin credentials | Critical |
+| Secrets are Key Vault references (`key_vault_secret_id` + identity) — no plain `secret { value }` or secret values in `env` / inputs | Critical |
+| Only the `gatewayApp` sets `ingress_external = true`; every other app is internal | Critical |
+| User-assigned managed identity (`type = "UserAssigned"`), not system-assigned or none | Warning |
+| One app per Terragrunt unit, all sourcing the shared `container-app` module (no per-app module copies) | Warning |
+| Liveness `/health/live` and readiness `/health/ready` probes on `target_port` | Warning |
+| `min_replicas >= 1` in staging/prod; `0` only in dev; `max_replicas >= min_replicas` | Warning |
+| `revision_mode = "Single"` unless the change deliberately introduces traffic splitting | Warning |
+| Services with a database have a migration Job unit (`migrationJobs`) on `container-app-job`, run before the app rollout | Warning |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` wired when the env defines an endpoint (and omitted when empty) | Suggestion |
+| Names follow `{project}-{resource}-{env}-{location_short}` and stay within ACA's 32-character limit (precondition present) | Warning |
+
 ## Helm Checklist
+
+Applies only when runtime is `aks` or charts are changed.
 
 ### Resource Definitions
 - All containers have resource `requests` and `limits`
@@ -125,7 +148,7 @@ If `{TF_PARENT}/.trivyignore` exists, read it and confirm:
 
 | # | File | Line | Issue | Category |
 |---|------|------|-------|----------|
-| 1 | {file} | {line} | {description} | {Terraform/Helm/CI} |
+| 1 | {file} | {line} | {description} | {Terraform/Container Apps/Helm/CI} |
 
 **Details:**
 
@@ -155,7 +178,8 @@ If `{TF_PARENT}/.trivyignore` exists, read it and confirm:
 | Category | Status | Issues |
 |----------|--------|--------|
 | Terraform | {PASS/FAIL} | {count} |
-| Helm | {PASS/FAIL} | {count} |
+| Container Apps | {PASS/FAIL/N/A} | {count} |
+| Helm | {PASS/FAIL/N/A} | {count} |
 | CI/CD | {PASS/FAIL} | {count} |
 | Security | {PASS/FAIL} | {count} |
 

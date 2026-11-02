@@ -78,7 +78,7 @@ ls -t src/{Service}/**/Migrations/*.cs | head -2
 
 ### Step 4: Apply Migration (Optional)
 
-Only apply if the user explicitly asks:
+Only apply if the user explicitly asks. Locally, either `dotnet ef database update` or the host's job mode (`dotnet run --project src/{Service}/{Service}.Host -- --migrate`), which is how deployed environments apply migrations (a Container Apps Job / compose service, before new revisions take traffic). The `--migrate` mode registers only the DbContext (`AddPersistence`) and exits non-zero on failure:
 
 ```bash
 dotnet ef database update \

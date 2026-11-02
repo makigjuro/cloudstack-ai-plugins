@@ -1,6 +1,6 @@
 ---
 name: lint
-description: Run all linters and formatters -- dotnet format, ESLint, helm lint, and terraform validate. Use to verify formatting before a PR. Note that hooks auto-fix on save/commit; this skill is for explicit verification across the full codebase. For infrastructure-only changes, use /infra-lint instead.
+description: Run all linters and formatters -- dotnet format, ESLint, terraform/terragrunt validate, and helm lint (AKS only). Use to verify formatting before a PR. Note that hooks auto-fix on save/commit; this skill is for explicit verification across the full codebase. For infrastructure-only changes, use /infra-lint instead.
 allowed-tools: Bash
 user-invocable: true
 argument-hint: "[--fix]"
@@ -17,6 +17,9 @@ Read `cloudstack.json` from the project root at the start of execution. Extract 
 - `FRONTEND_PATH` = `frontend.path` (default: `web`)
 - `CHARTS_PATH` = `infrastructure.chartsPath` (default: `deploy/charts`)
 - `TF_PATH` = `infrastructure.terraformPath` (default: `infra/terraform/modules`)
+- `TG_PATH` = `infrastructure.terragruntPath` (default: `infra/terragrunt`)
+- `RUNTIME` = `infrastructure.runtime` (default: `container-apps`)
+- `ENVIRONMENTS` = `infrastructure.containerApps.environments` (default: `dev staging prod`)
 
 If `cloudstack.json` does not exist, auto-detect by scanning the project structure.
 
@@ -61,6 +64,8 @@ cd {FRONTEND_PATH} && npm run type-check
 
 ## Helm Charts
 
+Only when `RUNTIME` is `aks` or `{CHARTS_PATH}/` exists — Container Apps projects have no charts, so report Helm as SKIPPED.
+
 **Lint all charts in {CHARTS_PATH}/:**
 ```bash
 # Discover and lint all charts
@@ -100,10 +105,15 @@ terraform fmt -check -recursive {TF_ROOT}
 terraform fmt -recursive {TF_ROOT}
 ```
 
-**Terragrunt validate (if terragrunt.hcl files exist):**
+**Terragrunt format + validate (if `{TG_PATH}/` exists):**
 ```bash
-find {TF_ROOT} -name "terragrunt.hcl" -execdir terragrunt validate \;
+(cd {TG_PATH} && terragrunt hcl format --check)   # drop --check with --fix
+for env in {ENVIRONMENTS}; do
+  [ -d "{TG_PATH}/$env" ] || continue
+  (cd "{TG_PATH}/$env" && IMAGE_TAG="${IMAGE_TAG:-0000000}" terragrunt run --all validate --provider-cache)
+done
 ```
+The placeholder `IMAGE_TAG` only satisfies the required image-tag input; without Azure credentials units validate against `mock_outputs`.
 
 ## After Running
 
@@ -115,6 +125,7 @@ find {TF_ROOT} -name "terragrunt.hcl" -execdir terragrunt validate \;
   - .NET Format: PASS/FAIL
   - ESLint: PASS/FAIL
   - TypeScript: PASS/FAIL
-  - Helm Lint: PASS/FAIL
+  - Helm Lint: PASS/FAIL/SKIPPED
   - Terraform Validate: PASS/FAIL
   - Terraform Format: PASS/FAIL
+  - Terragrunt Validate: PASS/FAIL/SKIPPED

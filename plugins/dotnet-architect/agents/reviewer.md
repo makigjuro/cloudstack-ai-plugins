@@ -45,7 +45,7 @@ This is the **thorough review** -- run as an agent from `/complete-task` or stan
 ### Sensitive Data Exposure
 - No sensitive data in logs (passwords, tokens, PII)
 - No sensitive fields returned in API responses
-- Error responses use Result pattern shape, never expose stack traces
+- Error responses are ProblemDetails with `error`/`message`/`errorType` extensions (Result pattern), never expose stack traces
 
 ### Security Misconfiguration
 - No debug mode in non-dev code
@@ -86,6 +86,10 @@ This is the **thorough review** -- run as an agent from `/complete-task` or stan
 - Domain events raised in factory and state-change methods, past-tense named
 - No domain logic in Infrastructure layer
 
+### Endpoints
+- No `.WithOpenApi()` (deprecated in .NET 10, fails `TreatWarningsAsErrors`); metadata via `.WithName/.WithSummary/.WithDescription/.Produces*`
+- `TenantId` taken from the token claim (`user.GetTenantId()`), never from the request body
+
 ### Pending Migrations
 - Entity/configuration changes have corresponding migrations
 
@@ -100,7 +104,7 @@ This is the **thorough review** -- run as an agent from `/complete-task` or stan
 
 ### Error Handling
 - No empty catch blocks
-- No catching generic `Exception` unless it is logged and converted to a `Result` failure
+- No catching generic `Exception` unless it is logged and converted to a `Result` failure -- or it is the host startup/`--migrate` wrapper that logs and returns exit code 1
 - Validation on all external inputs (FluentValidation)
 
 ### Testing
