@@ -73,3 +73,17 @@ Claude Code does not load a `rules/` directory from plugins, so coding conventio
 ## Code of conduct
 
 Be respectful and constructive. We're all here to build useful tools.
+
+## Releasing
+
+All four plugins share one version.
+
+1. Move the `[Unreleased]` entries in `CHANGELOG.md` under a new version heading, and add its compare link at the bottom.
+2. Bump `version` in every `plugins/*/.claude-plugin/plugin.json` and in `.claude-plugin/marketplace.json` (the metadata and each plugin entry).
+3. Merge, then tag the merge commit and publish the release:
+   ```bash
+   git tag -a vX.Y.Z -m "vX.Y.Z" && git push origin vX.Y.Z
+   gh release create vX.Y.Z --title "vX.Y.Z" --notes-file <changelog section>
+   ```
+
+`/dev-workflow:new-project` downloads the starter at the tag that matches the plugin version, so tag every release.

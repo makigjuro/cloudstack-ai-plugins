@@ -1,7 +1,7 @@
 {
   "name": "cloud-infra",
   "description": "Cloud layer of the cloudstack reference architecture — Terraform/Terragrunt for Azure Container Apps (or AKS + Helm), with linting, trivy security scans, plan-before-apply, and infrastructure review.",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "author": {
     "name": "Marjan Gjuroski"
   },

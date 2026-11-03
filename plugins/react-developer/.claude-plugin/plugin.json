@@ -1,7 +1,7 @@
 {
   "name": "react-developer",
   "description": "Frontend layer of the cloudstack reference architecture — React + TypeScript feature modules, frontend conventions and security, Playwright smoke tests and screenshots, and frontend review.",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "author": {
     "name": "Marjan Gjuroski"
   },
