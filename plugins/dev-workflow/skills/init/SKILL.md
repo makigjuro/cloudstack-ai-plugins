@@ -1,6 +1,6 @@
 ---
 name: init
-description: Scan a project and generate cloudstack.json configuration. Use when setting up cloudstack-ai-plugins in a project for the first time, onboarding a new project, or regenerating cloudstack.json.
+description: Scan a project and generate blueprint.json configuration. Use when setting up cloud-app-blueprint in a project for the first time, onboarding a new project, or regenerating blueprint.json.
 allowed-tools: Bash, Read, Glob, Grep, Write, AskUserQuestion
 user-invocable: true
 argument-hint: "[--minimal]"
@@ -8,7 +8,7 @@ argument-hint: "[--minimal]"
 
 # Initialize Project
 
-Scan the project structure, detect the tech stack, and generate a `cloudstack.json` configuration file. This is the first thing users should run after installing cloudstack-ai-plugins.
+Scan the project structure, detect the tech stack, and generate a `blueprint.json` configuration file. This is the first thing users should run after installing cloud-app-blueprint.
 
 ## Arguments
 
@@ -19,10 +19,13 @@ Scan the project structure, detect the tech stack, and generate a `cloudstack.js
 ### Step 1: Check for existing config
 
 ```bash
-test -f cloudstack.json && echo "EXISTS" || echo "NONE"
+test -f blueprint.json && echo "EXISTS" || echo "NONE"
+test -f cloudstack.json && echo "LEGACY" || true
 ```
 
-If `cloudstack.json` already exists, ask the user whether to overwrite or update it.
+If `blueprint.json` already exists, ask the user whether to overwrite or update it.
+
+If only `cloudstack.json` exists (the pre-0.4 name), offer to rename it: `git mv cloudstack.json blueprint.json`, and update its `$schema` URL to `https://raw.githubusercontent.com/makigjuro/cloud-app-blueprint/main/schema/blueprint.schema.json`. The format is unchanged, so then continue with update mode. The hook scripts still read `cloudstack.json` when there is no `blueprint.json`, but the skills only look for `blueprint.json`.
 
 ### Step 2: Detect project structure
 
@@ -105,7 +108,7 @@ Use AskUserQuestion for anything that can't be auto-detected:
 
 Keep questions to a minimum. If a value is clearly detectable, don't ask.
 
-### Step 4: Generate cloudstack.json
+### Step 4: Generate blueprint.json
 
 Build the configuration object from detected values. Include:
 
@@ -126,7 +129,7 @@ If `--minimal` was passed, only include `project`, `backend.solutionPath`, and `
 
 Write the file:
 ```bash
-# Write cloudstack.json to project root
+# Write blueprint.json to project root
 ```
 
 ### Step 5: Recommend plugins
@@ -136,7 +139,7 @@ Based on what was detected, recommend which plugins to install:
 ```markdown
 ## Project Initialized
 
-Created `cloudstack.json` with:
+Created `blueprint.json` with:
 - {N} microservices detected
 - {frontend framework} frontend at `{path}/`
 - {iac tool} infrastructure at `{path}/`
@@ -145,13 +148,13 @@ Created `cloudstack.json` with:
 
 | Plugin | Why | Install |
 |--------|-----|---------|
-| dotnet-architect | {N} .NET services detected | `/plugin install dotnet-architect@cloudstack-ai-plugins` |
-| react-developer | React frontend at `{path}/` | `/plugin install react-developer@cloudstack-ai-plugins` |
-| cloud-infra | Terraform + {Container Apps \| AKS/Helm} detected | `/plugin install cloud-infra@cloudstack-ai-plugins` |
-| dev-workflow | Git workflow + CI/CD | `/plugin install dev-workflow@cloudstack-ai-plugins` |
+| dotnet-architect | {N} .NET services detected | `/plugin install dotnet-architect@cloud-app-blueprint` |
+| react-developer | React frontend at `{path}/` | `/plugin install react-developer@cloud-app-blueprint` |
+| cloud-infra | Terraform + {Container Apps \| AKS/Helm} detected | `/plugin install cloud-infra@cloud-app-blueprint` |
+| dev-workflow | Git workflow + CI/CD | `/plugin install dev-workflow@cloud-app-blueprint` |
 
 ### Next steps:
-1. Review `cloudstack.json` and adjust any values
+1. Review `blueprint.json` and adjust any values
 2. Install recommended plugins above
 3. Try `/dotnet-architect:check-architecture` to validate your project
 ```

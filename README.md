@@ -1,4 +1,4 @@
-# cloudstack-ai-plugins
+# cloud-app-blueprint
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![.NET 10](https://img.shields.io/badge/.NET-10-512BD4)](https://dotnet.microsoft.com/)
@@ -6,7 +6,9 @@
 [![Azure Container Apps](https://img.shields.io/badge/Azure-Container%20Apps-0078D4)](https://learn.microsoft.com/azure/container-apps/)
 [![Terraform](https://img.shields.io/badge/Terraform-Terragrunt-7B42BC)](https://www.terraform.io/)
 
-**A reference architecture for cloud web apps, and the Claude Code workflow that builds and ships it.**
+**A reference architecture for cloud web apps, and the Claude Code toolkit that builds and ships it.**
+
+The first blueprint is .NET + React on Azure Container Apps. The workflow plugin works with any stack, and each stack layer is its own plugin, so more blueprints can be added beside it.
 
 You get an architecture that holds up in production: hexagonal .NET services, a React frontend, and Terraform on Azure Container Apps. You also get Claude Code plugins that build within that architecture at every step, from the first requirement to a deployed service. Claude scaffolds code that fits the layers, checks the rules on every change, reviews before every PR, and shows you the plan before anything is applied to the cloud.
 
@@ -27,7 +29,7 @@ graph LR
 - **Frontend:** feature modules with a central API client, server state in TanStack Query (or your library), and security defaults.
 - **Cloud:** Azure Container Apps in a VNet with only the gateway public. Images are tagged with the commit SHA and pulled with a managed identity. Key Vault secrets, migrations as jobs, GitHub Actions with OIDC, trivy scans and plan-before-apply. AKS + Helm is supported as an alternative runtime. `/cloud-infra:deploy` ships it, and `/cloud-infra:add-ci-pipeline` sets up CI to do the same.
 
-The full picture, including layer rules, the CQRS flow and the cloud topology, is in [docs/architecture.md](docs/architecture.md). To see it as running code, look at the [starter app](examples/starter/): one service, a gateway, a React app and Terraform for Container Apps. You can run it locally with `docker compose up`.
+The full picture, including layer rules, the CQRS flow and the cloud topology, is in [docs/architecture.md](docs/architecture.md). To see it as running code, look at the [starter app](examples/dotnet-react-azure/): one service, a gateway, a React app and Terraform for Container Apps. You can run it locally with `docker compose up`.
 
 ## The workflow
 
@@ -44,21 +46,21 @@ Each plugin also ships convention skills, such as the domain-layer rules, the en
 ## Install
 
 ```
-/plugin marketplace add makigjuro/cloudstack-ai-plugins
-/plugin install dev-workflow@cloudstack-ai-plugins
-/plugin install dotnet-architect@cloudstack-ai-plugins
-/plugin install react-developer@cloudstack-ai-plugins
-/plugin install cloud-infra@cloudstack-ai-plugins
+/plugin marketplace add makigjuro/cloud-app-blueprint
+/plugin install dev-workflow@cloud-app-blueprint
+/plugin install dotnet-architect@cloud-app-blueprint
+/plugin install react-developer@cloud-app-blueprint
+/plugin install cloud-infra@cloud-app-blueprint
 ```
 
 Then run `/dev-workflow:doctor` to check your tools.
 
-- **New project:** `/dev-workflow:new-project AcmeShop` creates a repo from the [starter app](examples/starter/), renamed to your project, then builds and tests it.
-- **Existing project:** `/dev-workflow:init` detects your layout and writes a `cloudstack.json` with your paths, namespaces and conventions.
+- **New project:** `/dev-workflow:new-project AcmeShop` creates a repo from the [starter app](examples/dotnet-react-azure/), renamed to your project, then builds and tests it.
+- **Existing project:** `/dev-workflow:init` detects your layout and writes a `blueprint.json` with your paths, namespaces and conventions.
 
 Each plugin also works on its own.
 
-To update after a release, run `/plugin marketplace update cloudstack-ai-plugins`, then update the plugins from `/plugin`. Changes are listed in the [CHANGELOG](CHANGELOG.md).
+To update after a release, run `/plugin marketplace update cloud-app-blueprint`, then update the plugins from `/plugin`. Changes are listed in the [CHANGELOG](CHANGELOG.md).
 
 | Plugin | Covers |
 |---|---|
@@ -85,9 +87,9 @@ Only what changed gets checked: a frontend-only change skips the .NET build. The
 ## Docs
 
 - [Getting started](docs/getting-started.md)
-- [Starter app](examples/starter/)
+- [Starter app](examples/dotnet-react-azure/)
 - [Reference architecture](docs/architecture.md)
-- [cloudstack.json reference](docs/cloudstack-json-reference.md)
+- [blueprint.json reference](docs/blueprint-json-reference.md)
 - [Writing plugins and skills](docs/plugin-development.md)
 - [Changelog](CHANGELOG.md)
 

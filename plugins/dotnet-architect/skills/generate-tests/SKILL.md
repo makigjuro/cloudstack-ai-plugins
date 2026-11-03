@@ -19,12 +19,12 @@ Generate unit and integration tests following project conventions. Analyzes the 
 
 ## Configuration
 
-Read `cloudstack.json` from the project root at the start of execution. Extract:
+Read `blueprint.json` from the project root at the start of execution. Extract:
 - `NAMESPACE` = `project.namespace` (default: detect from `*.sln`)
 - `SERVICES` = `backend.services[]` (default: discover from project structure)
 - `SOLUTION` = `backend.solutionPath` (default: find `*.sln`)
 
-If `cloudstack.json` does not exist, auto-detect by scanning the project structure.
+If `blueprint.json` does not exist, auto-detect by scanning the project structure.
 
 ## Process
 

@@ -1,6 +1,6 @@
 ---
 name: doctor
-description: Check that the tools the cloudstack plugins depend on are installed and authenticated — jq, gh, .NET SDK and dotnet-ef, Node, Docker, Terraform, Terragrunt, trivy, Azure CLI, Helm — and print install hints for anything missing. Use when setting up a machine, when a skill or hook fails because a tool is missing, or before the first /complete-task or /infra-apply.
+description: Check that the tools the cloud-app-blueprint plugins depend on are installed and authenticated — jq, gh, .NET SDK and dotnet-ef, Node, Docker, Terraform, Terragrunt, trivy, Azure CLI, Helm — and print install hints for anything missing. Use when setting up a machine, when a skill or hook fails because a tool is missing, or before the first /complete-task or /infra-apply.
 allowed-tools: Bash, Read
 argument-hint: "[backend|frontend|infra|all]"
 ---
@@ -11,7 +11,7 @@ Report which prerequisites are present, which are missing, and how to install th
 
 ## Configuration
 
-Read `cloudstack.json` from the project root if it exists, and use it to decide which layers apply:
+Read `blueprint.json` from the project root if it exists (if only the pre-0.4 `cloudstack.json` exists, read that and suggest `/dev-workflow:init` to rename it), and use it to decide which layers apply:
 - Backend: `backend.solutionPath` set, or a `*.sln` under `src/`
 - Frontend: `frontend.path` set, or a `package.json` in `web/`, `frontend/` or `client/`
 - Infra: `infrastructure.*` set, or `infra/` / `deploy/` directories
@@ -61,7 +61,7 @@ Give the hint for the detected OS (`uname`):
 ## Output
 
 ```
-## cloudstack doctor
+## Doctor
 
 | Layer | Tool | Status | Detail |
 |---|---|---|---|

@@ -1,6 +1,6 @@
-# cloudstack.json Reference
+# blueprint.json Reference
 
-`cloudstack.json` maps the reference architecture onto your project. It lives at the project root and tells the plugins where your services, frontend and infrastructure are and which conventions you follow. Generate it with `/dev-workflow:init`. All fields are optional — plugins auto-detect from your project structure when fields are missing.
+`blueprint.json` maps the reference architecture onto your project. It lives at the project root and tells the plugins where your services, frontend and infrastructure are and which conventions you follow. Generate it with `/dev-workflow:init`. All fields are optional — plugins auto-detect from your project structure when fields are missing.
 
 ## Schema
 
@@ -8,7 +8,7 @@ Add the `$schema` field for IDE autocompletion:
 
 ```json
 {
-  "$schema": "https://raw.githubusercontent.com/makigjuro/cloudstack-ai-plugins/main/schema/cloudstack.schema.json"
+  "$schema": "https://raw.githubusercontent.com/makigjuro/cloud-app-blueprint/main/schema/blueprint.schema.json"
 }
 ```
 
@@ -166,4 +166,4 @@ For a simple single-service project:
 
 ## Full Example
 
-See [templates/cloudstack.json](../templates/cloudstack.json) for a complete example.
+See [templates/blueprint.json](../templates/blueprint.json) for a complete example.

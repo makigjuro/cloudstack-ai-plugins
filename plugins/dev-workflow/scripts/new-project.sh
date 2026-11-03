@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# new-project.sh — Create a new project from the cloudstack reference starter (examples/starter).
+# new-project.sh — Create a new project from the cloud-app-blueprint reference starter (examples/dotnet-react-azure).
 #
 # Copies the starter, renames every "Starter"/"starter" identifier (solution, namespaces,
 # projects, files, images, Azure resource prefix, compose project, npm package), rewrites
@@ -14,7 +14,7 @@
 #             fits; 7 is the limit because the state storage account
 #             (<short>tfstatestagingweu) must be at most 24 chars.
 #   --dir     Target directory (default: ./<kebab-name>). Must not exist or be empty.
-#   --from    Local starter directory to copy instead of downloading (e.g. a clone's examples/starter).
+#   --from    Local starter directory to copy instead of downloading (e.g. a clone's examples/dotnet-react-azure).
 #   --ref     Git ref to download (default: tag v<plugin version> if it exists, else main).
 #   --no-git  Skip git init and the initial commit.
 #
@@ -26,7 +26,7 @@
 
 set -euo pipefail
 
-REPO_URL="https://github.com/makigjuro/cloudstack-ai-plugins"
+REPO_URL="https://github.com/makigjuro/cloud-app-blueprint"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 NAME=""
@@ -91,8 +91,8 @@ WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
 if [[ -n "$FROM" ]]; then
-  if [[ ! -f "$FROM/cloudstack.json" || ! -d "$FROM/src" ]]; then
-    echo "'$FROM' does not look like the starter (no cloudstack.json or src/)." >&2
+  if [[ ! -f "$FROM/blueprint.json" || ! -d "$FROM/src" ]]; then
+    echo "'$FROM' does not look like the starter (no blueprint.json or src/)." >&2
     exit 1
   fi
   SOURCE="$FROM"
@@ -108,8 +108,8 @@ else
   fi
   echo "Downloading the starter ($REF) from $REPO_URL ..." >&2
   git clone --quiet --depth 1 --filter=blob:none --sparse --branch "$REF" "$REPO_URL" "$WORK/repo" >&2
-  git -C "$WORK/repo" sparse-checkout set examples/starter >&2
-  SOURCE="$WORK/repo/examples/starter"
+  git -C "$WORK/repo" sparse-checkout set examples/dotnet-react-azure >&2
+  SOURCE="$WORK/repo/examples/dotnet-react-azure"
   ORIGIN="$REPO_URL ($REF, $(git -C "$WORK/repo" rev-parse --short HEAD))"
 fi
 
@@ -140,23 +140,23 @@ export PASCAL SHORT DOCS_URL
 # README: drop the lines that describe the starter as a template.
 if [[ -f "$DIR/README.md" ]]; then
   perl -0pi -e '
-    s/^# cloudstack starter\n/# $ENV{PASCAL}\n/m;
+    s/^# \.NET \+ React \+ Azure starter\n/# $ENV{PASCAL}\n/m;
     s/^A small, complete app built on the /Built on the /m;
     s/ It.s what the plugins scaffold into, and it shows the shape of a real project:/ It starts with:/;
     s/^Start a new project from it with .*\n\n//m;
-    s/^The workflows are written as if `examples\/starter` were the repo root.*\n\n//m;
+    s/^The workflows are written as if `examples\/dotnet-react-azure` were the repo root.*\n\n//m;
     s/^From this directory, with the plugins installed:/With the plugins installed:/m;
   ' "$DIR/README.md"
 fi
 
 # Every text file: plugins-repo notes and links first, then the generic rename.
 find "$DIR" -type f -not -path '*/.git/*' -print0 | xargs -0 grep -Il --null '' 2>/dev/null | xargs -0 perl -0pi -e '
-  s/^# NOTE: this starter lives in examples\/starter.*?copy the starter out to use them as-is\.\n//msg;
+  s/^# NOTE: this starter lives in examples\/dotnet-react-azure.*?copy the starter out to use them as-is\.\n//msg;
   s{\]\((?:\.\./)+docs/}{]($ENV{DOCS_URL}}g;
-  s{Build context: examples/starter}{Build context: repository root}g;
-  s{from `examples/starter`}{from the repository root}g;
-  s{app_location: examples/starter/web}{app_location: web}g;
-  s/Reference starter for the cloudstack architecture/Built on the cloudstack reference architecture/g;
+  s{Build context: examples/dotnet-react-azure}{Build context: repository root}g;
+  s{from `examples/dotnet-react-azure`}{from the repository root}g;
+  s{app_location: examples/dotnet-react-azure/web}{app_location: web}g;
+  s/Reference starter for the cloud-app-blueprint architecture/Built on the cloud-app-blueprint reference architecture/g;
   s/\bThis starter\b/This app/g;
   s/\bthe starter\b/the app/g;
   s/Starter/$ENV{PASCAL}/g;
@@ -180,7 +180,7 @@ if $GIT && git -C "$DIR" rev-parse --git-dir >/dev/null 2>&1; then
 elif $GIT; then
   git -C "$DIR" init --quiet --initial-branch=main
   git -C "$DIR" add -A
-  git -C "$DIR" commit --quiet -m "create $KEBAB from the cloudstack starter" -m "Source: $ORIGIN"
+  git -C "$DIR" commit --quiet -m "create $KEBAB from the cloud-app-blueprint starter" -m "Source: $ORIGIN"
   GIT_STATUS="initialized on main with one commit"
 fi
 

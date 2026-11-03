@@ -18,12 +18,12 @@ Perform a comprehensive code review of changes on the current branch compared to
 
 ## Configuration
 
-Read `cloudstack.json` from the project root if it exists. Extract:
+Read `blueprint.json` from the project root if it exists. Extract:
 - `SOLUTION` = `backend.solutionPath`
 - `SERVICES` = `backend.services[]`
 - `VALIDATOR_MCP` = `validators.mcpServer` (optional)
 
-If `cloudstack.json` does not exist, auto-detect by scanning the project structure.
+If `blueprint.json` does not exist, auto-detect by scanning the project structure.
 
 ## Process
 

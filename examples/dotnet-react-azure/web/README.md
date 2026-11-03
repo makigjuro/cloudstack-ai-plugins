@@ -9,7 +9,7 @@ npm install
 npm run dev        # http://localhost:5173
 ```
 
-The dev server proxies `/api/*` to the API gateway at `http://localhost:5080` (start it with docker-compose from `examples/starter`).
+The dev server proxies `/api/*` to the API gateway at `http://localhost:5080` (start it with docker-compose from `examples/dotnet-react-azure`).
 
 ## Scripts
 
@@ -51,4 +51,4 @@ The access token lives in memory only (`stores/auth-store.ts`) and is attached a
 
 ## Deploying to Azure Static Web Apps
 
-`staticwebapp.config.json` adds the SPA fallback and security headers. Set `app_location: examples/starter/web`, `output_location: dist`. If the API is on a different origin, replace the `https://api.example.com` placeholder in the CSP `connect-src` with your API origin (JSON has no comments, so the placeholder is documented here) and set `VITE_API_BASE_URL` at build time.
+`staticwebapp.config.json` adds the SPA fallback and security headers. Set `app_location: examples/dotnet-react-azure/web`, `output_location: dist`. If the API is on a different origin, replace the `https://api.example.com` placeholder in the CSP `connect-src` with your API origin (JSON has no comments, so the placeholder is documented here) and set `VITE_API_BASE_URL` at build time.

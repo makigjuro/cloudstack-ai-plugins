@@ -1,12 +1,12 @@
 {
   "name": "dotnet-architect",
-  "description": "Backend layer of the cloudstack reference architecture — scaffolds and enforces hexagonal .NET services: CQRS commands and queries, domain entities, EF Core migrations, tests, and architecture review.",
+  "description": "Backend layer of the cloud-app-blueprint reference architecture — scaffolds and enforces hexagonal .NET services: CQRS commands and queries, domain entities, EF Core migrations, tests, and architecture review.",
   "version": "0.4.0",
   "author": {
     "name": "Marjan Gjuroski"
   },
   "license": "MIT",
-  "homepage": "https://github.com/makigjuro/cloudstack-ai-plugins#reference-architecture",
-  "repository": "https://github.com/makigjuro/cloudstack-ai-plugins",
+  "homepage": "https://github.com/makigjuro/cloud-app-blueprint#reference-architecture",
+  "repository": "https://github.com/makigjuro/cloud-app-blueprint",
   "keywords": ["dotnet", "csharp", "hexagonal-architecture", "cqrs", "ddd", "efcore", "clean-architecture"]
 }

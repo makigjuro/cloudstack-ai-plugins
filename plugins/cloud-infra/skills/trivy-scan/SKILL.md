@@ -24,11 +24,11 @@ The script takes no CLI flags; the skill maps each argument to an environment va
 
 ## Configuration
 
-Read `cloudstack.json` from the project root at start of execution. Extract:
+Read `blueprint.json` from the project root at start of execution. Extract:
 - `TF_PATH` = `infrastructure.terraformPath` (default: `infra/terraform/modules`)
 - `CHARTS_PATH` = `infrastructure.chartsPath` (default: `deploy/charts`)
 
-Derive `TF_PARENT` as the parent directory of `TF_PATH` (e.g., `infra/terraform/modules` → `infra/terraform`). If `cloudstack.json` is missing, auto-detect by scanning the project.
+Derive `TF_PARENT` as the parent directory of `TF_PATH` (e.g., `infra/terraform/modules` → `infra/terraform`). If `blueprint.json` is missing, auto-detect by scanning the project.
 
 With `infrastructure.runtime` = `container-apps` (the default) the Terraform tree under `TF_PARENT` — including the `container-app*` modules the Terragrunt units source — is the scan target; `CHARTS_PATH` only applies to `aks` and is skipped automatically when the directory doesn't exist.
 

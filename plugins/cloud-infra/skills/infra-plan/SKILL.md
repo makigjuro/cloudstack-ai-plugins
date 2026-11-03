@@ -15,7 +15,7 @@ Break down an infrastructure change into implementation tasks. This is the infra
 
 ## Configuration
 
-Read `cloudstack.json` from the project root at the start of execution. Extract:
+Read `blueprint.json` from the project root at the start of execution. Extract:
 - `CHARTS_PATH` = `infrastructure.chartsPath` (default: `deploy/charts`)
 - `TF_PATH` = `infrastructure.terraformPath` (default: `infra/terraform/modules`)
 - `TG_PATH` = `infrastructure.terragruntPath` (default: `infra/terragrunt`)
@@ -23,7 +23,7 @@ Read `cloudstack.json` from the project root at the start of execution. Extract:
 - `IAC_WRAPPER` = `infrastructure.iacWrapper` (default: `none`)
 - `CLOUD` = `infrastructure.cloud` (default: `azure`)
 
-If `cloudstack.json` does not exist, auto-detect by scanning the project structure.
+If `blueprint.json` does not exist, auto-detect by scanning the project structure.
 
 ## Process
 

@@ -1,12 +1,12 @@
 {
   "name": "dev-workflow",
-  "description": "The workflow that ties the cloudstack reference architecture together — requirements, GitHub issues, branches, quality gates, parallel review agents, and pull requests, from idea to shippable change.",
+  "description": "The workflow that ties the cloud-app-blueprint reference architecture together — requirements, GitHub issues, branches, quality gates, parallel review agents, and pull requests, from idea to shippable change.",
   "version": "0.4.0",
   "author": {
     "name": "Marjan Gjuroski"
   },
   "license": "MIT",
-  "homepage": "https://github.com/makigjuro/cloudstack-ai-plugins#development-workflow",
-  "repository": "https://github.com/makigjuro/cloudstack-ai-plugins",
+  "homepage": "https://github.com/makigjuro/cloud-app-blueprint#development-workflow",
+  "repository": "https://github.com/makigjuro/cloud-app-blueprint",
   "keywords": ["workflow", "git", "ci-cd", "code-review", "testing", "documentation", "github"]
 }

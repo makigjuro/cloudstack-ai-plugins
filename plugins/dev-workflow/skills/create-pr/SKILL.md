@@ -12,13 +12,13 @@ Create a pull request for the current branch with a structured description.
 
 ## Configuration
 
-Read `cloudstack.json` from the project root at the start of execution. Extract relevant fields:
+Read `blueprint.json` from the project root at the start of execution. Extract relevant fields:
 - `SOLUTION` = `backend.solutionPath` (default: find `*.sln`)
 - `FRONTEND_PATH` = `frontend.path` (default: `web`)
 - `CHARTS_PATH` = `infrastructure.chartsPath` (default: `deploy/charts`)
 - `TF_PATH` = `infrastructure.terraformPath` (default: `infra/terraform/modules`)
 
-If `cloudstack.json` does not exist, auto-detect by scanning the project structure. The `gh` CLI infers the repository from the git remote -- no owner/repo configuration is needed.
+If `blueprint.json` does not exist, auto-detect by scanning the project structure. The `gh` CLI infers the repository from the git remote -- no owner/repo configuration is needed.
 
 ## Arguments
 

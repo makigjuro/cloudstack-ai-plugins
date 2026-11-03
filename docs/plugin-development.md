@@ -1,6 +1,6 @@
 # Plugin Development Guide
 
-How to extend the cloudstack reference architecture: add skills, convention skills and agents to an existing layer, or add a new plugin for a new layer. Each plugin owns one part of the architecture (backend, frontend, cloud, workflow). Keep new work inside the layer it belongs to and configurable through `cloudstack.json`.
+How to extend the cloud-app-blueprint reference architecture: add skills, convention skills and agents to an existing layer, or add a new plugin for a new layer. Each plugin owns one part of the architecture (backend, frontend, cloud, workflow). Keep new work inside the layer it belongs to and configurable through `blueprint.json`.
 
 ## Plugin Structure
 
@@ -90,10 +90,10 @@ Brief description of what this skill does and when to use it.
 
 ## Configuration
 
-Read `cloudstack.json` from the project root at the start of execution. Extract:
+Read `blueprint.json` from the project root at the start of execution. Extract:
 - `FIELD_1` = `section.field` (default: fallback value)
 
-If `cloudstack.json` does not exist, auto-detect by scanning the project structure.
+If `blueprint.json` does not exist, auto-detect by scanning the project structure.
 
 ## Process
 
@@ -112,18 +112,18 @@ Expected output format.
 
 ### Key Principles
 
-1. **Always read cloudstack.json first** — Extract project-specific values before doing anything
-2. **Auto-detect when config is missing** — Never fail just because cloudstack.json doesn't exist
+1. **Always read blueprint.json first** — Extract project-specific values before doing anything
+2. **Auto-detect when config is missing** — Never fail just because blueprint.json doesn't exist
 3. **Use generic examples** — Don't reference specific projects in instructions
 4. **Keep skills under 500 lines** — Extract reference material to bundled files if needed
 5. **Include error handling** — Cover common failure modes
 6. **Include a checklist** — Help verify the skill ran correctly
 
-### cloudstack.json Integration
+### blueprint.json Integration
 
 Every skill that needs project-specific values should:
 
-1. Read `cloudstack.json` from `$CLAUDE_PROJECT_DIR/cloudstack.json`
+1. Read `blueprint.json` from `$CLAUDE_PROJECT_DIR/blueprint.json`
 2. Extract only the fields it needs
 3. Have sensible defaults for every field
 4. Auto-detect from project structure when the config file is missing
@@ -133,7 +133,7 @@ Example preamble:
 ```markdown
 ## Configuration
 
-Read `cloudstack.json` from the project root. Extract:
+Read `blueprint.json` from the project root. Extract:
 - `SOLUTION` = `backend.solutionPath` (default: find `*.sln` in `src/`)
 - `SERVICES` = `backend.services[]` (default: discover from `src/*/` directories)
 ```

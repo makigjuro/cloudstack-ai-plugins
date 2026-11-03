@@ -37,7 +37,7 @@ Look for analogous implementations. If adding "alerts", check how similar featur
 
 ### 3. Identify Integration Points
 - **API endpoints:** Search for route registrations (MapGet, app.get, @GetMapping, etc.)
-- **Events/messaging:** Search for event publishers, message handlers, queue consumers. If the project defines a messaging subject prefix (`cloudstack.json` `backend.messagingConventions.subjectPrefix`, or detect one from publisher calls), grep for it to map the full subject hierarchy — the highest-signal probe in event-driven codebases
+- **Events/messaging:** Search for event publishers, message handlers, queue consumers. If the project defines a messaging subject prefix (`blueprint.json` `backend.messagingConventions.subjectPrefix`, or detect one from publisher calls), grep for it to map the full subject hierarchy — the highest-signal probe in event-driven codebases
 - **External services:** Database connections, HTTP clients, cache access, storage
 - **Domain events:** Search for event-driven patterns in the codebase
 

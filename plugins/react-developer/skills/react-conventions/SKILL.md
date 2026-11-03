@@ -11,7 +11,7 @@ paths:
 
 # React Frontend Rules
 
-These rules apply to React + TypeScript frontend code. Adapt paths based on the project's `cloudstack.json` `frontend.path` setting (default: `web`).
+These rules apply to React + TypeScript frontend code. Adapt paths based on the project's `blueprint.json` `frontend.path` setting (default: `web`).
 
 ## API Client
 

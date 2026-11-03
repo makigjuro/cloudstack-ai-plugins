@@ -16,7 +16,7 @@ Start the local development environment using the configured orchestrator.
 
 ## Configuration
 
-Read `cloudstack.json` from the project root at the start of execution. Extract:
+Read `blueprint.json` from the project root at the start of execution. Extract:
 - `FRONTEND_PATH` = `frontend.path` (default: `web`)
 - `FRONTEND_PORT` = `frontend.devPort` (default: `5173`)
 - `SOLUTION` = `backend.solutionPath` (default: first `*.sln` under `src/`)
@@ -34,7 +34,7 @@ Look for a project directory matching `*AppHost*` under `src/`. If found:
 **Option B -- Docker Compose:**
 If no AppHost project exists, look for `docker-compose.yml` or `docker-compose.yaml` in the repo root or `src/`.
 
-If `cloudstack.json` does not exist, auto-detect by scanning the project structure.
+If `blueprint.json` does not exist, auto-detect by scanning the project structure.
 
 ## Process
 

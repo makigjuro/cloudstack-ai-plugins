@@ -1,7 +1,7 @@
 # Deploy the React SPA (web/) to Azure Static Web Apps: dev -> staging -> prod.
 #
-# NOTE: this starter lives in examples/starter of the cloudstack-ai-plugins repo, so
-# GitHub never runs these workflows there. Paths are written as if examples/starter
+# NOTE: this starter lives in examples/dotnet-react-azure of the cloud-app-blueprint repo, so
+# GitHub never runs these workflows there. Paths are written as if examples/dotnet-react-azure
 # were the repository root: copy the starter out to use them as-is.
 # Generated shape: /cloud-infra:add-ci-pipeline
 #

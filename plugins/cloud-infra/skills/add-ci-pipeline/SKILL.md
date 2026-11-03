@@ -16,11 +16,11 @@ Generate workflows that enforce the architecture's deploy rules: immutable SHA t
 
 ## Reference implementation
 
-The canonical output is the starter's workflows: `examples/starter/.github/workflows/` in the cloudstack-ai-plugins repo (https://github.com/makigjuro/cloudstack-ai-plugins/tree/main/examples/starter/.github/workflows). Read the local copy if this is that repo; otherwise fetch the raw files. Reproduce them, changing only the project-specific values listed below. Their structure, step order and shell helpers are deliberate. If neither copy is reachable, write the workflows from the requirements in this file.
+The canonical output is the starter's workflows: `examples/dotnet-react-azure/.github/workflows/` in the cloud-app-blueprint repo (https://github.com/makigjuro/cloud-app-blueprint/tree/main/examples/dotnet-react-azure/.github/workflows). Read the local copy if this is that repo; otherwise fetch the raw files. Reproduce them, changing only the project-specific values listed below. Their structure, step order and shell helpers are deliberate. If neither copy is reachable, write the workflows from the requirements in this file.
 
 ## Configuration
 
-Read `cloudstack.json`. Stop if `infrastructure.cicd` is set to something other than `github-actions`. If `infrastructure.runtime` is `aks`, say that this scaffold targets Container Apps (an AKS pipeline would use Helm, see `/cloud-infra:add-helm-chart`) and stop.
+Read `blueprint.json`. Stop if `infrastructure.cicd` is set to something other than `github-actions`. If `infrastructure.runtime` is `aks`, say that this scaffold targets Container Apps (an AKS pipeline would use Helm, see `/cloud-infra:add-helm-chart`) and stop.
 
 Adapt the following, and read each value from the repo rather than assuming it:
 

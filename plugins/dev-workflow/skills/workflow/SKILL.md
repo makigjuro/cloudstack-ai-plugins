@@ -1,12 +1,12 @@
 ---
 name: workflow
-description: The end-to-end development workflow — requirements, planning, issue tracking, branching, implementation, verification, PR completion, docs, and diagnosis — and which skill or agent to use at each step. Apply when deciding what to do next on a feature, or which cloudstack skill fits the task.
+description: The end-to-end development workflow — requirements, planning, issue tracking, branching, implementation, verification, PR completion, docs, and diagnosis — and which skill or agent to use at each step. Apply when deciding what to do next on a feature, or which cloud-app-blueprint skill fits the task.
 user-invocable: false
 ---
 
 # Development Workflow
 
-This is the workflow that builds and ships the cloudstack reference architecture: from requirements to a reviewed PR, then to a deployed change. Each step has a corresponding skill.
+This is the workflow that builds and ships the cloud-app-blueprint reference architecture: from requirements to a reviewed PR, then to a deployed change. Each step has a corresponding skill.
 
 ## Workflow Overview
 

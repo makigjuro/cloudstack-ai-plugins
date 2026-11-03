@@ -111,10 +111,10 @@ jobs:
 
       - name: Validate JSON Schema
         run: |
-          echo "=== Validating cloudstack.schema.json ==="
+          echo "=== Validating blueprint.schema.json ==="
           python3 -c "
           import json
-          with open('schema/cloudstack.schema.json') as f:
+          with open('schema/blueprint.schema.json') as f:
               schema = json.load(f)
           assert '\$schema' in schema, 'Missing \$schema reference'
           assert 'properties' in schema, 'Missing properties'
@@ -124,15 +124,15 @@ jobs:
       - name: Install jsonschema
         run: pip install jsonschema
 
-      - name: Validate template cloudstack.json against schema
+      - name: Validate template blueprint.json against schema
         run: |
-          echo "=== Validating templates/cloudstack.json against schema ==="
+          echo "=== Validating templates/blueprint.json against schema ==="
           python3 -c "
           import json
           from jsonschema import validate, ValidationError
-          with open('schema/cloudstack.schema.json') as f:
+          with open('schema/blueprint.schema.json') as f:
               schema = json.load(f)
-          with open('templates/cloudstack.json') as f:
+          with open('templates/blueprint.json') as f:
               config = json.load(f)
           try:
               validate(instance=config, schema=schema)

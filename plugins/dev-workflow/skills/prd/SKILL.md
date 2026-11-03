@@ -12,10 +12,10 @@ Create a detailed, engineer-focused Product Requirements Document through struct
 
 ## Configuration
 
-Read `cloudstack.json` from the project root at the start of execution. Extract relevant fields:
+Read `blueprint.json` from the project root at the start of execution. Extract relevant fields:
 - `SERVICES` = `backend.services[]` (default: discover from project structure)
 
-If `cloudstack.json` does not exist, auto-detect by scanning the project structure.
+If `blueprint.json` does not exist, auto-detect by scanning the project structure.
 
 ## Arguments
 
@@ -146,7 +146,7 @@ Create the PRD file at `docs/prd/{feature-slug}.md`:
 ## 6. Technical Considerations
 
 ### Affected Services
-{List services from cloudstack.json or discovered services, with checkboxes for each}
+{List services from blueprint.json or discovered services, with checkboxes for each}
 
 ### Data Model Changes
 {New entities, modified entities, migrations needed}

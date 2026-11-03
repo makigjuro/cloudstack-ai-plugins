@@ -12,10 +12,10 @@ When the user describes a feature they want to build, produce a structured featu
 
 ## Configuration
 
-Read `cloudstack.json` from the project root at the start of execution. Extract relevant fields:
+Read `blueprint.json` from the project root at the start of execution. Extract relevant fields:
 - `SERVICES` = `backend.services[]` (default: discover from project structure)
 
-If `cloudstack.json` does not exist, auto-detect by scanning the project structure.
+If `blueprint.json` does not exist, auto-detect by scanning the project structure.
 
 ## Process
 
@@ -36,7 +36,7 @@ Start in plan mode (`EnterPlanMode`): explore the codebase and clarify scope bef
 One-paragraph description of the feature and the problem it solves.
 
 ## Affected Services
-{List services from cloudstack.json or discovered from project structure, with checkboxes for each affected one}
+{List services from blueprint.json or discovered from project structure, with checkboxes for each affected one}
 
 ## Acceptance Criteria
 - [ ] AC1: ...

@@ -1,7 +1,7 @@
 # Terraform-native rollout of one environment, called by deploy.yml.
 #
-# NOTE: this starter lives in examples/starter of the cloudstack-ai-plugins repo, so
-# GitHub never runs these workflows there. Paths are written as if examples/starter
+# NOTE: this starter lives in examples/dotnet-react-azure of the cloud-app-blueprint repo, so
+# GitHub never runs these workflows there. Paths are written as if examples/dotnet-react-azure
 # were the repository root: copy the starter out to use them as-is.
 # Generated shape: /cloud-infra:add-ci-pipeline (same sequence as /cloud-infra:deploy)
 #
@@ -55,7 +55,7 @@ jobs:
       LOCATION_SHORT: weu
       TERRAGRUNT_VERSION: "0.93.13"
       TG_DIR: infra/terragrunt/${{ inputs.environment }}
-      # Units, from cloudstack.json infrastructure.containerApps.
+      # Units, from blueprint.json infrastructure.containerApps.
       # migrationJobs values first, then apps with the gateway LAST.
       MIGRATION_UNITS: orders-migrate
       APP_UNITS: orders gateway

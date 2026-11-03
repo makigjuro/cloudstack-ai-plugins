@@ -1,8 +1,8 @@
 # Build web/ for one environment and upload it to that environment's Static Web App.
 # Called by deploy-web.yml.
 #
-# NOTE: this starter lives in examples/starter of the cloudstack-ai-plugins repo, so
-# GitHub never runs these workflows there. Paths are written as if examples/starter
+# NOTE: this starter lives in examples/dotnet-react-azure of the cloud-app-blueprint repo, so
+# GitHub never runs these workflows there. Paths are written as if examples/dotnet-react-azure
 # were the repository root: copy the starter out to use them as-is.
 
 name: Deploy web (reusable)

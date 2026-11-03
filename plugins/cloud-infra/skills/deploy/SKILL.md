@@ -19,7 +19,7 @@ Roll new images out to one environment without letting Terraform state drift. Im
 
 ## Configuration
 
-Read `cloudstack.json`:
+Read `blueprint.json`:
 - `RUNTIME` = `infrastructure.runtime`. If it is `aks`, stop and say this skill targets Container Apps (use Helm/your cluster pipeline). If it is `none`, stop.
 - `TG_PATH`, `UNITS_PATH` = `infrastructure.containerApps.appUnitsPath` (default `infra/terragrunt/{env}`)
 - `GATEWAY` = `containerApps.gatewayApp` (default `gateway`), `ENVS` = `containerApps.environments`

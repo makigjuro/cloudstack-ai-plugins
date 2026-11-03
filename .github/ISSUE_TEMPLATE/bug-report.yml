@@ -40,10 +40,10 @@ body:
       required: true
 
   - type: textarea
-    id: cloudstack-json
+    id: blueprint-json
     attributes:
-      label: cloudstack.json (if applicable)
-      description: Paste your cloudstack.json (remove any secrets first)
+      label: blueprint.json (if applicable)
+      description: Paste your blueprint.json (remove any secrets first)
       render: json
 
   - type: input

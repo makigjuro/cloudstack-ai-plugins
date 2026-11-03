@@ -47,7 +47,7 @@ terraform fmt -check -recursive infra
 
 ## Plugins
 
-This project uses [cloudstack-ai-plugins](https://github.com/makigjuro/cloudstack-ai-plugins). Configuration is in `cloudstack.json` at the project root.
+This project uses [cloud-app-blueprint](https://github.com/makigjuro/cloud-app-blueprint). Configuration is in `blueprint.json` at the project root.
 
 Available skills:
 - `/dotnet-architect:add-entity` — Scaffold domain entities

@@ -17,7 +17,7 @@ Verify that the implementation on the current branch satisfies the requirements 
 
 ## Configuration
 
-Auto-detect the GitHub repository from `git remote -v` (extract owner and repo name). If `cloudstack.json` sets `repository.owner` / `repository.name`, use them as a fallback.
+Auto-detect the GitHub repository from `git remote -v` (extract owner and repo name). If `blueprint.json` sets `repository.owner` / `repository.name`, use them as a fallback.
 
 ## Process
 

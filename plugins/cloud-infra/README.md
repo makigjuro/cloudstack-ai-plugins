@@ -1,9 +1,9 @@
 # cloud-infra
 
-**The cloud layer of the [cloudstack reference architecture](../../README.md).** It provisions the app on Azure Container Apps with Terraform/Terragrunt, with AKS + Helm as an alternative. You see the plan before anything is applied.
+**The cloud layer of the [cloud-app-blueprint reference architecture](../../README.md).** It provisions the app on Azure Container Apps with Terraform/Terragrunt, with AKS + Helm as an alternative. You see the plan before anything is applied.
 
 ```
-/plugin install cloud-infra@cloudstack-ai-plugins
+/plugin install cloud-infra@cloud-app-blueprint
 ```
 
 ## The architecture it targets
@@ -20,7 +20,7 @@
 - **AKS + Helm (alternative):** one chart per service, with the release namespace, standard labels and resource limits.
 - **Security and review:** every change is linted, scanned with trivy and reviewed. Apply runs only on the plan you reviewed.
 
-The runtime comes from `infrastructure.runtime` in `cloudstack.json`: `container-apps` (default) or `aks`. Lint, review and the doctor check adapt to it.
+The runtime comes from `infrastructure.runtime` in `blueprint.json`: `container-apps` (default) or `aks`. Lint, review and the doctor check adapt to it.
 
 The cloud topology diagram is in [docs/architecture.md](../../docs/architecture.md#cloud-infrastructure).
 
@@ -64,7 +64,7 @@ The cloud topology diagram is in [docs/architecture.md](../../docs/architecture.
 | Key | Default | Notes |
 |---|---|---|
 | `infrastructure.runtime` | `container-apps` | `container-apps` or `aks` |
-| `infrastructure.containerApps` | see the [reference](../../docs/cloudstack-json-reference.md) | Units path, gateway app, migration jobs, environments |
+| `infrastructure.containerApps` | see the [reference](../../docs/blueprint-json-reference.md) | Units path, gateway app, migration jobs, environments |
 | `infrastructure.terraformPath` | `infra/terraform/modules` | Terraform modules |
 | `infrastructure.terragruntPath` | `infra/terragrunt` | per-environment configs |
 | `infrastructure.chartsPath` | `deploy/charts` | Helm charts (AKS runtime) |

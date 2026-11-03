@@ -1,6 +1,6 @@
 # Reference Architecture
 
-This is the reference architecture for a cloud web app that the cloudstack plugins build, enforce and ship: hexagonal .NET services, a React frontend, and Terraform on Azure Container Apps (AKS + Helm as an alternative). Every skill, convention skill and agent in the marketplace exists to scaffold, check or review one part of it, so this page is also the map of what the plugins do.
+This is the reference architecture for a cloud web app that the cloud-app-blueprint plugins build, enforce and ship: hexagonal .NET services, a React frontend, and Terraform on Azure Container Apps (AKS + Helm as an alternative). Every skill, convention skill and agent in the marketplace exists to scaffold, check or review one part of it, so this page is also the map of what the plugins do.
 
 ## Overview
 
@@ -264,12 +264,12 @@ web/src/
 
 The default runtime is **Azure Container Apps (ACA)**: serverless containers with revisions, scale-to-zero and managed ingress, without running a Kubernetes cluster. Terraform/Terragrunt provisions everything; CI builds immutable images and rolls each service to a new revision. **AKS + Helm** is supported as an alternative runtime.
 
-Set the runtime with `infrastructure.runtime` in `cloudstack.json` (`container-apps` by default, or `aks`). On Container Apps:
+Set the runtime with `infrastructure.runtime` in `blueprint.json` (`container-apps` by default, or `aks`). On Container Apps:
 - `/cloud-infra:add-container-app` scaffolds a service and `/cloud-infra:add-container-app-job` a migration job.
 - `/cloud-infra:deploy` rolls out a SHA-tagged release (migrations, then apps, then smoke test, with rollback).
 - `/cloud-infra:add-ci-pipeline` writes the GitHub Actions workflows.
 
-The deploy flow has been validated offline against [the starter](../examples/starter/), not yet against a live subscription.
+The deploy flow has been validated offline against [the starter](../examples/dotnet-react-azure/), not yet against a live subscription.
 
 ```mermaid
 graph TB

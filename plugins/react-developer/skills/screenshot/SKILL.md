@@ -18,15 +18,15 @@ Capture a screenshot of a URL or route. Nothing else — no tables, no analysis,
 
 ## Configuration
 
-Read `cloudstack.json` from the project root at the start of execution. Extract:
+Read `blueprint.json` from the project root at the start of execution. Extract:
 - `FRONTEND_PATH` = `frontend.path` (default: `web`)
 - `DEV_PORT` = `frontend.devPort` (default: `5173`)
 
-If `cloudstack.json` does not exist, auto-detect by checking `package.json` dependencies.
+If `blueprint.json` does not exist, auto-detect by checking `package.json` dependencies.
 
 ### Auth Configuration
 
-Check `cloudstack.json` for `localDev.authConfig`:
+Check `blueprint.json` for `localDev.authConfig`:
 
 ```json
 {
@@ -63,7 +63,7 @@ Skip this step if `--no-auth` is passed or the URL is not on `localhost:{DEV_POR
 
 Navigate to `http://localhost:{DEV_PORT}` first to establish the origin, then inject auth via localStorage.
 
-If `localDev.authConfig` is defined in `cloudstack.json`, use that directly:
+If `localDev.authConfig` is defined in `blueprint.json`, use that directly:
 ```javascript
 localStorage.setItem('{storageKey}', JSON.stringify({authConfig.state}))
 ```

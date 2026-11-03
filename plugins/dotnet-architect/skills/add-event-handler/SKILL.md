@@ -17,14 +17,14 @@ When the user asks to add an event handler, scaffold a WolverineFx handler for a
 
 ## Configuration
 
-Read `cloudstack.json` from the project root at the start of execution. Extract:
+Read `blueprint.json` from the project root at the start of execution. Extract:
 - `NAMESPACE` = `project.namespace` (default: detect from `*.sln` name or first `*.csproj` root namespace)
 - `DOMAIN_PATH` = `backend.sharedDomainPath` (default: find directory matching `**/Domain/` containing `Entities/`)
 - `SERVICES` = `backend.services[]` (default: discover from `src/*/` directories containing `.Application/` subfolders)
 - `PUBLISHER_INTERFACE` = `backend.messagingConventions.publisherInterface` (default: `IMessagePublisher` — but grep the codebase for the actual publisher abstraction first; projects often name it after their broker, e.g. `INatsPublisher`)
 - `SUBJECT_PREFIX` = `backend.messagingConventions.subjectPrefix` (used to build subject/topic names consistent with the project's hierarchy)
 
-If `cloudstack.json` does not exist, auto-detect by scanning the project structure.
+If `blueprint.json` does not exist, auto-detect by scanning the project structure.
 
 ## 1. Find the Event
 

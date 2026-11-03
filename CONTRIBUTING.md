@@ -1,12 +1,12 @@
-# Contributing to cloudstack-ai-plugins
+# Contributing to cloud-app-blueprint
 
-Thanks for your interest! cloudstack-ai-plugins is a reference architecture for cloud web apps plus the Claude Code workflow that builds and ships it. Good contributions make one of those stronger: a skill that scaffolds or checks part of the architecture, a convention that keeps a layer consistent, an agent that reviews it, or a whole new layer (another cloud, another frontend).
+Thanks for your interest! cloud-app-blueprint is a reference architecture for cloud web apps plus the Claude Code workflow that builds and ships it. Good contributions make one of those stronger: a skill that scaffolds or checks part of the architecture, a convention that keeps a layer consistent, an agent that reviews it, or a whole new layer (another cloud, another frontend).
 
 ## Quick ways to contribute
 
-- **Report bugs** -- [Open an issue](https://github.com/makigjuro/cloudstack-ai-plugins/issues/new?template=bug-report.yml)
-- **Request features** -- [Open an issue](https://github.com/makigjuro/cloudstack-ai-plugins/issues/new?template=feature-request.yml)
-- **Ask questions** -- [Start a discussion](https://github.com/makigjuro/cloudstack-ai-plugins/discussions)
+- **Report bugs** -- [Open an issue](https://github.com/makigjuro/cloud-app-blueprint/issues/new?template=bug-report.yml)
+- **Request features** -- [Open an issue](https://github.com/makigjuro/cloud-app-blueprint/issues/new?template=feature-request.yml)
+- **Ask questions** -- [Start a discussion](https://github.com/makigjuro/cloud-app-blueprint/discussions)
 - **Star the repo** -- Helps others discover it
 
 ## Adding a new skill
@@ -15,7 +15,7 @@ Thanks for your interest! cloudstack-ai-plugins is a reference architecture for 
 2. Pick the plugin it belongs to (or create a new one)
 3. Create `plugins/<plugin>/skills/<skill-name>/SKILL.md` with:
    - YAML frontmatter (`name`, `description`, `allowed-tools`, `user-invocable: true`)
-   - Configuration section reading from `cloudstack.json`
+   - Configuration section reading from `blueprint.json`
    - Step-by-step instructions
    - Error handling and output format
 4. Run `claude plugin validate ./plugins/<plugin>` to check structure
@@ -64,8 +64,8 @@ Claude Code does not load a `rules/` directory from plugins, so coding conventio
 
 ## Guidelines
 
-- **No project-specific references** -- Skills must be generic, configured via `cloudstack.json`
-- **Auto-detect when config is missing** -- Never fail just because `cloudstack.json` doesn't exist
+- **No project-specific references** -- Skills must be generic, configured via `blueprint.json`
+- **Auto-detect when config is missing** -- Never fail just because `blueprint.json` doesn't exist
 - **Keep skills under 500 lines** -- Extract reference material to bundled files
 - **Include error handling** -- Cover common failure modes
 - **Test locally** -- `claude --plugin-dir ./plugins/<plugin>` before submitting

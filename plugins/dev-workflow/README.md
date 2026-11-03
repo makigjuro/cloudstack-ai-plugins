@@ -1,9 +1,9 @@
 # dev-workflow
 
-**The workflow layer of the [cloudstack reference architecture](../../README.md).** It moves a feature from idea to a shippable pull request and runs the backend, frontend and infra plugins' checks at the right moments.
+**The workflow layer of the [cloud-app-blueprint reference architecture](../../README.md).** It moves a feature from idea to a shippable pull request and runs the backend, frontend and infra plugins' checks at the right moments.
 
 ```
-/plugin install dev-workflow@cloudstack-ai-plugins
+/plugin install dev-workflow@cloud-app-blueprint
 ```
 
 ## The flow
@@ -46,7 +46,7 @@ Without them, it still handles tests, review, acceptance criteria and the PR.
 
 ## Configuration
 
-Run `/dev-workflow:init` to generate `cloudstack.json` from your project layout. The fields this plugin uses most are:
+Run `/dev-workflow:init` to generate `blueprint.json` from your project layout. The fields this plugin uses most are:
 - `backend.solutionPath`
 - `backend.services[]` (with `aliases`/`testProjects` for test resolution)
 - `frontend.path`
@@ -54,6 +54,6 @@ Run `/dev-workflow:init` to generate `cloudstack.json` from your project layout.
 - `conventions.branchFormat` / `commitStyle`
 - `validators.mcpServer`
 
-Without the file, the plugin auto-detects. See the [cloudstack.json reference](../../docs/cloudstack-json-reference.md).
+Without the file, the plugin auto-detects. See the [blueprint.json reference](../../docs/blueprint-json-reference.md).
 
 **MCP servers:** context7 (library docs) is bundled. Mermaid Chart and `github-mcp-server` are used when available. GitHub operations default to the `gh` CLI.

@@ -25,7 +25,7 @@ If no argument given, detect what's changed since last docs update and suggest w
 
 ## Configuration
 
-Read `cloudstack.json` from the project root at the start of execution. Extract:
+Read `blueprint.json` from the project root at the start of execution. Extract:
 - `NAMESPACE` = `project.namespace`
 - `SOLUTION` = `backend.solutionPath`
 - `SERVICES` = `backend.services[]`
@@ -33,7 +33,7 @@ Read `cloudstack.json` from the project root at the start of execution. Extract:
 - `CHARTS_PATH` = `infrastructure.chartsPath` (default: `deploy/charts`)
 - `TERRAFORM_PATH` = `infrastructure.terraformPath`
 
-If `cloudstack.json` does not exist, auto-detect by scanning the project structure.
+If `blueprint.json` does not exist, auto-detect by scanning the project structure.
 
 ## Process
 

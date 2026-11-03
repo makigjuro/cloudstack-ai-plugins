@@ -7,7 +7,7 @@ set -euo pipefail
 # Require jq for parsing hook input
 if ! command -v jq &>/dev/null; then
   # stdout JSON systemMessage is shown to the user; stderr on exit 0 is not
-  echo '{"systemMessage":"cloudstack dev-workflow: jq is not installed, so pre-commit lint was skipped. Install it: brew install jq (macOS) or apt install jq (Linux)."}'
+  echo '{"systemMessage":"cloud-app-blueprint dev-workflow: jq is not installed, so pre-commit lint was skipped. Install it: brew install jq (macOS) or apt install jq (Linux)."}'
   exit 0
 fi
 
@@ -20,12 +20,15 @@ if [[ "$COMMAND" != *"git commit"* ]]; then
 fi
 
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}"
+# blueprint.json, or the pre-0.4 name cloudstack.json.
+CONFIG="$PROJECT_DIR/blueprint.json"
+[[ -f "$CONFIG" ]] || CONFIG="$PROJECT_DIR/cloudstack.json"
 ERRORS=()
 
-# Auto-detect solution path: cloudstack.json > find *.sln
+# Auto-detect solution path: blueprint.json > find *.sln
 resolve_sln() {
   local sln
-  sln=$(jq -r '.backend.solutionPath // empty' "$PROJECT_DIR/cloudstack.json" 2>/dev/null)
+  sln=$(jq -r '.backend.solutionPath // empty' "$CONFIG" 2>/dev/null)
   if [[ -z "$sln" ]]; then
     sln=$(find "$PROJECT_DIR/src" -name "*.sln" -maxdepth 2 2>/dev/null | head -1)
   fi
@@ -35,10 +38,10 @@ resolve_sln() {
   echo "$sln"
 }
 
-# Auto-detect frontend path: cloudstack.json > common locations
+# Auto-detect frontend path: blueprint.json > common locations
 resolve_frontend() {
   local fe
-  fe=$(jq -r '.frontend.path // empty' "$PROJECT_DIR/cloudstack.json" 2>/dev/null)
+  fe=$(jq -r '.frontend.path // empty' "$CONFIG" 2>/dev/null)
   if [[ -z "$fe" ]]; then
     for candidate in "$PROJECT_DIR/web" "$PROJECT_DIR/frontend" "$PROJECT_DIR/client" "$PROJECT_DIR/app"; do
       if [[ -f "$candidate/package.json" ]]; then
