@@ -6,7 +6,7 @@ A small, complete app built on the [cloudstack reference architecture](../../doc
 - a React frontend
 - Terraform/Terragrunt for Azure Container Apps
 
-Copy it to start a new project, or read it to see what each skill produces.
+Start a new project from it with `/dev-workflow:new-project <Name>`, or read it to see what each skill produces.
 
 ## What's inside
 
@@ -75,7 +75,7 @@ With the plugins installed, `/cloud-infra:deploy dev` previews a release and `--
 - `deploy.yml`: deploys to dev on merge, then promotes to staging and prod behind environment approvals.
 - `deploy-web.yml`: deploys the frontend to Static Web Apps.
 
-The workflows are written as if `examples/starter` were the repo root, so copy the starter out before using them.
+The workflows are written as if `examples/starter` were the repo root. They run as-is in a project made with `/dev-workflow:new-project`.
 
 ## Use it with the plugins
 

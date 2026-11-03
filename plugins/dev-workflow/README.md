@@ -14,7 +14,7 @@
 | Build | `/dev-workflow:start-work 42` branches from the issue and starts implementing |
 | Verify | `/dev-workflow:run-tests` (only affected test projects), `/dev-workflow:lint`, `/dev-workflow:run-local` (Aspire or Docker Compose) |
 | Ship | `/dev-workflow:complete-task` builds, lints, tests, runs parallel review agents, fixes issues (max 3 rounds) and opens the PR |
-| Support | `/dev-workflow:code-review`, `/dev-workflow:task-check`, `/dev-workflow:create-pr`, `/dev-workflow:docs`, `/dev-workflow:diagnose`, `/dev-workflow:init`, `/dev-workflow:doctor` (checks prerequisites) |
+| Support | `/dev-workflow:code-review`, `/dev-workflow:task-check`, `/dev-workflow:create-pr`, `/dev-workflow:docs`, `/dev-workflow:diagnose`, `/dev-workflow:init`, `/dev-workflow:doctor` (checks prerequisites), `/dev-workflow:new-project` (new repo from the starter) |
 
 `complete-task` checks only what changed and uses whichever other plugins are installed:
 - With dotnet-architect: .NET build, migrations check, architecture review.
