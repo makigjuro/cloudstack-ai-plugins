@@ -69,6 +69,15 @@ find . -name "terragrunt.hcl" -maxdepth 4 2>/dev/null | head -1
 # Helm charts
 find . -name "Chart.yaml" -maxdepth 4 2>/dev/null
 
+# Runtime: Container Apps resources/modules, AKS clusters
+grep -rlE 'azurerm_container_app"|azurerm_container_app_job"' --include="*.tf" . 2>/dev/null | head -5
+grep -rlE 'azurerm_kubernetes_cluster"' --include="*.tf" . 2>/dev/null | head -1
+find . -path "*/terragrunt/*" -name "terragrunt.hcl" -not -path "*/.terragrunt-cache/*" 2>/dev/null
+
+# Frontend hosting
+find . -name "staticwebapp.config.json" -not -path "*/node_modules/*" 2>/dev/null | head -1
+grep -rl 'azurerm_static_web_app"' --include="*.tf" . 2>/dev/null | head -1
+
 # Docker Compose
 find . -name "docker-compose*.yml" -o -name "docker-compose*.yaml" -maxdepth 3 2>/dev/null
 
@@ -92,6 +101,7 @@ Use AskUserQuestion for anything that can't be auto-detected:
 - **No namespace detectable** -- Ask for the root C# namespace
 - **Multiple frontend directories** -- Ask which is the main one
 - **Cloud provider unclear** -- Ask Azure vs AWS vs GCP
+- **Both Container Apps and AKS/Helm found** -- Ask which runtime is primary
 
 Keep questions to a minimum. If a value is clearly detectable, don't ask.
 
@@ -104,7 +114,11 @@ Build the configuration object from detected values. Include:
 - `repository` -- owner/name (from git remote)
 - `backend` -- solutionPath, sharedDomainPath, sharedInfraPath, services[], orm, messaging
 - `frontend` -- path, framework, stateManagement, uiLibrary, bundler, devPort
-- `infrastructure` -- cloud, iac, iacWrapper, terraformPath, chartsPath, namespace
+- `infrastructure` -- cloud, iac, iacWrapper, terraformPath, terragruntPath, runtime, frontendHosting, plus:
+  - `runtime` -- `container-apps` when `azurerm_container_app` resources, `container-app*` modules, or per-app Terragrunt units exist; `aks` when `deploy/charts` (any `Chart.yaml`) or an `azurerm_kubernetes_cluster` module exists; otherwise `none`
+  - `frontendHosting` -- `static-web-app` when `staticwebapp.config.json` or `azurerm_static_web_app` exists; `container-app` when the frontend has its own Container App unit
+  - `containerApps` (runtime `container-apps`) -- `appUnitsPath` from the unit directory layout (e.g. `infra/terragrunt/{env}`), `environments` from the env directories, `gatewayApp` from the unit whose inputs set `ingress_external = true`, `migrationJobs` from units sourcing a `container-app-job` module, keyed by the service they migrate
+  - `chartsPath`, `namespace` (runtime `aks`)
 - `localDev` -- orchestrator, appHostPath or composePath
 - `conventions` -- branchFormat (detect from existing branches), commitStyle
 
@@ -133,7 +147,7 @@ Created `cloudstack.json` with:
 |--------|-----|---------|
 | dotnet-architect | {N} .NET services detected | `/plugin install dotnet-architect@cloudstack-ai-plugins` |
 | react-developer | React frontend at `{path}/` | `/plugin install react-developer@cloudstack-ai-plugins` |
-| cloud-infra | Terraform + Helm detected | `/plugin install cloud-infra@cloudstack-ai-plugins` |
+| cloud-infra | Terraform + {Container Apps \| AKS/Helm} detected | `/plugin install cloud-infra@cloudstack-ai-plugins` |
 | dev-workflow | Git workflow + CI/CD | `/plugin install dev-workflow@cloudstack-ai-plugins` |
 
 ### Next steps:

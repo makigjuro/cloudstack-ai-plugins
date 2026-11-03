@@ -88,7 +88,7 @@ Search for `Result.Failure` calls and verify:
 ## 7. Endpoint Conventions
 
 Check endpoints have:
-- `.WithName()`, `.WithSummary()`, `.WithOpenApi()`
+- `.WithName()`, `.WithSummary()`, `.WithDescription()` -- and no `.WithOpenApi()` (deprecated in .NET 10; flag it as a FAIL)
 - `.Produces<T>()` and `.ProducesProblem()` declarations
 - Result-to-HTTP conversion via `.ToHttpResult()`
 

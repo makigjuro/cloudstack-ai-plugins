@@ -63,7 +63,15 @@ Check that the backend matches the architecture:
 
 For an infra-only branch, `/cloud-infra:complete-infra` runs lint, scan and review, then opens the PR.
 
-The target runtime is Azure Container Apps. A one-command app deploy is in progress ([#4](https://github.com/makigjuro/cloudstack-ai-plugins/issues/4)): build SHA-tagged images, run migrations as a job, roll a new revision and smoke-test it.
+On Azure Container Apps (the default runtime), ship the application with one command:
+
+```
+/cloud-infra:deploy dev            # preview: images, plan, what will change
+/cloud-infra:deploy dev --apply    # build + push, migrate, roll out, smoke test, roll back on failure
+/cloud-infra:deploy staging --apply  # promote the same image, never rebuild
+```
+
+To run this from GitHub instead, `/cloud-infra:add-ci-pipeline` writes the workflows. They deploy to dev on merge and promote to staging/prod behind environment approvals, with OIDC and no stored credentials.
 
 ## Cost and speed
 

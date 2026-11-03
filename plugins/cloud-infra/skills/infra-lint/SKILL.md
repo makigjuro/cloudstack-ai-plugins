@@ -1,6 +1,6 @@
 ---
 name: infra-lint
-description: Lint Terraform, Terragrunt, and Helm charts only — skips application and frontend checks. Use for infrastructure-only changes when /lint would be overkill.
+description: Lint Terraform, Terragrunt (Container Apps), and Helm charts (AKS) only — skips application and frontend checks. Use for infrastructure-only changes when /lint would be overkill.
 allowed-tools: Bash
 user-invocable: true
 ---
@@ -15,7 +15,7 @@ Fast lint for infrastructure files only. Skips application and frontend checks.
 - `terraform` — Only lint Terraform/Terragrunt
 - `helm` — Only lint Helm charts
 
-If no argument, lint both Terraform and Helm.
+If no argument, lint Terraform/Terragrunt, plus Helm when it applies (see below).
 
 ## Configuration
 
@@ -24,6 +24,10 @@ Read `cloudstack.json` from the project root at the start of execution. Extract:
 - `TF_PATH` = `infrastructure.terraformPath` (default: `infra/terraform/modules`)
 - `TG_PATH` = `infrastructure.terragruntPath` (default: `infra/terragrunt`)
 - `IAC_WRAPPER` = `infrastructure.iacWrapper` (default: `none`)
+- `RUNTIME` = `infrastructure.runtime` (default: `container-apps`)
+- `ENVIRONMENTS` = `infrastructure.containerApps.environments` (default: `dev staging prod`)
+
+Helm linting runs only when `RUNTIME` = `aks` or `{CHARTS_PATH}/` exists; otherwise report it as SKIPPED.
 
 If `cloudstack.json` does not exist, auto-detect by scanning the project structure. Derive `TF_PARENT` as the parent directory of `TF_PATH` (e.g., if `TF_PATH` is `infra/terraform/modules`, `TF_PARENT` is `infra/terraform`).
 
@@ -48,12 +52,18 @@ for dir in $(find {TF_PATH} -name "*.tf" -exec dirname {} \; | sort -u); do
 done
 ```
 
-**Terragrunt validate (only if `IAC_WRAPPER` = `terragrunt`):**
+**Terragrunt format + validate (only if `IAC_WRAPPER` = `terragrunt`):**
 ```bash
-find {TG_PATH} -name "terragrunt.hcl" -execdir terragrunt validate \;
+(cd {TG_PATH} && terragrunt hcl format --check)   # drop --check with --fix
+for env in {ENVIRONMENTS}; do
+  [ -d "{TG_PATH}/$env" ] || continue
+  echo "=== Validating $env ==="
+  (cd "{TG_PATH}/$env" && IMAGE_TAG="${IMAGE_TAG:-0000000}" terragrunt run --all validate --provider-cache)
+done
 ```
+Without Azure credentials, units fall back to `mock_outputs`; the placeholder `IMAGE_TAG` only satisfies the required image-tag input and is never applied.
 
-## Helm Charts
+## Helm Charts (runtime `aks` or charts present)
 
 **Lint all charts:**
 ```bash
@@ -64,7 +74,7 @@ for chart in {CHARTS_PATH}/*/; do
 done
 ```
 
-If `{CHARTS_PATH}/` doesn't exist, skip Helm linting and note it.
+If `RUNTIME` is not `aks` and `{CHARTS_PATH}/` doesn't exist, skip Helm linting and note it.
 
 ## Security Scan
 
@@ -84,8 +94,8 @@ Report pass/fail per category:
 ```
 - Terraform Format: PASS/FAIL
 - Terraform Validate: PASS/FAIL
-- Terragrunt Validate: PASS/FAIL (or SKIPPED if IAC_WRAPPER != terragrunt)
-- Helm Lint: PASS/FAIL (or SKIPPED)
+- Terragrunt Format + Validate: PASS/FAIL (or SKIPPED if IAC_WRAPPER != terragrunt)
+- Helm Lint: PASS/FAIL (or SKIPPED — runtime not aks, no charts)
 - Helm Template: PASS/FAIL (or SKIPPED)
 - Security Scan (trivy): PASS/FAIL (FAIL with install hint if trivy is missing)
 ```

@@ -1,0 +1,92 @@
+# Build web/ for one environment and upload it to that environment's Static Web App.
+# Called by deploy-web.yml.
+#
+# NOTE: this starter lives in examples/starter of the cloudstack-ai-plugins repo, so
+# GitHub never runs these workflows there. Paths are written as if examples/starter
+# were the repository root: copy the starter out to use them as-is.
+
+name: Deploy web (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: Target environment (dev, staging, prod)
+        type: string
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  deploy:
+    name: Deploy web ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    concurrency:
+      group: deploy-web-${{ inputs.environment }}
+      cancel-in-progress: false
+    env:
+      # Names follow {project}-{resource}-{env}-{location_short} (infra/README.md).
+      RG: starter-rg-${{ inputs.environment }}-weu
+      SWA: starter-swa-${{ inputs.environment }}-weu
+      GATEWAY_APP: starter-ca-gateway-${{ inputs.environment }}-weu
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Resolve gateway URL and deployment token
+        id: azure
+        run: |
+          fqdn=$(az containerapp show -g "$RG" -n "$GATEWAY_APP" \
+            --query properties.configuration.ingress.fqdn -o tsv)
+          [ -n "$fqdn" ] || { echo "::error::$GATEWAY_APP has no ingress FQDN; deploy the backend first."; exit 1; }
+          echo "api_base_url=https://$fqdn" >> "$GITHUB_OUTPUT"
+          token=$(az staticwebapp secrets list -n "$SWA" -g "$RG" --query properties.apiKey -o tsv)
+          echo "::add-mask::$token"
+          echo "token=$token" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Build
+        working-directory: web
+        env:
+          VITE_API_BASE_URL: ${{ steps.azure.outputs.api_base_url }}
+        run: |
+          npm ci
+          npm run build
+          # Routing/headers config must sit next to the uploaded files.
+          cp staticwebapp.config.json dist/
+
+      - name: Upload to Static Web Apps
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ steps.azure.outputs.token }}
+          action: upload
+          app_location: web/dist
+          skip_app_build: true
+          skip_api_build: true
+
+      - name: Smoke test
+        run: |
+          host=$(az staticwebapp show -n "$SWA" -g "$RG" --query defaultHostname -o tsv)
+          for _ in $(seq 1 12); do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 "https://$host/" || echo 000)
+            [ "$code" = 200 ] && { echo "OK https://$host/"; exit 0; }
+            sleep 5
+          done
+          echo "::error::https://$host/ returned $code"; exit 1

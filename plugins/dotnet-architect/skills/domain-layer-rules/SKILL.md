@@ -10,7 +10,8 @@ paths:
 
 ## Zero External Dependencies
 - No references to Infrastructure, Host, EF Core, ASP.NET, or any framework
-- Only pure C# and domain abstractions
+- Only pure C# and domain abstractions -- the Domain csproj has no package or project references
+- `Result`/`Error` are NOT in Domain; they live in the shared infrastructure project (`Shared.Infrastructure/Results/`) and are used by Application handlers
 
 ## Entities
 - Inherit from `Entity<TId>` where `TId` is a strongly-typed value object
@@ -21,6 +22,7 @@ paths:
 ## Aggregate Roots
 - Inherit from `AggregateRoot<TId>` which extends `Entity<TId>`
 - Use static factory methods for creation: `public static Order Create(TenantId tenantId, string description, ...)`
+- Factories guard invariants with `ArgumentException`/`ArgumentNullException.ThrowIf...` (programmer errors only); user-input validation belongs in FluentValidation validators in Application
 - Raise domain events inside factory methods and state-changing methods: `RaiseDomainEvent(new OrderCreatedEvent(...))`
 - Only aggregate roots are directly persisted via repositories
 

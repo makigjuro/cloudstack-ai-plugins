@@ -1,0 +1,309 @@
+# Terraform-native rollout of one environment, called by deploy.yml.
+#
+# NOTE: this starter lives in examples/starter of the cloudstack-ai-plugins repo, so
+# GitHub never runs these workflows there. Paths are written as if examples/starter
+# were the repository root: copy the starter out to use them as-is.
+# Generated shape: /cloud-infra:add-ci-pipeline (same sequence as /cloud-infra:deploy)
+#
+#   (promote: az acr import the tag from the previous env's ACR, never rebuild)
+#   record deployed tags -> plan job + app units (refuse deletes)
+#   -> apply migration job unit -> az containerapp job start -> wait for Succeeded
+#   -> apply app units, gateway last -> wait for each new revision to be ready
+#   -> smoke test through the gateway
+#   on failure: re-apply the recorded previous tag on every unit that was applied.
+#
+# State never drifts: images change only through `IMAGE_TAG=<sha> terragrunt apply`,
+# never `az containerapp update --image`.
+
+name: Rollout (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: Target environment (dev, staging, prod)
+        type: string
+        required: true
+      image_tag:
+        description: Immutable image tag (short git SHA)
+        type: string
+        required: true
+      promote_from:
+        description: Environment whose ACR already holds the tag (empty = images were pushed by the build job)
+        type: string
+        default: ""
+
+permissions:
+  id-token: write
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  rollout:
+    name: Rollout ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    concurrency:
+      group: deploy-${{ inputs.environment }}
+      cancel-in-progress: false
+    timeout-minutes: 60
+    env:
+      PROJECT: starter
+      LOCATION_SHORT: weu
+      TERRAGRUNT_VERSION: "0.93.13"
+      TG_DIR: infra/terragrunt/${{ inputs.environment }}
+      # Units, from cloudstack.json infrastructure.containerApps.
+      # migrationJobs values first, then apps with the gateway LAST.
+      MIGRATION_UNITS: orders-migrate
+      APP_UNITS: orders gateway
+      GATEWAY_UNIT: gateway
+      IMAGES: starter-orders starter-gateway
+      # Gateway routes that must reach the service and get 401 (no token) rather than 404/5xx.
+      SMOKE_UNAUTHENTICATED_ROUTES: /api/orders
+      IMAGE_TAG: ${{ inputs.image_tag }}
+      PROMOTE_FROM: ${{ inputs.promote_from }}
+      # Terraform azurerm provider + backend authenticate with the same OIDC identity.
+      ARM_USE_OIDC: "true"
+      ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      TG_NON_INTERACTIVE: "true"
+      TG_TF_PATH: terraform
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.5.x"
+          terraform_wrapper: false
+
+      - name: Install Terragrunt ${{ env.TERRAGRUNT_VERSION }}
+        run: |
+          base="https://github.com/gruntwork-io/terragrunt/releases/download/v${TERRAGRUNT_VERSION}"
+          cd "$RUNNER_TEMP"
+          curl -fsSLo terragrunt_linux_amd64 "$base/terragrunt_linux_amd64"
+          curl -fsSLo SHA256SUMS "$base/SHA256SUMS"
+          grep ' terragrunt_linux_amd64$' SHA256SUMS | sha256sum -c -
+          sudo install -m 0755 terragrunt_linux_amd64 /usr/local/bin/terragrunt
+          terragrunt --version
+
+      - name: Write rollout helpers
+        run: |
+          cat > "$RUNNER_TEMP/rollout.sh" <<'EOF'
+          set -euo pipefail
+          STATE="$RUNNER_TEMP/rollout"; mkdir -p "$STATE"
+          tg()     { local unit=$1; shift; (cd "$TG_DIR/$unit" && terragrunt "$@"); }
+          tg_out() { tg "$1" output -raw "$2" 2>/dev/null || true; }
+          tag_of() { if [ -n "$1" ]; then echo "${1##*:}"; fi; }
+
+          # Start a Container Apps Job execution and wait for a terminal state.
+          run_job() {
+            local job=$1 exec status
+            exec=$(az containerapp job start -g "$RG" -n "$job" --query name -o tsv)
+            echo "Started $job execution $exec"
+            for _ in $(seq 1 120); do
+              status=$(az containerapp job execution show -g "$RG" -n "$job" \
+                --job-execution-name "$exec" --query properties.status -o tsv)
+              case "$status" in
+                Succeeded) echo "$job|$exec|Succeeded" >> "$STATE/migrations"; return 0 ;;
+                Failed|Stopped|Degraded)
+                  echo "$job|$exec|$status" >> "$STATE/migrations"
+                  echo "::error::Migration job $job execution $exec ended $status. Check Log Analytics (ContainerAppConsoleLogs_CL)."
+                  return 1 ;;
+              esac
+              sleep 10
+            done
+            echo "$job|$exec|Timeout" >> "$STATE/migrations"
+            echo "::error::Migration job $job execution $exec did not finish within 20 minutes."
+            return 1
+          }
+
+          # Wait until the app's latest revision runs the wanted tag and is ready.
+          # Dev scales to zero, so healthState may be "None"; the smoke test wakes it up.
+          wait_revision() {  # app wanted-tag unit
+            local app=$1 want=$2 unit=$3 latest ready image running health
+            for _ in $(seq 1 60); do
+              read -r latest ready < <(az containerapp show -g "$RG" -n "$app" \
+                --query "[properties.latestRevisionName, properties.latestReadyRevisionName]" -o tsv)
+              read -r image running health < <(az containerapp revision show -g "$RG" -n "$app" \
+                --revision "$latest" \
+                --query "[properties.template.containers[0].image, properties.runningState, properties.healthState]" -o tsv)
+              echo "$app: revision=$latest ready=$ready tag=$(tag_of "$image") running=$running health=$health"
+              case "$running" in
+                Failed|Degraded)
+                  echo "$unit|$want|$latest|$running" >> "$STATE/revisions"
+                  echo "::error::$app revision $latest is $running"; return 1 ;;
+              esac
+              if [ "$(tag_of "$image")" = "$want" ] && [ "$latest" = "$ready" ] && [ "$health" != "Unhealthy" ]; then
+                echo "$unit|$want|$latest|${health:-None}" >> "$STATE/revisions"; return 0
+              fi
+              sleep 10
+            done
+            echo "$unit|$want|$latest|NotReady" >> "$STATE/revisions"
+            echo "::error::$app revision $latest was not ready within 10 minutes"; return 1
+          }
+          EOF
+
+      - name: Resolve environment targets
+        run: |
+          source "$RUNNER_TEMP/rollout.sh"
+          rg=$(tg_out resource-group name)
+          acr=$(tg_out container-registry name)
+          if [ -z "$rg" ] || [ -z "$acr" ]; then
+            echo "::error::Platform units are not applied in ${{ inputs.environment }}. Apply them first (/cloud-infra:infra-apply)."
+            exit 1
+          fi
+          echo "RG=$rg" >> "$GITHUB_ENV"
+          echo "ACR=$acr" >> "$GITHUB_ENV"
+
+      - name: Promote images from ${{ inputs.promote_from }}
+        if: inputs.promote_from != ''
+        env:
+          SOURCE_ACR_RESOURCE_ID: ${{ vars.SOURCE_ACR_RESOURCE_ID }}
+        run: |
+          source "$RUNNER_TEMP/rollout.sh"
+          source_acr="${PROJECT}acr${PROMOTE_FROM}${LOCATION_SHORT}"
+          for img in $IMAGES; do
+            if az acr repository show --name "$ACR" --image "$img:$IMAGE_TAG" --output none 2>/dev/null; then
+              echo "$ACR already has $img:$IMAGE_TAG"; continue
+            fi
+            # Same digest, no rebuild. Cross-subscription sources need the registry resource ID.
+            if [ -n "${SOURCE_ACR_RESOURCE_ID:-}" ]; then
+              az acr import --name "$ACR" --registry "$SOURCE_ACR_RESOURCE_ID" \
+                --source "$img:$IMAGE_TAG" --image "$img:$IMAGE_TAG"
+            else
+              az acr import --name "$ACR" --source "$source_acr.azurecr.io/$img:$IMAGE_TAG" \
+                --image "$img:$IMAGE_TAG"
+            fi
+          done
+
+      - name: Verify images exist in ${{ inputs.environment }} ACR
+        run: |
+          source "$RUNNER_TEMP/rollout.sh"
+          for img in $IMAGES; do
+            az acr repository show --name "$ACR" --image "$img:$IMAGE_TAG" --output none \
+              || { echo "::error::$ACR.azurecr.io/$img:$IMAGE_TAG not found"; exit 1; }
+          done
+
+      - name: Record currently deployed tags
+        run: |
+          source "$RUNNER_TEMP/rollout.sh"
+          : > "$STATE/previous"
+          # "app" units are Container Apps, "job" units are Container Apps Jobs.
+          record() {  # kind unit
+            local name img="" cmd=(az containerapp)
+            if [ "$1" = job ]; then cmd+=(job); fi
+            name=$(tg_out "$2" name)
+            if [ -n "$name" ]; then
+              img=$("${cmd[@]}" show -g "$RG" -n "$name" \
+                --query "properties.template.containers[0].image" -o tsv 2>/dev/null || true)
+            fi
+            echo "$2=$(tag_of "$img")" >> "$STATE/previous"
+          }
+          for unit in $MIGRATION_UNITS; do record job "$unit"; done
+          for unit in $APP_UNITS; do record app "$unit"; done
+          cat "$STATE/previous"
+
+      - name: Plan (refuses deletes and replacements)
+        run: |
+          source "$RUNNER_TEMP/rollout.sh"
+          for unit in $MIGRATION_UNITS $APP_UNITS; do
+            echo "::group::plan $unit"
+            tg "$unit" plan -input=false -out=tfplan
+            echo "::endgroup::"
+            deletes=$(tg "$unit" show -json tfplan \
+              | jq '[.resource_changes[]? | select(.change.actions | index("delete"))] | length')
+            if [ "$deletes" != "0" ]; then
+              echo "::error::$unit plan deletes or replaces $deletes resource(s). A deploy only changes images; run /cloud-infra:infra-apply to review."
+              exit 1
+            fi
+          done
+
+      - name: Apply migration jobs and run them
+        run: |
+          source "$RUNNER_TEMP/rollout.sh"
+          for unit in $MIGRATION_UNITS; do
+            echo "$unit" >> "$STATE/applied"
+            tg "$unit" apply -input=false tfplan
+            run_job "$(tg_out "$unit" name)"
+          done
+
+      - name: Apply apps (gateway last) and wait for healthy revisions
+        run: |
+          source "$RUNNER_TEMP/rollout.sh"
+          for unit in $APP_UNITS; do
+            echo "$unit" >> "$STATE/applied"
+            tg "$unit" apply -input=false tfplan
+            wait_revision "$(tg_out "$unit" name)" "$IMAGE_TAG" "$unit"
+          done
+
+      - name: Smoke test through the gateway
+        run: |
+          source "$RUNNER_TEMP/rollout.sh"
+          fqdn=$(tg_out "$GATEWAY_UNIT" fqdn)
+          probe() {  # url expected-status
+            local code
+            for _ in $(seq 1 30); do
+              code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 "$1" || echo 000)
+              [ "$code" = "$2" ] && { echo "OK $code $1"; return 0; }
+              echo "got $code from $1, retrying"; sleep 5
+            done
+            echo "::error::$1 returned $code, expected $2"; return 1
+          }
+          probe "https://$fqdn/health/ready" 200
+          for route in $SMOKE_UNAUTHENTICATED_ROUTES; do
+            probe "https://$fqdn$route" 401
+          done
+          echo "smoke=passed" >> "$STATE/result"
+
+      - name: Roll back to the previous tags
+        if: failure()
+        run: |
+          source "$RUNNER_TEMP/rollout.sh"
+          [ -s "$STATE/applied" ] || { echo "Nothing was applied; nothing to roll back."; exit 0; }
+          status=complete
+          for unit in $(tac "$STATE/applied"); do
+            prev=$(grep "^$unit=" "$STATE/previous" | cut -d= -f2 || true)
+            if [ -z "$prev" ]; then
+              echo "::warning::$unit had no previous deployment (first rollout); left on $IMAGE_TAG."
+              status=partial; continue
+            fi
+            echo "::group::rollback $unit -> $prev"
+            (export IMAGE_TAG="$prev"; tg "$unit" apply -input=false -auto-approve) || status=failed
+            echo "::endgroup::"
+            if [[ " $APP_UNITS " == *" $unit "* ]]; then
+              wait_revision "$(tg_out "$unit" name)" "$prev" "$unit" || status=failed
+            fi
+          done
+          echo "rollback=$status" >> "$STATE/result"
+          [ "$status" = complete ] || echo "::error::Rollback $status; check the units above."
+
+      - name: Summary
+        if: always()
+        run: |
+          STATE="$RUNNER_TEMP/rollout"
+          {
+            echo "## Rollout ${{ inputs.environment }} -> \`$IMAGE_TAG\`"
+            echo
+            echo "| Unit | Previous tag | Deployed tag | Revision | Health |"
+            echo "|------|--------------|--------------|----------|--------|"
+            while IFS='=' read -r unit prev; do
+              # last line wins, so a rollback shows the restored revision
+              last=$(grep "^$unit|" "$STATE/revisions" 2>/dev/null | tail -1 || true)
+              IFS='|' read -r _ tag rev health <<< "${last:-|||}"
+              echo "| $unit | ${prev:-none} | ${tag:-not applied} | ${rev:--} | ${health:--} |"
+            done < <(cat "$STATE/previous" 2>/dev/null || true)
+            echo
+            echo "Migrations: $(tr '\n' ' ' < "$STATE/migrations" 2>/dev/null || echo none)"
+            echo
+            echo "Result: $(tr '\n' ' ' < "$STATE/result" 2>/dev/null || echo 'failed before smoke test')"
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -62,7 +62,7 @@ Rules:
 ## Error Responses
 
 - Never expose stack traces, internal paths, or implementation details in API error responses
-- Use the Result pattern error shape: `{ error: "CODE", message: "user-safe message", type: "ErrorType" }`
+- Return RFC 7807 ProblemDetails (via `ToHttpResult()`) with extensions `{ error: "CODE", message: "user-safe message", errorType: "ErrorType" }` (plus `errors` for per-field validation details). Never put the ErrorType in `type` -- ProblemDetails reserves `type` for its URI
 - Log the full exception server-side, return only the error code to the client
 
 ## Dependencies

@@ -1,6 +1,6 @@
 ---
 name: trivy-scan
-description: Scan Terraform and Helm charts for security misconfigurations using trivy. Use for a fast IaC security check — catches issues that `/infra-lint` doesn't (public-access defaults, missing encryption, weak TLS, over-broad IAM). Invoked automatically by `/infra-lint` and `/complete-infra`.
+description: Scan Terraform (and Helm charts on AKS) for security misconfigurations using trivy. Use for a fast IaC security check — catches issues that `/infra-lint` doesn't (public-access defaults, missing encryption, weak TLS, over-broad IAM). Invoked automatically by `/infra-lint` and `/complete-infra`.
 allowed-tools: Bash, Read
 user-invocable: true
 ---
@@ -29,6 +29,8 @@ Read `cloudstack.json` from the project root at start of execution. Extract:
 - `CHARTS_PATH` = `infrastructure.chartsPath` (default: `deploy/charts`)
 
 Derive `TF_PARENT` as the parent directory of `TF_PATH` (e.g., `infra/terraform/modules` → `infra/terraform`). If `cloudstack.json` is missing, auto-detect by scanning the project.
+
+With `infrastructure.runtime` = `container-apps` (the default) the Terraform tree under `TF_PARENT` — including the `container-app*` modules the Terragrunt units source — is the scan target; `CHARTS_PATH` only applies to `aks` and is skipped automatically when the directory doesn't exist.
 
 ## Prerequisites
 

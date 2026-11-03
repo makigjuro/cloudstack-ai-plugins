@@ -38,7 +38,7 @@ Creates the following structure under `{FRONTEND_PATH}/src/features/{feature}/`:
     └── {feature}-overview.tsx
 ```
 
-And adds an API service at `{FRONTEND_PATH}/src/api/services/{feature}.api.ts`.
+And adds an API service at `{FRONTEND_PATH}/src/api/services/{feature}.api.ts` and server-state hooks at `{FRONTEND_PATH}/src/hooks/api/use-{feature}.ts`.
 
 ## 0. Detect Existing Patterns
 
@@ -83,38 +83,61 @@ export const {feature}Api = {
   /**
    * Get paginated list
    */
-  async getAll(page = 1, pageSize = 20): Promise<PaginatedResponse<{Entity}>> {
+  async getAll(page = 1, pageSize = 20, signal?: AbortSignal): Promise<PaginatedResponse<{Entity}>> {
     const params = new URLSearchParams()
     params.set('pageNumber', page.toString())
     params.set('pageSize', pageSize.toString())
 
-    return apiRequest({ url: BASE_PATH, params })
+    return apiRequest({ url: BASE_PATH, params, signal })
   },
 
   /**
    * Get by ID
    */
-  async getById(id: string): Promise<{Entity}> {
-    return apiRequest({ url: `${BASE_PATH}/${id}` })
+  async getById(id: string, signal?: AbortSignal): Promise<{Entity}> {
+    return apiRequest({ url: `${BASE_PATH}/${encodeURIComponent(id)}`, signal })
   },
 }
 ```
 
+`PaginatedResponse<T>` is `{ items: T[]; totalCount: number; pageNumber: number; pageSize: number }`, matching the backend list response.
+
 ### If `MULTI_TENANT` is true:
 
-Look for the existing tenant utility (e.g., `appendTenantId`, `withTenantParams`, or similar). If found, import it and apply to each API call's query parameters. If no utility exists, add tenant ID from the auth store:
-
-```typescript
-// Add to each method that needs tenant scoping:
-const params = new URLSearchParams()
-appendTenantId(params) // or use whatever pattern the project uses
-```
+The backend resolves the tenant from the token's tenant claim, so normally nothing is added on the client. Only if the existing API services already send a tenant (e.g. an `appendTenantId` utility) apply the same utility to each call -- never invent a tenant query parameter.
 
 ### If using plain axios/fetch:
 
 Match the existing pattern exactly. Do not introduce a new abstraction.
 
-## 2. Page (`{FRONTEND_PATH}/src/features/{feature}/pages/{feature}-page.tsx`)
+## 2. Query Hooks (`{FRONTEND_PATH}/src/hooks/api/use-{feature}.ts`)
+
+For `tanstack-query` (default), wrap the API service in hooks with a query-key factory; components never call `useQuery` directly:
+
+```typescript
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { {feature}Api } from '@/api/services/{feature}.api'
+
+export const {feature}Keys = {
+  all: ['{feature}'] as const,
+  lists: () => [...{feature}Keys.all, 'list'] as const,
+  list: (page: number, pageSize: number) => [...{feature}Keys.lists(), { page, pageSize }] as const,
+  detail: (id: string) => [...{feature}Keys.all, 'detail', id] as const,
+}
+
+export function use{Feature}List(page: number, pageSize: number) {
+  return useQuery({
+    queryKey: {feature}Keys.list(page, pageSize),
+    queryFn: ({ signal }) => {feature}Api.getAll(page, pageSize, signal),
+    placeholderData: keepPreviousData,
+    staleTime: 30_000,
+  })
+}
+```
+
+Mutation hooks (`useCreate{Entity}`) go in the same file and invalidate `{feature}Keys.lists()` on success. For `swr`, put the `useSWR` wrappers in the same file.
+
+## 3. Page (`{FRONTEND_PATH}/src/features/{feature}/pages/{feature}-page.tsx`)
 
 ```tsx
 import { {Feature}Overview } from '../components/{feature}-overview'
@@ -128,25 +151,20 @@ export function {Feature}Page() {
 }
 ```
 
-## 3. Overview Component (`{FRONTEND_PATH}/src/features/{feature}/components/{feature}-overview.tsx`)
+## 4. Overview Component (`{FRONTEND_PATH}/src/features/{feature}/components/{feature}-overview.tsx`)
 
 Adapt based on `STATE_SERVER`:
 
 ### If `tanstack-query` (default):
 
 ```tsx
-import { useQuery } from '@tanstack/react-query'
-import { {feature}Api } from '@/api/services/{feature}.api'
+import { use{Feature}List } from '@/hooks/api/use-{feature}'
 
 export function {Feature}Overview() {
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['{feature}'],
-    queryFn: () => {feature}Api.getAll(),
-    staleTime: 30_000,
-  })
+  const { data, isPending, isError } = use{Feature}List(1, 20)
 
-  if (isLoading) return <div>Loading...</div>
-  if (error) return <div>Error loading {feature}</div>
+  if (isPending) return <div>Loading...</div>
+  if (isError) return <div>Error loading {feature}</div>
 
   return (
     <div>
@@ -191,7 +209,7 @@ Follow the project's existing RTK Query slice pattern. Look for `createApi` usag
 
 Match whichever UI library is detected in the project's `package.json`.
 
-## 4. Add Route
+## 5. Add Route
 
 Find the router configuration file and add the route automatically:
 
@@ -216,7 +234,8 @@ If the router structure is unclear or uses a pattern you don't recognize, show t
 - [ ] API service follows existing client pattern
 - [ ] Multi-tenancy support included if `MULTI_TENANT` is true
 - [ ] Types defined as interfaces, no `any`
-- [ ] Server state management matches `STATE_SERVER` config
+- [ ] Server state management matches `STATE_SERVER` config; query hooks live in `hooks/api/use-{feature}.ts`
+- [ ] List calls use `pageNumber`/`pageSize` and `PaginatedResponse<T>`
 - [ ] UI components match `UI_LIBRARY` config
 - [ ] Functional components only
 - [ ] Route added to router config
@@ -236,6 +255,7 @@ After scaffolding, report:
 
 Files created:
 - `{FRONTEND_PATH}/src/api/services/{feature}.api.ts`
+- `{FRONTEND_PATH}/src/hooks/api/use-{feature}.ts`
 - `{FRONTEND_PATH}/src/features/{feature}/pages/{feature}-page.tsx`
 - `{FRONTEND_PATH}/src/features/{feature}/components/{feature}-overview.tsx`
 - Route added to `{router-file}`

@@ -106,7 +106,8 @@ public record {Name}IntegrationEvent(
 
 ## Guidelines
 
-- WolverineFx discovers handlers by convention -- no explicit registration needed
+- WolverineFx discovers handlers by convention (class name ending in `Handler`/`Consumer`, `Handle` method) -- but only in assemblies it scans. Handlers in the Application project need `options.Discovery.IncludeAssembly(typeof({EventName}Handler).Assembly)` in `builder.Host.UseWolverine(...)` (check it is already there)
+- WolverineFx 6 generates handler code at runtime and needs the `WolverineFx.RuntimeCompilation` package referenced by the Host (alongside `WolverineFx`, same version in `Directory.Packages.props`); without it (and without pre-generated code) handler dispatch fails at runtime
 - One handler per event per concern (don't mix read model updates with notifications)
 - Use `ILogger` for observability, not `Console.WriteLine`
 - For message broker subjects/topics, follow the project's naming conventions

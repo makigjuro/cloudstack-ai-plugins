@@ -109,11 +109,17 @@ Auto-detected from `git remote -v` if omitted.
 | `iacWrapper` | `terragrunt` \| `none` | `none` | IaC wrapper |
 | `terraformPath` | string | `infra/terraform/modules` | Terraform modules path |
 | `terragruntPath` | string | — | Terragrunt config path |
-| `kubernetes` | `aks` \| `eks` \| `gke` \| `none` | `none` | Kubernetes flavor |
-| `charts` | `helm` \| `kustomize` \| `none` | `helm` | Chart tool |
-| `chartsPath` | string | `deploy/charts` | Helm charts path |
-| `containerRegistry` | string | — | Container registry URL |
-| `namespace` | string | — | Kubernetes namespace |
+| `runtime` | `container-apps` \| `aks` \| `none` | `container-apps` | Where services run. `container-apps` = Azure Container Apps, one Terragrunt unit per app; `aks` = Kubernetes + Helm charts. Lint, review and scan skills only run Helm checks when this is `aks` (or charts exist) |
+| `frontendHosting` | `static-web-app` \| `container-app` \| `none` | `static-web-app` | How the frontend is hosted |
+| `containerApps.appUnitsPath` | string | `infra/terragrunt/{env}` | Where per-app Terragrunt units live; `{env}` is replaced with each environment |
+| `containerApps.gatewayApp` | string | `gateway` | The only app with external ingress; all others are internal |
+| `containerApps.migrationJobs` | object | — | Service name → migration Job unit run before the app rolls out, e.g. `{ "Orders": "orders-migrate" }` |
+| `containerApps.environments` | string[] | `["dev", "staging", "prod"]` | Environment names, in promotion order |
+| `kubernetes` | `aks` \| `eks` \| `gke` \| `none` | `none` | Kubernetes flavor (`runtime: aks`) |
+| `charts` | `helm` \| `kustomize` \| `none` | `helm` | Chart tool (`runtime: aks`) |
+| `chartsPath` | string | `deploy/charts` | Helm charts path (`runtime: aks`) |
+| `containerRegistry` | string | the IaC-provisioned ACR | Registry login server; set only to use a registry other than the project's Azure Container Registry, e.g. `ghcr.io/myorg` |
+| `namespace` | string | — | Kubernetes namespace (`runtime: aks`) |
 | `cicd` | `github-actions` \| `azure-devops` \| `gitlab-ci` | `github-actions` | CI/CD platform |
 
 ### `localDev`

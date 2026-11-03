@@ -32,6 +32,8 @@ paths:
 - Never commit entity/configuration changes without the corresponding migration
 - Review generated migrations before committing -- verify only expected changes are included
 - Skipping migrations causes `PendingModelChangesWarning` runtime errors
+- Migrations are applied by a one-shot job (`{Service}.Host --migrate`), never on normal web startup. That mode registers only the DbContext (`AddPersistence`), not the full `AddInfrastructure` -- otherwise DI validation in Development fails on services it cannot satisfy (e.g. Wolverine's `IMessageBus`)
+- Wrap host startup (both modes) in try/catch that logs and returns exit code 1 (rethrow `HostAbortedException` for `dotnet ef`): as PID 1 in a container an unhandled startup exception hangs the process instead of exiting
 
 ## Zero-Downtime Migration Patterns
 When modifying existing schemas in production, use the **expand/contract** pattern to avoid downtime:
@@ -52,7 +54,7 @@ When modifying existing schemas in production, use the **expand/contract** patte
 For simple additive changes (new tables, new nullable columns, new indexes), a single migration is fine. Use expand/contract only when modifying or removing existing schema that production code depends on.
 
 ## DI Registration Pattern
-- Expose a single `AddInfrastructure(this IServiceCollection services, IConfiguration configuration)` extension method
+- Expose a single `AddInfrastructure(this IServiceCollection services, IConfiguration configuration)` extension method; it calls a separate `AddPersistence(...)` that registers only the DbContext (reused by `--migrate`)
 - Register DbContext with Npgsql: `services.AddDbContext<TContext>(options => options.UseNpgsql(...))`
 - Register repositories as scoped
 - Register external service clients (message broker, blob storage, cache)

@@ -29,6 +29,9 @@ Read `cloudstack.json` from the project root at the start of execution. Extract:
 - `FRONTEND_PATH` = `frontend.path` (default: `web`)
 - `CHARTS_PATH` = `infrastructure.chartsPath` (default: `deploy/charts`)
 - `TERRAFORM_PATH` = `infrastructure.terraformPath` (default: `infra/terraform/modules`)
+- `TG_PATH` = `infrastructure.terragruntPath` (default: `infra/terragrunt`, used when `infrastructure.iacWrapper` is `terragrunt`)
+- `RUNTIME` = `infrastructure.runtime` (default: `container-apps`)
+- `ENVIRONMENTS` = `infrastructure.containerApps.environments` (default: `dev staging prod`)
 - `SERVICES` = `backend.services[]` (default: discover from `src/*/` directories containing `.Application/` subfolders)
 - `VALIDATOR_MCP` = `validators.mcpServer` (optional — enables structured MCP checks in Phases 0 and 1.5)
 
@@ -147,11 +150,19 @@ cd ${FRONTEND_PATH} && npm run lint
 
 **Track C (if HAS_INFRA): Infrastructure lint**
 
-Lint all Helm charts found under the charts path, and check Terraform formatting:
+Check Terraform formatting, validate the Terragrunt tree (if present), and lint Helm charts only when `RUNTIME` is `aks` or `${CHARTS_PATH}/` exists:
 ```bash
-# Find and lint each chart directory
-for chart in ${CHARTS_PATH}/*/; do helm lint "$chart"; done
 terraform fmt -check -recursive ${TERRAFORM_PATH}
+if [ -d "${TG_PATH}" ]; then
+  (cd ${TG_PATH} && terragrunt hcl format --check)
+  for env in ${ENVIRONMENTS}; do
+    [ -d "${TG_PATH}/$env" ] || continue
+    (cd "${TG_PATH}/$env" && IMAGE_TAG="${IMAGE_TAG:-0000000}" terragrunt run --all validate --provider-cache)
+  done
+fi
+if [ "${RUNTIME}" = "aks" ] || [ -d "${CHARTS_PATH}" ]; then
+  for chart in ${CHARTS_PATH}/*/; do helm lint "$chart"; done
+fi
 ```
 
 If any track fails, STOP and report which track(s) failed.
@@ -225,7 +236,7 @@ Only confirmed findings enter the Phase 5 fix loop; suggestions are reported as 
 
 3. **`dev-workflow:doc-checker`** (run_in_background: true) -- Only if `HAS_ENDPOINTS` OR `HAS_ENTITIES` OR `HAS_EVENTS` OR `HAS_INFRA`. Detects stale documentation relative to code changes.
 
-4. **`cloud-infra:infra-reviewer`** (run_in_background: true) -- Only if `HAS_INFRA`. Dedicated Terraform/Helm/CI review.
+4. **`cloud-infra:infra-reviewer`** (run_in_background: true) -- Only if `HAS_INFRA`. Dedicated Terraform/Container Apps/Helm/CI review.
 
 5. **`react-developer:frontend-reviewer`** (run_in_background: true) -- Only if `HAS_FRONTEND`. Frontend review for accessibility, performance, React patterns, and security; review `git diff origin/main...HEAD -- ${FRONTEND_PATH}`.
 

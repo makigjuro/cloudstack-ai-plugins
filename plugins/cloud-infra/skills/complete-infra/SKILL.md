@@ -1,6 +1,6 @@
 ---
 name: complete-infra
-description: Complete infrastructure task — lint, validate, review, and submit PR. Use when an infrastructure-only branch is ready for submission — runs Terraform/Helm validation and creates the PR, skipping application/frontend checks.
+description: Complete infrastructure task — lint, validate, review, and submit PR. Use when an infrastructure-only branch is ready for submission — runs Terraform/Terragrunt validation (plus Helm on AKS) and creates the PR, skipping application/frontend checks.
 allowed-tools: Bash, Read, Glob, Grep, Agent, Skill
 user-invocable: true
 ---
@@ -26,6 +26,8 @@ Read `cloudstack.json` from the project root at the start of execution. Extract:
 - `TF_PATH` = `infrastructure.terraformPath` (default: `infra/terraform/modules`)
 - `TG_PATH` = `infrastructure.terragruntPath` (default: `infra/terragrunt`)
 - `IAC_WRAPPER` = `infrastructure.iacWrapper` (default: `none`)
+- `RUNTIME` = `infrastructure.runtime` (default: `container-apps`)
+- `ENVIRONMENTS` = `infrastructure.containerApps.environments` (default: `dev staging prod`)
 
 If `cloudstack.json` does not exist, auto-detect by scanning the project structure. Derive `TF_PARENT` as the parent directory of `TF_PATH`.
 
@@ -43,7 +45,7 @@ These scripts read `TF_PATH` and `CHARTS_PATH` from environment variables. Expor
 export TF_PATH="..." CHARTS_PATH="..."
 ```
 
-The security scan (Track D below) reuses the script from the `trivy-scan` skill rather than duplicating it:
+The security scan (Track E below) reuses the script from the `trivy-scan` skill rather than duplicating it:
 ```bash
 bash ${CLAUDE_PLUGIN_ROOT}/skills/trivy-scan/scripts/scan-trivy.sh
 ```
@@ -84,13 +86,22 @@ export TF_PATH="{TF_PATH}"
 bash ${CLAUDE_PLUGIN_ROOT}/skills/complete-infra/scripts/validate-terraform.sh
 ```
 
-**Track C: Helm lint (if charts changed)**
+**Track C: Terragrunt validate (if `IAC_WRAPPER` = `terragrunt`)**
+```bash
+(cd {TG_PATH} && terragrunt hcl format --check)
+for env in {ENVIRONMENTS}; do
+  [ -d "{TG_PATH}/$env" ] || continue
+  (cd "{TG_PATH}/$env" && IMAGE_TAG="${IMAGE_TAG:-0000000}" terragrunt run --all validate --provider-cache)
+done
+```
+
+**Track D: Helm lint (only if `RUNTIME` = `aks` or charts exist, and charts changed)**
 ```bash
 export CHARTS_PATH="{CHARTS_PATH}"
 bash ${CLAUDE_PLUGIN_ROOT}/skills/complete-infra/scripts/lint-helm.sh
 ```
 
-**Track D: Security scan (trivy)**
+**Track E: Security scan (trivy)**
 ```bash
 export TF_PARENT="{TF_PARENT}" CHARTS_PATH="{CHARTS_PATH}"
 bash ${CLAUDE_PLUGIN_ROOT}/skills/trivy-scan/scripts/scan-trivy.sh
@@ -104,7 +115,7 @@ If any lint or scan track fails, STOP and report. Treat `trivy` missing as a FAI
 
 Launch the review agent (it only reads, so no worktree isolation is needed):
 
-**Agent: `cloud-infra:infra-reviewer`** — Dedicated Terraform/Helm/CI review using the `infra-reviewer` agent definition. Reviews `git diff origin/main...HEAD -- {TF_PARENT}/ {CHARTS_PATH}/ .github/workflows/` and returns APPROVED / CHANGES REQUESTED / BLOCKED with findings covering security, naming, resource limits, and CI best practices.
+**Agent: `cloud-infra:infra-reviewer`** — Dedicated Terraform/Container Apps/Helm/CI review using the `infra-reviewer` agent definition. Reviews `git diff origin/main...HEAD -- {TF_PARENT}/ {CHARTS_PATH}/ .github/workflows/` and returns APPROVED / CHANGES REQUESTED / BLOCKED with findings covering security, naming, resource limits, and CI best practices.
 
 ### Phase 3: Evaluate
 
@@ -131,7 +142,8 @@ Run `/create-pr {issue}`.
 ### Quality Gates
 - Terraform Format: PASS
 - Terraform Validate: PASS
-- Helm Lint: PASS / SKIP (no chart changes)
+- Terragrunt Validate: PASS / SKIP (no Terragrunt)
+- Helm Lint: PASS / SKIP (runtime not aks, or no chart changes)
 - Security Scan (trivy): PASS / FAIL
 - Infra Review: APPROVED
 

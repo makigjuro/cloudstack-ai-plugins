@@ -99,9 +99,10 @@ group.MapGet("/{route}", {Name})
 private static async Task<IResult> {Name}(
     [FromRoute] Guid id,
     [FromServices] {Name}Handler handler,
+    ClaimsPrincipal user,
     CancellationToken cancellationToken)
 {
-    var query = new {Name}Query(id);
+    var query = new {Name}Query(user.GetTenantId(), id); // tenant from token claim
     var result = await handler.Handle(query, cancellationToken);
     return result.ToHttpResult();
 }
@@ -116,7 +117,7 @@ For list endpoints, use `[FromQuery]` for pagination:
 - [ ] Query record is immutable
 - [ ] Uses query repository (read side), not command repository
 - [ ] Handler returns `Result<T>`
-- [ ] Endpoint has OpenAPI metadata
+- [ ] Endpoint has OpenAPI metadata (WithName, WithSummary, WithDescription, Produces) -- no `.WithOpenApi()`
 - [ ] Pagination supported for list queries
 - [ ] CancellationToken propagated
 

@@ -14,4 +14,10 @@ export interface ProblemDetails {
   status?: number
   detail?: string
   errors?: Record<string, string[]>
+  /** Entity-specific error code, e.g. `ORDER_NOT_FOUND`. */
+  error?: string
+  /** Human-readable message for the error code. */
+  message?: string
+  /** Error category: `Validation`, `NotFound`, `Conflict`, … */
+  errorType?: string
 }

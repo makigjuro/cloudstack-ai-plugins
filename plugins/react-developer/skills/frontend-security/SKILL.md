@@ -30,10 +30,11 @@ Apply these rules while writing frontend code, not just during review.
 
 ## localStorage / sessionStorage
 
-- Only store auth tokens and user preferences in localStorage — never store sensitive PII, full user profiles, or secrets
+- Keep access tokens in memory (e.g. a non-persisted Zustand store fed by the auth library) — never write them to localStorage/sessionStorage yourself; let the auth library own any token storage
+- Only store non-sensitive user preferences in localStorage — never store tokens, sensitive PII, full user profiles, or secrets
 - Use `sessionStorage` for data that should not persist across tabs (if applicable)
 - When using Zustand `persist` middleware (or similar), use `partialize` to explicitly select which fields are stored
-- Clear auth storage on logout — call `localStorage.removeItem()` for all auth-related keys
+- Clear auth state on logout and on 401 (in-memory token plus anything the auth library persisted)
 
 ## No Hardcoded Secrets
 

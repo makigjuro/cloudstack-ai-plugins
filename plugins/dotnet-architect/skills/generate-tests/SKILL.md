@@ -135,7 +135,7 @@ public class {Target}Tests
         var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().BeFailure();
+        result.Should().BeFailure(); // project-local extension, see ResultAssertions.cs
         result.Error.Code.Should().Be("{ENTITY}_NOT_FOUND");
     }
 }
@@ -148,7 +148,7 @@ Adapt the template based on what the handler actually does — read the real cod
 If using unfamiliar Testcontainers or WireMock patterns, use context7 to look up the current API.
 
 ```csharp
-namespace {Service}.Tests.Integration;
+namespace {Namespace}.{Service}.Tests.Integration;
 
 public class {Target}IntegrationTests : IClassFixture<IntegrationTestFactory>
 {
@@ -167,7 +167,7 @@ public class {Target}IntegrationTests : IClassFixture<IntegrationTestFactory>
         var client = _factory.CreateAuthenticatedClient();
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/{resource}", new { /* data */ });
+        var response = await client.PostAsJsonAsync("/api/{resource}", new { /* data */ }, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -198,7 +198,7 @@ Generate tests for each untested handler, one file per handler.
 
 Files created:
 - `tests/{Namespace}.Domain.Tests/{Target}Tests.cs` ({N} test methods)
-- `tests/{Service}.Tests.Integration/{Target}IntegrationTests.cs` ({M} test methods) [if --integration]
+- `tests/{Namespace}.{Service}.Tests.Integration/{Target}IntegrationTests.cs` ({M} test methods) [if --integration]
 
 Test scenarios covered:
 - {list of scenarios}
@@ -209,12 +209,12 @@ Run: `dotnet test tests/{Namespace}.Domain.Tests --filter {Target}Tests`
 ## Error Handling
 
 - **Target not found:** Search for partial matches and suggest alternatives
-- **No test project:** Suggest creating one with `dotnet new xunit`
+- **No test project:** Suggest creating one modelled on an existing test csproj (`xunit.v3`, `OutputType Exe`, FluentAssertions 7.x, NSubstitute)
 - **Complex dependencies:** If handler has 5+ dependencies, note which are mocked and suggest reviewing whether the handler has too many responsibilities
 
 ## Checklist
 
-- [ ] Uses xUnit `[Fact]` and `[Theory]` attributes
+- [ ] Uses xUnit v3 `[Fact]` and `[Theory]` attributes
 - [ ] Uses NSubstitute for mocking (`Substitute.For<T>()`)
 - [ ] Uses FluentAssertions (`.Should().`)
 - [ ] Follows Arrange-Act-Assert pattern

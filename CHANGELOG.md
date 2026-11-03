@@ -9,10 +9,29 @@ After a release, update installed plugins with `/plugin` (or reinstall with `/pl
 ### Added
 - `/dev-workflow:doctor`: checks the tools the plugins depend on (`jq`, `gh` auth, .NET SDK and `dotnet-ef`, Node, Docker, `terraform`, `terragrunt`, `trivy`, `az`, `helm`) and prints install hints.
 - Cost and scope notes in the docs: what `complete-task` launches, how to run a lighter pass, and which parts of the stack are tested.
+- `examples/starter`: a working reference app with a hexagonal .NET Orders service, YARP gateway, React app, Terraform/Terragrunt for Azure Container Apps (dev/staging/prod), docker-compose, and its own `cloudstack.json`.
+- Azure Container Apps runtime:
+  - `infrastructure.runtime` (`container-apps` default, `aks`), `frontendHosting` and `containerApps` in `cloudstack.json`, detected by `/dev-workflow:init`.
+  - `/cloud-infra:add-container-app` and `/cloud-infra:add-container-app-job` scaffold services and migration jobs.
+  - `/cloud-infra:deploy` ships SHA-tagged images (migration job, then apps with the gateway last, then smoke test, with rollback to the recorded tags). It previews by default.
+  - `/cloud-infra:add-ci-pipeline` writes the GitHub Actions workflows (CI, then dev deploy and staging/prod promotion with OIDC, plus Static Web Apps). The starter ships the reference output.
+  - `container-apps-conventions` background skill and a Container Apps checklist in `infra-reviewer`.
 
 ### Changed
 - Pre-commit lint and secret-scan hooks only start on `git commit` / `git push` (hook `if` filters) instead of on every Bash call.
 - Bundled MCP servers are pinned (`@upstash/context7-mcp@4.4.4`, `@playwright/mcp@0.0.83`) instead of tracking `latest`.
+
+- Lint (`lint`, `infra-lint`, `complete-infra`, `complete-task`) runs `helm lint` only on the AKS runtime or when charts exist, and validates Terragrunt units with `--provider-cache` on Container Apps.
+- Skills aligned with the starter, which builds and runs:
+  - no `.WithOpenApi()` (deprecated in .NET 10, `ASPDEPR002`); `AddOpenApi`/`MapOpenApi` plus endpoint metadata instead
+  - `WolverineFx.RuntimeCompilation` and explicit handler assembly discovery
+  - `Result` in Shared.Infrastructure, with domain factories guarding via `ArgumentException`
+  - a `ToHttpResult(location)` overload for 201 responses
+  - ProblemDetails errors with `error`/`message`/`errorType`
+  - tenant ID taken from the token
+  - `--migrate` registers only persistence
+  - xunit.v3 and FluentAssertions 7.x pinned for licensing
+  - frontend query hooks in `hooks/api/`, a fetch-based API client, and in-memory tokens
 
 ### Fixed
 - When `jq` is missing, the hooks now show a visible warning instead of silently skipping lint, formatting and the secret scan.

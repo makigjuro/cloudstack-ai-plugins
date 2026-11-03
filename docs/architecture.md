@@ -60,23 +60,24 @@ Every microservice follows hexagonal (ports & adapters) architecture. This patte
 
 ### Project Structure
 
-Each service consists of four projects:
+Each service consists of three projects:
 
 ```
-ServiceName/
-├── ServiceName.Domain/           # Pure business logic, zero dependencies
-├── ServiceName.Application/      # Use cases (commands, queries, events)
-├── ServiceName.Infrastructure/   # External integrations (DB, APIs, cache)
-└── ServiceName.Host/             # HTTP endpoints, DI wiring, startup
+{Service}/
+├── {Namespace}.{Service}.Application/      # Use cases (commands, queries, events, validators)
+├── {Namespace}.{Service}.Infrastructure/   # External integrations (DB, APIs, cache)
+└── {Namespace}.{Service}.Host/             # HTTP endpoints, DI wiring, startup, --migrate job mode
 ```
 
 Plus shared projects used by all services:
 
 ```
 Shared/
-├── {Namespace}.Domain/                    # Shared entities, value objects, events
-└── {Namespace}.Shared.Infrastructure/     # Result types, auth, resilience
+├── {Namespace}.Domain/                    # Entities, value objects, events, repository ports -- zero dependencies
+└── {Namespace}.Shared.Infrastructure/     # Result/Error types + ToHttpResult, auth, messaging
 ```
+
+`Result`/`Error` live in Shared.Infrastructure, not Domain, so the Domain project keeps zero package and project references. Domain factories guard invariants with `ArgumentException`; user input is validated earlier by FluentValidation validators.
 
 ### Layer Responsibilities
 
@@ -179,15 +180,15 @@ sequenceDiagram
     rect rgb(59, 130, 246, 0.1)
     Note over Client,Events: Command Flow (Write)
     Client->>Endpoint: POST /api/orders
-    Endpoint->>Validator: Validate CreateOrderCommand
-    Validator-->>Endpoint: ValidationResult
     Endpoint->>Handler: Handle(CreateOrderCommand)
+    Handler->>Validator: Validate CreateOrderCommand
+    Validator-->>Handler: ValidationResult
     Handler->>Repository: Add(order)
     Repository->>DB: INSERT
     DB-->>Repository: OK
     Handler->>Events: Publish(OrderCreatedEvent)
     Handler-->>Endpoint: Result of OrderId
-    Endpoint-->>Client: 201 Created
+    Endpoint-->>Client: 201 Created + Location
     end
 
     rect rgb(16, 185, 129, 0.1)
@@ -238,7 +239,7 @@ The React frontend follows a feature-based module structure. Each feature is sel
 ```
 web/src/
 ├── api/
-│   ├── client.ts              # Axios singleton with auth interceptors
+│   ├── client.ts              # fetch-based apiRequest wrapper (auth header, ApiError, 401 handling)
 │   ├── types/                 # Shared API types
 │   └── services/              # Per-domain API clients
 │       ├── orders.api.ts
@@ -250,20 +251,25 @@ web/src/
 │   └── customers/
 │       ├── pages/
 │       └── components/
-├── hooks/api/                 # TanStack Query hooks
+├── hooks/api/                 # TanStack Query hooks, one use-<feature>.ts per feature
 ├── stores/                    # Zustand client state
 └── routes/                    # React Router configuration
 ```
 
 **State management split:**
 - **Server state** (TanStack Query): API data with automatic caching, refetching, and invalidation
-- **Client state** (Zustand): UI preferences, auth tokens, ephemeral state
+- **Client state** (Zustand): UI preferences (persisted), the access token (in memory only, never in browser storage), ephemeral state
 
 ## Cloud Infrastructure
 
 The default runtime is **Azure Container Apps (ACA)**: serverless containers with revisions, scale-to-zero and managed ingress, without running a Kubernetes cluster. Terraform/Terragrunt provisions everything; CI builds immutable images and rolls each service to a new revision. **AKS + Helm** is supported as an alternative runtime.
 
-> Status: the Terraform, Terragrunt, lint, trivy and plan/apply skills work today for both runtimes. Container Apps–specific scaffolding (`add-container-app`, migration jobs) and the application deploy skill are tracked in [#4](https://github.com/makigjuro/cloudstack-ai-plugins/issues/4).
+Set the runtime with `infrastructure.runtime` in `cloudstack.json` (`container-apps` by default, or `aks`). On Container Apps:
+- `/cloud-infra:add-container-app` scaffolds a service and `/cloud-infra:add-container-app-job` a migration job.
+- `/cloud-infra:deploy` rolls out a SHA-tagged release (migrations, then apps, then smoke test, with rollback).
+- `/cloud-infra:add-ci-pipeline` writes the GitHub Actions workflows.
+
+The deploy flow has been validated offline against [the starter](../examples/starter/), not yet against a live subscription.
 
 ```mermaid
 graph TB
@@ -349,7 +355,7 @@ infra/terraform/modules/
 
 ### Alternative runtime: AKS + Helm
 
-To run on AKS instead, each microservice gets its own Helm chart (`/cloud-infra:add-helm-chart`). An explicit `infrastructure.runtime` switch arrives with the Container Apps skills in #4.
+To run on AKS instead, set `infrastructure.runtime: aks`. Each microservice then gets its own Helm chart (`/cloud-infra:add-helm-chart`):
 
 ```
 deploy/charts/
