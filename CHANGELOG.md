@@ -2,9 +2,11 @@
 
 All notable changes to the cloudstack-ai-plugins marketplace. All four plugins share one version.
 
-After a release, update installed plugins with `/plugin` (or reinstall with `/plugin install <name>@cloudstack-ai-plugins`).
+After a release, run `/plugin marketplace update cloudstack-ai-plugins`, then update the plugins from `/plugin` (or reinstall with `/plugin install <name>@cloudstack-ai-plugins`).
 
 ## [Unreleased]
+
+## [0.4.0] - 2026-11-03
 
 ### Added
 - `/dev-workflow:new-project <Name>`: creates a repo from `examples/starter`, renamed to your project (namespaces, files, images, Azure resource prefix), then builds and tests it. CI regenerates a project from the starter on every starter change.
@@ -21,7 +23,6 @@ After a release, update installed plugins with `/plugin` (or reinstall with `/pl
 ### Changed
 - Pre-commit lint and secret-scan hooks only start on `git commit` / `git push` (hook `if` filters) instead of on every Bash call.
 - Bundled MCP servers are pinned (`@upstash/context7-mcp@4.4.4`, `@playwright/mcp@0.0.83`) instead of tracking `latest`.
-
 - Lint (`lint`, `infra-lint`, `complete-infra`, `complete-task`) runs `helm lint` only on the AKS runtime or when charts exist, and validates Terragrunt units with `--provider-cache` on Container Apps.
 - Skills aligned with the starter, which builds and runs:
   - no `.WithOpenApi()` (deprecated in .NET 10, `ASPDEPR002`); `AddOpenApi`/`MapOpenApi` plus endpoint metadata instead
@@ -71,7 +72,8 @@ After a release, update installed plugins with `/plugin` (or reinstall with `/pl
 - Initial marketplace with four plugins: `dotnet-architect`, `react-developer`, `cloud-infra`, `dev-workflow`.
 - Reference architecture docs, `cloudstack.json` schema and template, hooks for formatting, pre-commit lint and secret scanning.
 
-[Unreleased]: https://github.com/makigjuro/cloudstack-ai-plugins/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/makigjuro/cloudstack-ai-plugins/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/makigjuro/cloudstack-ai-plugins/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/makigjuro/cloudstack-ai-plugins/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/makigjuro/cloudstack-ai-plugins/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/makigjuro/cloudstack-ai-plugins/releases/tag/v0.1.0

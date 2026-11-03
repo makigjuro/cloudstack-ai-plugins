@@ -58,6 +58,8 @@ Then run `/dev-workflow:doctor` to check your tools.
 
 Each plugin also works on its own.
 
+To update after a release, run `/plugin marketplace update cloudstack-ai-plugins`, then update the plugins from `/plugin`. Changes are listed in the [CHANGELOG](CHANGELOG.md).
+
 | Plugin | Covers |
 |---|---|
 | [dev-workflow](plugins/dev-workflow/) | Requirements → issues → branch → quality gates → PR, plus diagnosis and docs |
