@@ -16,11 +16,11 @@ Scaffold a new Helm chart following project conventions.
 
 ## Configuration
 
-Read `cloudstack.json` from the project root at the start of execution. Extract:
+Read `blueprint.json` from the project root at the start of execution. Extract:
 - `CHARTS_PATH` = `infrastructure.chartsPath` (default: `deploy/charts`)
 - `K8S_NAMESPACE` = `infrastructure.namespace` (default: detect from existing charts or use project name)
 
-If `cloudstack.json` does not exist, auto-detect by scanning the project structure.
+If `blueprint.json` does not exist, auto-detect by scanning the project structure.
 
 ## Process
 

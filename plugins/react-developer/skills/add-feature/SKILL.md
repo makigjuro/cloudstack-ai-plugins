@@ -16,7 +16,7 @@ Scaffold a new feature module following the project's React + TypeScript convent
 
 ## Configuration
 
-Read `cloudstack.json` from the project root at the start of execution. Extract:
+Read `blueprint.json` from the project root at the start of execution. Extract:
 - `FRONTEND_PATH` = `frontend.path` (default: `web`)
 - `DEV_PORT` = `frontend.devPort` (default: `5173`)
 - `UI_LIBRARY` = `frontend.uiLibrary` (default: `shadcn`)
@@ -24,7 +24,7 @@ Read `cloudstack.json` from the project root at the start of execution. Extract:
 - `STATE_CLIENT` = `frontend.stateManagement.client` (default: `zustand`)
 - `MULTI_TENANT` = `backend.multiTenancy` (default: `false`)
 
-If `cloudstack.json` does not exist, auto-detect by checking `package.json` dependencies.
+If `blueprint.json` does not exist, auto-detect by checking `package.json` dependencies.
 
 ## Structure
 

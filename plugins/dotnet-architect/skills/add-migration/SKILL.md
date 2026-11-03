@@ -17,15 +17,15 @@ Create a new EF Core migration for a microservice's database context.
 
 ## Configuration
 
-Read `cloudstack.json` from the project root at the start of execution. Extract:
+Read `blueprint.json` from the project root at the start of execution. Extract:
 - `SERVICES` = `backend.services[]` (default: discover from `src/*/` directories containing `.Application/` subfolders)
 - `SOLUTION` = `backend.solutionPath` (default: find `*.sln` in `src/`)
 
-If `cloudstack.json` does not exist, auto-detect by scanning the project structure.
+If `blueprint.json` does not exist, auto-detect by scanning the project structure.
 
 ## Service DbContext Discovery
 
-If a service-to-DbContext mapping is not defined in `cloudstack.json`, auto-detect by searching for `*DbContext.cs` files:
+If a service-to-DbContext mapping is not defined in `blueprint.json`, auto-detect by searching for `*DbContext.cs` files:
 
 ```bash
 grep -rn "class.*DbContext" src/{Service}/**/Infrastructure/ --include="*.cs"

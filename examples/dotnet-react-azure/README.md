@@ -1,6 +1,6 @@
-# cloudstack starter
+# .NET + React + Azure starter
 
-A small, complete app built on the [cloudstack reference architecture](../../docs/architecture.md). It's what the plugins scaffold into, and it shows the shape of a real project:
+A small, complete app built on the [cloud-app-blueprint reference architecture](../../docs/architecture.md). It's what the plugins scaffold into, and it shows the shape of a real project:
 - one hexagonal .NET service (Orders)
 - an API gateway
 - a React frontend
@@ -24,7 +24,7 @@ web/                                   React 19 + TypeScript, TanStack Query, Zu
 infra/
   terraform/modules/                   11 modules: networking, identity, Key Vault, ACR, PostgreSQL, Container Apps env/app/job, Static Web App, …
   terragrunt/{dev,staging,prod}/       One unit per module and per app
-cloudstack.json                        Tells the plugins where everything is
+blueprint.json                        Tells the plugins where everything is
 ```
 
 The Orders API runs behind the gateway, and every endpoint requires a JWT:
@@ -75,7 +75,7 @@ With the plugins installed, `/cloud-infra:deploy dev` previews a release and `--
 - `deploy.yml`: deploys to dev on merge, then promotes to staging and prod behind environment approvals.
 - `deploy-web.yml`: deploys the frontend to Static Web Apps.
 
-The workflows are written as if `examples/starter` were the repo root. They run as-is in a project made with `/dev-workflow:new-project`.
+The workflows are written as if `examples/dotnet-react-azure` were the repo root. They run as-is in a project made with `/dev-workflow:new-project`.
 
 ## Use it with the plugins
 

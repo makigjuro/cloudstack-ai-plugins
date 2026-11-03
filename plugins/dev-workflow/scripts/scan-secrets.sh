@@ -7,7 +7,7 @@ set -euo pipefail
 # Require jq for parsing hook input
 if ! command -v jq &>/dev/null; then
   # stdout JSON systemMessage is shown to the user; stderr on exit 0 is not
-  echo '{"systemMessage":"cloudstack dev-workflow: jq is not installed, so the secret scan did NOT run before this commit/push. Install it: brew install jq (macOS) or apt install jq (Linux)."}'
+  echo '{"systemMessage":"cloud-app-blueprint dev-workflow: jq is not installed, so the secret scan did NOT run before this commit/push. Install it: brew install jq (macOS) or apt install jq (Linux)."}'
   exit 0
 fi
 

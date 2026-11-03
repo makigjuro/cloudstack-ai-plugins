@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# Build context: examples/starter  ->  docker build -f src/Starter.ApiGateway/Dockerfile -t starter-gateway .
+# Build context: examples/dotnet-react-azure  ->  docker build -f src/Starter.ApiGateway/Dockerfile -t starter-gateway .
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /source

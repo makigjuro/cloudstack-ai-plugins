@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # resolve-test-projects.sh — Map changed files to affected .NET test project paths.
 #
-# Configuration is read from cloudstack.json at the repo root (via jq):
+# Configuration is read from blueprint.json at the repo root (via jq):
 #   .backend.services[]      — name, path, projectPrefix, aliases[], testProjects.unit[]/integration[]
 #   .backend.sharedPaths[]   — foundational paths; a change here means run the full suite
 #   .repository.defaultBranch — default diff base (falls back to "main")
-# When jq or cloudstack.json is missing, degrades to convention-based discovery
+# When jq or blueprint.json is missing, degrades to convention-based discovery
 # (tests/ and src/tests/ directories, fuzzy name matching).
 #
 # Usage: resolve-test-projects.sh [--mode unit|integration|all] [--service slug] [--diff-base ref]
@@ -32,12 +32,13 @@ while [[ $# -gt 0 ]]; do
 done
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
-CONFIG="$REPO_ROOT/cloudstack.json"
+CONFIG="$REPO_ROOT/blueprint.json"
+[[ -f "$CONFIG" ]] || CONFIG="$REPO_ROOT/cloudstack.json"  # pre-0.4 name
 
 lower()  { printf '%s' "$1" | tr '[:upper:]' '[:lower:]'; }
 squash() { lower "$1" | tr -d '._-'; }
 
-# --- Load configuration (graceful degradation without jq/cloudstack.json) ---
+# --- Load configuration (graceful degradation without jq/blueprint.json) ---
 HAVE_CONFIG=false
 SERVICE_TABLE=""   # rows: name \t path \t prefix \t aliases \t unitFlag \t unitList \t intFlag \t intList
 SHARED_PATHS=""

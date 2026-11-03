@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-# Build context: examples/starter  ->  docker build -f src/Orders/Dockerfile -t starter-orders .
+# Build context: examples/dotnet-react-azure  ->  docker build -f src/Orders/Dockerfile -t starter-orders .
 # Run as API:       docker run starter-orders
 # Run as migration: docker run starter-orders --migrate   (Azure Container Apps Job args: ["--migrate"])
 

@@ -18,7 +18,7 @@ Only review files under the frontend directory (typically `web/src/`). Ignore ba
 
 ## Review Process
 
-1. If `cloudstack.json` exists, read:
+1. If `blueprint.json` exists, read:
    - `frontend.path` → the frontend directory (default: `web`)
    - `STATE_SERVER` = `frontend.stateManagement.server` (default: `tanstack-query`)
    - `STATE_CLIENT` = `frontend.stateManagement.client` (default: `zustand`)

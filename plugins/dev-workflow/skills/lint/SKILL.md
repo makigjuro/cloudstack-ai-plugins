@@ -12,7 +12,7 @@ Run all project linters and report violations. Optionally fix auto-fixable issue
 
 ## Configuration
 
-Read `cloudstack.json` from the project root at the start of execution. Extract relevant fields:
+Read `blueprint.json` from the project root at the start of execution. Extract relevant fields:
 - `SOLUTION` = `backend.solutionPath` (default: find `*.sln`)
 - `FRONTEND_PATH` = `frontend.path` (default: `web`)
 - `CHARTS_PATH` = `infrastructure.chartsPath` (default: `deploy/charts`)
@@ -21,7 +21,7 @@ Read `cloudstack.json` from the project root at the start of execution. Extract 
 - `RUNTIME` = `infrastructure.runtime` (default: `container-apps`)
 - `ENVIRONMENTS` = `infrastructure.containerApps.environments` (default: `dev staging prod`)
 
-If `cloudstack.json` does not exist, auto-detect by scanning the project structure.
+If `blueprint.json` does not exist, auto-detect by scanning the project structure.
 
 ## Arguments
 

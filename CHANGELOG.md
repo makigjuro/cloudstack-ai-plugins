@@ -1,20 +1,26 @@
 # Changelog
 
-All notable changes to the cloudstack-ai-plugins marketplace. All four plugins share one version.
+All notable changes to the cloud-app-blueprint marketplace (named cloudstack-ai-plugins before 0.4.0). All four plugins share one version.
 
-After a release, run `/plugin marketplace update cloudstack-ai-plugins`, then update the plugins from `/plugin` (or reinstall with `/plugin install <name>@cloudstack-ai-plugins`).
+After a release, run `/plugin marketplace update cloud-app-blueprint`, then update the plugins from `/plugin` (or reinstall with `/plugin install <name>@cloud-app-blueprint`).
 
 ## [Unreleased]
 
 ## [0.4.0] - 2026-11-03
 
+### Renamed
+- The repo and marketplace are now **cloud-app-blueprint** (was `cloudstack-ai-plugins`, which clashed with Apache CloudStack). GitHub redirects the old URLs.
+- The config file is now `blueprint.json` (was `cloudstack.json`), and the schema is `schema/blueprint.schema.json`. The format is unchanged. `/dev-workflow:init` offers to rename an existing `cloudstack.json`, and the hook scripts still read the old name.
+- The starter moved to `examples/dotnet-react-azure`.
+- **Migrating an install:** `/plugin marketplace remove cloudstack-ai-plugins`, then `/plugin marketplace add makigjuro/cloud-app-blueprint` and reinstall the plugins with `@cloud-app-blueprint`.
+
 ### Added
-- `/dev-workflow:new-project <Name>`: creates a repo from `examples/starter`, renamed to your project (namespaces, files, images, Azure resource prefix), then builds and tests it. CI regenerates a project from the starter on every starter change.
+- `/dev-workflow:new-project <Name>`: creates a repo from the starter, renamed to your project (namespaces, files, images, Azure resource prefix), then builds and tests it. CI regenerates a project from the starter on every starter change.
 - `/dev-workflow:doctor`: checks the tools the plugins depend on (`jq`, `gh` auth, .NET SDK and `dotnet-ef`, Node, Docker, `terraform`, `terragrunt`, `trivy`, `az`, `helm`) and prints install hints.
 - Cost and scope notes in the docs: what `complete-task` launches, how to run a lighter pass, and which parts of the stack are tested.
-- `examples/starter`: a working reference app with a hexagonal .NET Orders service, YARP gateway, React app, Terraform/Terragrunt for Azure Container Apps (dev/staging/prod), docker-compose, and its own `cloudstack.json`.
+- `examples/dotnet-react-azure`: a working reference app with a hexagonal .NET Orders service, YARP gateway, React app, Terraform/Terragrunt for Azure Container Apps (dev/staging/prod), docker-compose, and its own `blueprint.json`.
 - Azure Container Apps runtime:
-  - `infrastructure.runtime` (`container-apps` default, `aks`), `frontendHosting` and `containerApps` in `cloudstack.json`, detected by `/dev-workflow:init`.
+  - `infrastructure.runtime` (`container-apps` default, `aks`), `frontendHosting` and `containerApps` in `blueprint.json`, detected by `/dev-workflow:init`.
   - `/cloud-infra:add-container-app` and `/cloud-infra:add-container-app-job` scaffold services and migration jobs.
   - `/cloud-infra:deploy` ships SHA-tagged images (migration job, then apps with the gateway last, then smoke test, with rollback to the recorded tags). It previews by default.
   - `/cloud-infra:add-ci-pipeline` writes the GitHub Actions workflows (CI, then dev deploy and staging/prod promotion with OIDC, plus Static Web Apps). The starter ships the reference output.
@@ -72,8 +78,8 @@ After a release, run `/plugin marketplace update cloudstack-ai-plugins`, then up
 - Initial marketplace with four plugins: `dotnet-architect`, `react-developer`, `cloud-infra`, `dev-workflow`.
 - Reference architecture docs, `cloudstack.json` schema and template, hooks for formatting, pre-commit lint and secret scanning.
 
-[Unreleased]: https://github.com/makigjuro/cloudstack-ai-plugins/compare/v0.4.0...HEAD
-[0.4.0]: https://github.com/makigjuro/cloudstack-ai-plugins/compare/v0.3.0...v0.4.0
-[0.3.0]: https://github.com/makigjuro/cloudstack-ai-plugins/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/makigjuro/cloudstack-ai-plugins/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/makigjuro/cloudstack-ai-plugins/releases/tag/v0.1.0
+[Unreleased]: https://github.com/makigjuro/cloud-app-blueprint/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/makigjuro/cloud-app-blueprint/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/makigjuro/cloud-app-blueprint/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/makigjuro/cloud-app-blueprint/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/makigjuro/cloud-app-blueprint/releases/tag/v0.1.0

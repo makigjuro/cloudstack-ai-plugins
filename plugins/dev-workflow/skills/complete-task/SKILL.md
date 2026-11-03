@@ -24,7 +24,7 @@ Finalize the current feature branch by running all quality gates and creating a 
 
 ## Configuration
 
-Read `cloudstack.json` from the project root at the start of execution. Extract:
+Read `blueprint.json` from the project root at the start of execution. Extract:
 - `SOLUTION` = `backend.solutionPath` (default: find `*.sln` in `src/`)
 - `FRONTEND_PATH` = `frontend.path` (default: `web`)
 - `CHARTS_PATH` = `infrastructure.chartsPath` (default: `deploy/charts`)
@@ -35,7 +35,7 @@ Read `cloudstack.json` from the project root at the start of execution. Extract:
 - `SERVICES` = `backend.services[]` (default: discover from `src/*/` directories containing `.Application/` subfolders)
 - `VALIDATOR_MCP` = `validators.mcpServer` (optional — enables structured MCP checks in Phases 0 and 1.5)
 
-If `cloudstack.json` does not exist, auto-detect by scanning the project structure.
+If `blueprint.json` does not exist, auto-detect by scanning the project structure.
 
 ## Scripts
 
@@ -81,12 +81,12 @@ If pre-flight fails, STOP and report the issue.
 
 If `VALIDATOR_MCP` is configured, call `mcp__{VALIDATOR_MCP}__detect_changes` instead of the bash below — one call returns all flags as structured JSON (`hasBackend`, `hasFrontend`, `hasInfra`, `hasEndpoints`, `hasEntities`, `hasEvents`).
 
-Otherwise, detect what changed using git diff against the base branch. The change detection flags should use paths from cloudstack.json when available.
+Otherwise, detect what changed using git diff against the base branch. The change detection flags should use paths from blueprint.json when available.
 
 ```bash
 CHANGED=$(git diff origin/main...HEAD --name-only)
 
-# Use paths from cloudstack.json -- these are the defaults
+# Use paths from blueprint.json -- these are the defaults
 SRC_PATH="src/"           # directory containing backend code
 FRONTEND_PATH="web/"      # from frontend.path
 INFRA_PATH="infra/"       # from infrastructure.terraformPath parent
@@ -123,7 +123,7 @@ If either track fails, STOP and report the failure.
 If `VALIDATOR_MCP` is configured, call `mcp__{VALIDATOR_MCP}__check_all_migrations` — one batch call covering all services with a structured `anyPending` verdict. Otherwise, check each service for pending EF Core migrations by looping through the configured services:
 
 ```bash
-# For each service in cloudstack.json backend.services[]:
+# For each service in blueprint.json backend.services[]:
 cd ${SERVICE_PATH}/${SERVICE_NAME}.Infrastructure
 dotnet ef migrations has-pending-model-changes --startup-project ../${SERVICE_NAME}.Host
 ```
@@ -182,7 +182,7 @@ If tests fail, STOP and report failures.
 Check if the frontend is running:
 
 ```bash
-FRONTEND_PORT=$(jq -r '.frontend.devPort // 5173' cloudstack.json 2>/dev/null || echo 5173)
+FRONTEND_PORT=$(jq -r '.frontend.devPort // 5173' blueprint.json 2>/dev/null || echo 5173)
 curl -sf http://localhost:${FRONTEND_PORT} > /dev/null 2>&1 && echo "Frontend: UP" || echo "Frontend: DOWN"
 ```
 

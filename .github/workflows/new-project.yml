@@ -1,19 +1,19 @@
 name: New Project
 
-# Generates a project from examples/starter with /dev-workflow:new-project's script and checks
+# Generates a project from examples/dotnet-react-azure with /dev-workflow:new-project's script and checks
 # that it builds and its unit and web tests pass, so a starter change can't break the bootstrap.
 
 on:
   push:
     branches: [main]
     paths:
-      - "examples/starter/**"
+      - "examples/dotnet-react-azure/**"
       - "plugins/dev-workflow/scripts/new-project.sh"
       - ".github/workflows/new-project.yml"
   pull_request:
     branches: [main]
     paths:
-      - "examples/starter/**"
+      - "examples/dotnet-react-azure/**"
       - "plugins/dev-workflow/scripts/new-project.sh"
       - ".github/workflows/new-project.yml"
 
@@ -27,7 +27,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Generate AcmeShop from the starter
-        run: plugins/dev-workflow/scripts/new-project.sh acme-shop --short acme --from examples/starter --dir "$RUNNER_TEMP/acme-shop" --no-git
+        run: plugins/dev-workflow/scripts/new-project.sh acme-shop --short acme --from examples/dotnet-react-azure --dir "$RUNNER_TEMP/acme-shop" --no-git
 
       - uses: actions/setup-dotnet@v4
         with:

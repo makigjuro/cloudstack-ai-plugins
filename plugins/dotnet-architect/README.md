@@ -1,9 +1,9 @@
 # dotnet-architect
 
-**The backend layer of the [cloudstack reference architecture](../../README.md).** It scaffolds .NET microservices with hexagonal architecture and keeps them that way.
+**The backend layer of the [cloud-app-blueprint reference architecture](../../README.md).** It scaffolds .NET microservices with hexagonal architecture and keeps them that way.
 
 ```
-/plugin install dotnet-architect@cloudstack-ai-plugins
+/plugin install dotnet-architect@cloud-app-blueprint
 ```
 
 ## The architecture it enforces
@@ -56,7 +56,7 @@ Claude applies these automatically when it edits matching files:
 }
 ```
 
-Without `cloudstack.json`, the skills detect the namespace from the solution, find Domain and Infrastructure projects, and discover services under `src/`. See the [cloudstack.json reference](../../docs/cloudstack-json-reference.md).
+Without `blueprint.json`, the skills detect the namespace from the solution, find Domain and Infrastructure projects, and discover services under `src/`. See the [blueprint.json reference](../../docs/blueprint-json-reference.md).
 
 **Prerequisites:**
 - .NET SDK (the reference stack targets .NET 10)

@@ -11,10 +11,10 @@ Analyze a feature plan or PRD and create the appropriate GitHub issue structure.
 
 ## Configuration
 
-Read `cloudstack.json` from the project root at the start of execution. Extract relevant fields:
+Read `blueprint.json` from the project root at the start of execution. Extract relevant fields:
 - `REPO_OWNER` / `REPO_NAME` = `repository.owner` / `repository.name` (default: detect from `git remote -v`)
 
-If `cloudstack.json` does not exist, auto-detect by parsing the GitHub remote URL:
+If `blueprint.json` does not exist, auto-detect by parsing the GitHub remote URL:
 ```bash
 git remote get-url origin | sed -E 's|.*github\.com[:/]([^/]+)/([^/.]+).*|\1 \2|'
 ```
@@ -214,7 +214,7 @@ General labels:
 - `enhancement` for improvements
 - `bug` for defects
 
-Add service-specific labels based on the services defined in `cloudstack.json` or discovered in the project.
+Add service-specific labels based on the services defined in `blueprint.json` or discovered in the project.
 
 ## Task Title Conventions
 

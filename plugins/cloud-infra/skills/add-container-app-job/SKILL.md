@@ -1,6 +1,6 @@
 ---
 name: add-container-app-job
-description: Add an Azure Container Apps Job unit (database migrations, one-off setup tasks, scheduled batch work) on the shared container-app-job module, using the same image and Key Vault secrets as its service, and register migration jobs in cloudstack.json. Use when a service needs EF Core migrations run before rollout, a manual task container, or a cron job on Container Apps.
+description: Add an Azure Container Apps Job unit (database migrations, one-off setup tasks, scheduled batch work) on the shared container-app-job module, using the same image and Key Vault secrets as its service, and register migration jobs in blueprint.json. Use when a service needs EF Core migrations run before rollout, a manual task container, or a cron job on Container Apps.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 user-invocable: true
 argument-hint: "{name} --service {service} [--args \"--migrate\"] [--schedule \"<cron>\"]"
@@ -21,7 +21,7 @@ A job is a **migration job** when `--args` contains `--migrate` or `{name}` ends
 
 ## Configuration
 
-Read `cloudstack.json`:
+Read `blueprint.json`:
 - `RUNTIME` = `infrastructure.runtime` (default `container-apps`). If it is `aks`, stop and suggest a Kubernetes Job in the service's Helm chart (`/cloud-infra:add-helm-chart`).
 - `TG_PATH` = `infrastructure.terragruntPath`, `TF_PATH` = `infrastructure.terraformPath`
 - `UNITS_PATH` = `infrastructure.containerApps.appUnitsPath` (default `infra/terragrunt/{env}`)
@@ -105,7 +105,7 @@ For each env in `ENVS`, create `{UNITS_PATH}/{env}/{name}/terragrunt.hcl` with t
 
 ### 5. Register migration jobs
 
-For a migration job, add `"{Service}": "{name}"` to `infrastructure.containerApps.migrationJobs` in `cloudstack.json`, creating the `containerApps` object if needed. Keep the file's formatting and existing keys. `/cloud-infra:deploy` and the CI rollout read this map to know which job to run, and wait on, before the service's app unit is applied.
+For a migration job, add `"{Service}": "{name}"` to `infrastructure.containerApps.migrationJobs` in `blueprint.json`, creating the `containerApps` object if needed. Keep the file's formatting and existing keys. `/cloud-infra:deploy` and the CI rollout read this map to know which job to run, and wait on, before the service's app unit is applied.
 
 ### 6. Format and validate offline
 
@@ -125,7 +125,7 @@ cd {UNITS_PATH with env=dev} && TG_OFFLINE=true IMAGE_TAG=abc1234 terragrunt run
 ...
 Image: same as {service} (<acr>/{image_repository}:${IMAGE_TAG}), args: [...]
 Secrets: <secret env vars> (Key Vault refs)
-cloudstack.json: containerApps.migrationJobs.{Service} = "{name}" | not a migration job
+blueprint.json: containerApps.migrationJobs.{Service} = "{name}" | not a migration job
 Validation: hcl format ok, dev validate ok
 
 Run manually: az containerapp job start -g <rg> -n {project}-job-{job_name}-<env>-{loc}

@@ -19,7 +19,7 @@ Navigate key application routes using Playwright and verify they render without 
 
 ## Configuration
 
-Read `cloudstack.json` from the project root at the start of execution. Extract:
+Read `blueprint.json` from the project root at the start of execution. Extract:
 - `FRONTEND_PATH` = `frontend.path` (default: `web`)
 - `DEV_PORT` = `frontend.devPort` (default: `5173`)
 
@@ -28,11 +28,11 @@ Also extract:
 - `ORCHESTRATOR` = `localDev.orchestrator` (default: `none`) — e.g., `aspire`, `docker-compose`, `none`
 - `ORCHESTRATOR_PORT` = `localDev.orchestratorPort` (default: `none`)
 
-If `cloudstack.json` does not exist, auto-detect by checking `package.json` dependencies.
+If `blueprint.json` does not exist, auto-detect by checking `package.json` dependencies.
 
 ### Auth Configuration
 
-Check `cloudstack.json` for `localDev.authConfig`. If present, use it. Otherwise, detect the auth store pattern from the codebase (see screenshot skill for details).
+Check `blueprint.json` for `localDev.authConfig`. If present, use it. Otherwise, detect the auth store pattern from the codebase (see screenshot skill for details).
 
 ## Prerequisites
 
@@ -89,7 +89,7 @@ Instead of hardcoded routes, detect routes from the project's router configurati
 grep -rl "createBrowserRouter\|RouteObject\|<Route" {FRONTEND_PATH}/src/ 2>/dev/null | head -3
 ```
 
-Read the router file and extract all top-level route paths. Always include `/` (root/dashboard). If `cloudstack.json` defines `frontend.smokeRoutes`, test those routes in addition to the auto-detected ones — they are the project's known-critical paths and auto-detection may miss dynamic or feature-flagged routes.
+Read the router file and extract all top-level route paths. Always include `/` (root/dashboard). If `blueprint.json` defines `frontend.smokeRoutes`, test those routes in addition to the auto-detected ones — they are the project's known-critical paths and auto-detection may miss dynamic or feature-flagged routes.
 
 If route detection fails, fall back to testing just `/` and `/login`.
 

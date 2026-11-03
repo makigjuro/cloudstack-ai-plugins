@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/makigjuro/cloudstack-ai-plugins/main/schema/cloudstack.schema.json",
+  "$schema": "https://raw.githubusercontent.com/makigjuro/cloud-app-blueprint/main/schema/blueprint.schema.json",
   "project": {
     "name": "MyProject",
     "namespace": "MyProject",

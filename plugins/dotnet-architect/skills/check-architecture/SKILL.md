@@ -11,16 +11,16 @@ Verify the project follows its architectural rules. Run automated arch tests fir
 
 ## Configuration
 
-Read `cloudstack.json` from the project root at the start of execution. Extract:
+Read `blueprint.json` from the project root at the start of execution. Extract:
 - `NAMESPACE` = `project.namespace` (default: detect from `*.sln` name or first `*.csproj` root namespace)
 - `SERVICES` = `backend.services[]` (default: discover from `src/*/` directories containing `.Application/` subfolders)
 - `SOLUTION` = `backend.solutionPath` (default: find `*.sln` in `src/`)
 
-If `cloudstack.json` does not exist, auto-detect by scanning the project structure.
+If `blueprint.json` does not exist, auto-detect by scanning the project structure.
 
 ## Validator MCP Fast Path
 
-If the project registers an architecture-validator MCP server (declared in `cloudstack.json` as `validators.mcpServer`, e.g. `"my-validator"`), prefer its batch tools over the grep/dotnet-ef checks below — they return structured JSON in one call for all services instead of N shell invocations:
+If the project registers an architecture-validator MCP server (declared in `blueprint.json` as `validators.mcpServer`, e.g. `"my-validator"`), prefer its batch tools over the grep/dotnet-ef checks below — they return structured JSON in one call for all services instead of N shell invocations:
 
 - `mcp__{server}__validate_all_layers` replaces the per-service layer-dependency greps (section 2)
 - `mcp__{server}__check_all_migrations` replaces per-service `dotnet ef migrations has-pending-model-changes` loops

@@ -17,15 +17,15 @@ Post-implementation browser verification for frontend features. Auto-detects cha
 
 ## Configuration
 
-Read `cloudstack.json` from the project root at the start of execution. Extract:
+Read `blueprint.json` from the project root at the start of execution. Extract:
 - `FRONTEND_PATH` = `frontend.path` (default: `web`)
 - `DEV_PORT` = `frontend.devPort` (default: `5173`)
 
-If `cloudstack.json` does not exist, auto-detect by checking `package.json` dependencies.
+If `blueprint.json` does not exist, auto-detect by checking `package.json` dependencies.
 
 ### Auth Configuration
 
-Check `cloudstack.json` for `localDev.authConfig`. If present, use it for localStorage injection. Otherwise, detect the auth store pattern from the codebase (see screenshot skill for details).
+Check `blueprint.json` for `localDev.authConfig`. If present, use it for localStorage injection. Otherwise, detect the auth store pattern from the codebase (see screenshot skill for details).
 
 ## Process
 
@@ -61,7 +61,7 @@ If frontend is down, STOP and suggest starting the dev server.
 
 ### Step 3: Authenticate
 
-Navigate to `http://localhost:{DEV_PORT}` to establish the origin, then inject auth via localStorage using the auth configuration (from `cloudstack.json` or auto-detected from the codebase).
+Navigate to `http://localhost:{DEV_PORT}` to establish the origin, then inject auth via localStorage using the auth configuration (from `blueprint.json` or auto-detected from the codebase).
 
 ### Step 4: Verify Each Route
 

@@ -18,7 +18,7 @@ Give a backend service its own Container App in every environment, following the
 
 ## Configuration
 
-Read `cloudstack.json` from the project root:
+Read `blueprint.json` from the project root:
 - `RUNTIME` = `infrastructure.runtime` (default `container-apps`)
 - `TG_PATH` = `infrastructure.terragruntPath` (default `infra/terragrunt`)
 - `UNITS_PATH` = `infrastructure.containerApps.appUnitsPath` (default `infra/terragrunt/{env}`)

@@ -12,11 +12,11 @@ Run tests based on what changed. Auto-detects affected services from git diff an
 
 ## Configuration
 
-Read `cloudstack.json` from the project root at the start of execution. Extract relevant fields:
+Read `blueprint.json` from the project root at the start of execution. Extract relevant fields:
 - `SOLUTION` = `backend.solutionPath` (default: find `*.sln`)
 - `SERVICES` = `backend.services[]` (default: discover from project structure)
 
-If `cloudstack.json` does not exist, auto-detect by scanning the project structure.
+If `blueprint.json` does not exist, auto-detect by scanning the project structure.
 
 ## 1. Parse Arguments
 
@@ -42,7 +42,7 @@ Run the deterministic resolver script instead of reasoning about the mapping you
 ${CLAUDE_PLUGIN_ROOT}/scripts/resolve-test-projects.sh [--mode unit|integration|all] [--service {slug}] [--diff-base {ref}]
 ```
 
-It reads `cloudstack.json` (`backend.services[]` with `aliases`/`testProjects`, `backend.sharedPaths[]`) and degrades to convention-based discovery (`tests/{projectPrefix}.Tests*`, fuzzy directory matching) when the config or `jq` is missing.
+It reads `blueprint.json` (`backend.services[]` with `aliases`/`testProjects`, `backend.sharedPaths[]`) and degrades to convention-based discovery (`tests/{projectPrefix}.Tests*`, fuzzy directory matching) when the config or `jq` is missing.
 
 **Exit-code contract:**
 

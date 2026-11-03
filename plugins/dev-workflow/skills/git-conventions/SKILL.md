@@ -6,7 +6,7 @@ user-invocable: false
 
 # Git Conventions
 
-If `cloudstack.json` sets `conventions.branchFormat` or `conventions.commitStyle`, those override the defaults below.
+If `blueprint.json` sets `conventions.branchFormat` or `conventions.commitStyle`, those override the defaults below.
 
 ## Branch Naming
 

@@ -23,7 +23,7 @@ Ignore all other changes — the general `reviewer` agent handles application co
 
 ## Review Process
 
-Derive `TF_PARENT` as the parent of `cloudstack.json` `infrastructure.terraformPath` (default `infra/terraform`).
+Derive `TF_PARENT` as the parent of `blueprint.json` `infrastructure.terraformPath` (default `infra/terraform`).
 
 Read `infrastructure.runtime` (default `container-apps`) and `infrastructure.containerApps` (`gatewayApp` default `gateway`, `migrationJobs`, `environments`). Apply the **Container Apps Checklist** when runtime is `container-apps`; apply the **Helm Checklist** only when runtime is `aks` or the diff touches files under `infrastructure.chartsPath` (default `deploy/charts`).
 

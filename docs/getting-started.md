@@ -1,6 +1,6 @@
 # Getting Started
 
-cloudstack-ai-plugins is a reference architecture for cloud web apps plus the Claude Code workflow that builds and ships it. This guide takes you from install to your first deployed change.
+cloud-app-blueprint is a reference architecture for cloud web apps plus the Claude Code workflow that builds and ships it. This guide takes you from install to your first deployed change.
 
 ## Prerequisites
 
@@ -12,18 +12,18 @@ cloudstack-ai-plugins is a reference architecture for cloud web apps plus the Cl
   - Docker (for integration tests and local dev)
   - `terraform`, `trivy`, `az` CLI (and `terragrunt`; `helm` only for the AKS runtime)
 
-Starting from scratch? After installing, run `/dev-workflow:new-project <Name>`. It creates a repo from [`examples/starter`](../examples/starter/), a working app in the reference architecture with its own `cloudstack.json`, renamed to your project. Every step below works on it straight away, and you can skip step 2.
+Starting from scratch? After installing, run `/dev-workflow:new-project <Name>`. It creates a repo from [`examples/dotnet-react-azure`](../examples/dotnet-react-azure/), a working app in the reference architecture with its own `blueprint.json`, renamed to your project. Every step below works on it straight away, and you can skip step 2.
 
 Check your machine with `/dev-workflow:doctor` once the plugins are installed. It lists what's missing and how to install it.
 
 ## 1. Install
 
 ```
-/plugin marketplace add makigjuro/cloudstack-ai-plugins
-/plugin install dev-workflow@cloudstack-ai-plugins
-/plugin install dotnet-architect@cloudstack-ai-plugins
-/plugin install react-developer@cloudstack-ai-plugins
-/plugin install cloud-infra@cloudstack-ai-plugins
+/plugin marketplace add makigjuro/cloud-app-blueprint
+/plugin install dev-workflow@cloud-app-blueprint
+/plugin install dotnet-architect@cloud-app-blueprint
+/plugin install react-developer@cloud-app-blueprint
+/plugin install cloud-infra@cloud-app-blueprint
 ```
 
 Install only the layers you need. Each plugin works on its own, and `dev-workflow` uses whichever others are present.
@@ -34,7 +34,7 @@ Install only the layers you need. Each plugin works on its own, and `dev-workflo
 /dev-workflow:init
 ```
 
-This scans your project and writes a `cloudstack.json` with your solution, services, frontend path, infra paths and conventions. It's optional, since the plugins auto-detect without it. It is worth having on a real project. Every field is in the [cloudstack.json reference](cloudstack-json-reference.md), and `templates/cloudstack.json` is a full starting point.
+This scans your project and writes a `blueprint.json` with your solution, services, frontend path, infra paths and conventions. It's optional, since the plugins auto-detect without it. It is worth having on a real project. Every field is in the [blueprint.json reference](blueprint-json-reference.md), and `templates/blueprint.json` is a full starting point.
 
 Check that the backend matches the architecture:
 
@@ -93,13 +93,13 @@ The reference path is the one the plugins are built and used against:
 - React with TanStack Query, Zustand and shadcn/ui
 - Terraform + Terragrunt on Azure, GitHub Actions
 
-Other values in `cloudstack.json` are accepted, and the skills adapt by reading your existing code, but they haven't been tested end to end:
+Other values in `blueprint.json` are accepted, and the skills adapt by reading your existing code, but they haven't been tested end to end:
 - `cloud: aws | gcp`
 - `uiLibrary: mui | antd`
 - `stateManagement: swr | redux`
 - `messageBroker: rabbitmq`
 
-Reports are welcome in the [issues](https://github.com/makigjuro/cloudstack-ai-plugins/issues).
+Reports are welcome in the [issues](https://github.com/makigjuro/cloud-app-blueprint/issues).
 
 ## MCP servers
 

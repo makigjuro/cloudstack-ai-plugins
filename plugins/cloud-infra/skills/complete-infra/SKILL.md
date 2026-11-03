@@ -21,7 +21,7 @@ Finalize an infrastructure branch by running infra-specific quality gates and cr
 
 ## Configuration
 
-Read `cloudstack.json` from the project root at the start of execution. Extract:
+Read `blueprint.json` from the project root at the start of execution. Extract:
 - `CHARTS_PATH` = `infrastructure.chartsPath` (default: `deploy/charts`)
 - `TF_PATH` = `infrastructure.terraformPath` (default: `infra/terraform/modules`)
 - `TG_PATH` = `infrastructure.terragruntPath` (default: `infra/terragrunt`)
@@ -29,7 +29,7 @@ Read `cloudstack.json` from the project root at the start of execution. Extract:
 - `RUNTIME` = `infrastructure.runtime` (default: `container-apps`)
 - `ENVIRONMENTS` = `infrastructure.containerApps.environments` (default: `dev staging prod`)
 
-If `cloudstack.json` does not exist, auto-detect by scanning the project structure. Derive `TF_PARENT` as the parent directory of `TF_PATH`.
+If `blueprint.json` does not exist, auto-detect by scanning the project structure. Derive `TF_PARENT` as the parent directory of `TF_PATH`.
 
 ## Scripts
 

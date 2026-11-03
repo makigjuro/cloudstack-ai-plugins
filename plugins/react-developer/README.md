@@ -1,9 +1,9 @@
 # react-developer
 
-**The frontend layer of the [cloudstack reference architecture](../../README.md).** It builds React + TypeScript feature modules on a consistent structure and checks them in a real browser.
+**The frontend layer of the [cloud-app-blueprint reference architecture](../../README.md).** It builds React + TypeScript feature modules on a consistent structure and checks them in a real browser.
 
 ```
-/plugin install react-developer@cloudstack-ai-plugins
+/plugin install react-developer@cloud-app-blueprint
 ```
 
 ## The architecture it follows

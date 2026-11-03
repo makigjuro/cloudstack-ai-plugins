@@ -1,12 +1,12 @@
 {
   "name": "react-developer",
-  "description": "Frontend layer of the cloudstack reference architecture — React + TypeScript feature modules, frontend conventions and security, Playwright smoke tests and screenshots, and frontend review.",
+  "description": "Frontend layer of the cloud-app-blueprint reference architecture — React + TypeScript feature modules, frontend conventions and security, Playwright smoke tests and screenshots, and frontend review.",
   "version": "0.4.0",
   "author": {
     "name": "Marjan Gjuroski"
   },
   "license": "MIT",
-  "homepage": "https://github.com/makigjuro/cloudstack-ai-plugins#reference-architecture",
-  "repository": "https://github.com/makigjuro/cloudstack-ai-plugins",
+  "homepage": "https://github.com/makigjuro/cloud-app-blueprint#reference-architecture",
+  "repository": "https://github.com/makigjuro/cloud-app-blueprint",
   "keywords": ["react", "typescript", "frontend", "playwright", "shadcn", "tanstack-query", "vite"]
 }

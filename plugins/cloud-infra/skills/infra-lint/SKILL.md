@@ -19,7 +19,7 @@ If no argument, lint Terraform/Terragrunt, plus Helm when it applies (see below)
 
 ## Configuration
 
-Read `cloudstack.json` from the project root at the start of execution. Extract:
+Read `blueprint.json` from the project root at the start of execution. Extract:
 - `CHARTS_PATH` = `infrastructure.chartsPath` (default: `deploy/charts`)
 - `TF_PATH` = `infrastructure.terraformPath` (default: `infra/terraform/modules`)
 - `TG_PATH` = `infrastructure.terragruntPath` (default: `infra/terragrunt`)
@@ -29,7 +29,7 @@ Read `cloudstack.json` from the project root at the start of execution. Extract:
 
 Helm linting runs only when `RUNTIME` = `aks` or `{CHARTS_PATH}/` exists; otherwise report it as SKIPPED.
 
-If `cloudstack.json` does not exist, auto-detect by scanning the project structure. Derive `TF_PARENT` as the parent directory of `TF_PATH` (e.g., if `TF_PATH` is `infra/terraform/modules`, `TF_PARENT` is `infra/terraform`).
+If `blueprint.json` does not exist, auto-detect by scanning the project structure. Derive `TF_PARENT` as the parent directory of `TF_PATH` (e.g., if `TF_PATH` is `infra/terraform/modules`, `TF_PARENT` is `infra/terraform`).
 
 ## Terraform / Terragrunt
 
