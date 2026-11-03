@@ -7,6 +7,7 @@ After a release, update installed plugins with `/plugin` (or reinstall with `/pl
 ## [Unreleased]
 
 ### Added
+- `/dev-workflow:new-project <Name>`: creates a repo from `examples/starter`, renamed to your project (namespaces, files, images, Azure resource prefix), then builds and tests it. CI regenerates a project from the starter on every starter change.
 - `/dev-workflow:doctor`: checks the tools the plugins depend on (`jq`, `gh` auth, .NET SDK and `dotnet-ef`, Node, Docker, `terraform`, `terragrunt`, `trivy`, `az`, `helm`) and prints install hints.
 - Cost and scope notes in the docs: what `complete-task` launches, how to run a lighter pass, and which parts of the stack are tested.
 - `examples/starter`: a working reference app with a hexagonal .NET Orders service, YARP gateway, React app, Terraform/Terragrunt for Azure Container Apps (dev/staging/prod), docker-compose, and its own `cloudstack.json`.

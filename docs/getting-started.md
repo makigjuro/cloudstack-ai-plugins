@@ -12,7 +12,7 @@ cloudstack-ai-plugins is a reference architecture for cloud web apps plus the Cl
   - Docker (for integration tests and local dev)
   - `terraform`, `trivy`, `az` CLI (and `terragrunt`; `helm` only for the AKS runtime)
 
-Starting from scratch? Copy [`examples/starter`](../examples/starter/). It's a working app in the reference architecture with its own `cloudstack.json`, so every step below works on it straight away.
+Starting from scratch? After installing, run `/dev-workflow:new-project <Name>`. It creates a repo from [`examples/starter`](../examples/starter/), a working app in the reference architecture with its own `cloudstack.json`, renamed to your project. Every step below works on it straight away, and you can skip step 2.
 
 Check your machine with `/dev-workflow:doctor` once the plugins are installed. It lists what's missing and how to install it.
 

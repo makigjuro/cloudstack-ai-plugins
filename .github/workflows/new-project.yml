@@ -1,0 +1,53 @@
+name: New Project
+
+# Generates a project from examples/starter with /dev-workflow:new-project's script and checks
+# that it builds and its unit and web tests pass, so a starter change can't break the bootstrap.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "examples/starter/**"
+      - "plugins/dev-workflow/scripts/new-project.sh"
+      - ".github/workflows/new-project.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "examples/starter/**"
+      - "plugins/dev-workflow/scripts/new-project.sh"
+      - ".github/workflows/new-project.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate AcmeShop from the starter
+        run: plugins/dev-workflow/scripts/new-project.sh acme-shop --short acme --from examples/starter --dir "$RUNNER_TEMP/acme-shop" --no-git
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: ${{ runner.temp }}/acme-shop/global.json
+
+      - name: Build and unit-test the backend
+        working-directory: ${{ runner.temp }}/acme-shop
+        run: |
+          dotnet build src/AcmeShop.sln -warnaserror
+          dotnet test src/AcmeShop.sln --no-build --filter "Category!=Integration"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Build and test the web app
+        working-directory: ${{ runner.temp }}/acme-shop/web
+        run: |
+          npm ci
+          npm run type-check
+          npm run lint
+          npm test -- --run
+          npm run build

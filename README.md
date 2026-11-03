@@ -51,7 +51,12 @@ Each plugin also ships convention skills, such as the domain-layer rules, the en
 /plugin install cloud-infra@cloudstack-ai-plugins
 ```
 
-Then run `/dev-workflow:doctor` to check your tools, and `/dev-workflow:init` in your project. It detects your layout and writes a `cloudstack.json` with your paths, namespaces and conventions. Starting from scratch works too: the scaffolding skills create the structure as you go. Each plugin also works on its own.
+Then run `/dev-workflow:doctor` to check your tools.
+
+- **New project:** `/dev-workflow:new-project AcmeShop` creates a repo from the [starter app](examples/starter/), renamed to your project, then builds and tests it.
+- **Existing project:** `/dev-workflow:init` detects your layout and writes a `cloudstack.json` with your paths, namespaces and conventions.
+
+Each plugin also works on its own.
 
 | Plugin | Covers |
 |---|---|
