@@ -38,16 +38,31 @@ Run `/infra-lint terraform` to ensure all modules are valid before planning.
 Single module:
 ```bash
 cd {TG_PATH}/{environment}/{module}
-terragrunt plan -out=tfplan
+terragrunt plan -input=false -out=tfplan
 ```
 
 All modules:
 ```bash
 cd {TG_PATH}/{environment}
-terragrunt run --all plan -out=tfplan
+terragrunt run --all --non-interactive plan -- -input=false -out=tfplan 2>&1 | tee /tmp/tg-plan-{environment}.log
 ```
 
-With `run --all`, the `tfplan` file is written separately inside each module's directory (or its `.terragrunt-cache` working dir).
+With `run --all`, Terraform flags go after `--` (Terragrunt 0.93+ rejects `run --all plan -out=tfplan`), and each module gets its own `tfplan` inside its `.terragrunt-cache` working dir.
+
+**Mock outputs (new or partly applied environments).** A module whose dependency has no state yet is planned with that dependency's `mock_outputs`. Terragrunt logs `has no outputs, but mock outputs provided` for it. Such a plan points at placeholder resources, so it must never be applied: in a new environment it fails with 404s against names like `*-mock-*`. Check every module's plan:
+```bash
+grep -c "mock outputs provided" /tmp/tg-plan-{environment}.log
+# per module: count mock values in the saved plan (mock values in this architecture contain "mock")
+(cd {TG_PATH}/{environment}/{module} && terragrunt show -json tfplan | grep -ci mock)
+```
+If any module's plan uses mock values, switch to **waves**:
+1. A wave is the set of modules whose plans have no mock values. Their dependencies all exist already.
+2. Show that wave's plans for review, then apply them one module at a time (Step 4, single module), in the order Terragrunt printed (`Unit queue will be processed for plan in this order`).
+3. Plan the remaining modules again. They now see real outputs from the wave just applied. Show the new plans, and repeat until none remain.
+
+**Key Vault firewall.** When Terraform writes Key Vault secrets (the reference architecture's `postgresql` module does), the machine running it must be allowed through the vault firewall. The reference starter reads extra IPs from `KEY_VAULT_ALLOWED_IPS`. Export it with the runner's IPv4 (`curl -4 -s ifconfig.me`; Key Vault rules don't accept IPv6) before planning the key-vault module, rather than committing the IP to `env.hcl`.
+
+Every wave's plans are new plans, so review and confirm each wave. If `terragrunt show -json tfplan` prints nothing for a module, treat that plan as unchecked, not clean. Tell the user why waves were needed. For Container Apps, the app and job modules (`containerApps` in `blueprint.json`) are rolled out by `/cloud-infra:deploy`, not here, because they need images in the registry first.
 
 **If `IAC_WRAPPER` = `none` (plain Terraform):**
 
@@ -85,13 +100,13 @@ Apply exactly the plan reviewed in Step 3 by applying the saved `tfplan` file â€
 Single module:
 ```bash
 cd {TG_PATH}/{environment}/{module}
-terragrunt apply tfplan
+terragrunt apply -input=false tfplan
 ```
 
-All modules:
+All modules (only when no plan uses mock values, see Step 2):
 ```bash
 cd {TG_PATH}/{environment}
-terragrunt run --all apply tfplan
+terragrunt run --all --non-interactive apply -- tfplan
 ```
 
 **If `IAC_WRAPPER` = `none`:**

@@ -45,7 +45,7 @@ For each app unit, read `image_repository` from `{TG_PATH}/_envcommon/{unit}.hcl
   docker build --platform linux/amd64 -f <Dockerfile> -t "$ACR.azurecr.io/<repo>:<tag>" .   # context = repo root
   docker push "$ACR.azurecr.io/<repo>:<tag>"
   ```
-  `--platform linux/amd64` matters on Apple Silicon, because Container Apps runs amd64 and an arm64 image fails to start.
+  `--platform linux/amd64` matters on Apple Silicon, because Container Apps runs amd64 and an arm64 image fails to start. The Dockerfile's SDK stage must use `FROM --platform=$BUILDPLATFORM` and `-a $TARGETARCH` (as the reference Dockerfiles do): under amd64 emulation `dotnet restore` crashes with `AccessViolationException` (exit 134). If a build fails that way, fix the Dockerfile rather than retrying.
 - `staging`/`prod`: **promote, never rebuild**, so the tested digest is what ships. The source is the previous env in `ENVS`, and the tag must already exist there (if it doesn't, stop and deploy to that env first). With `--apply`:
   ```bash
   az acr import --name "$ACR" --source "<source-acr>.azurecr.io/<repo>:<tag>" --image "<repo>:<tag>"
@@ -71,6 +71,10 @@ terragrunt show -json tfplan | jq '[.resource_changes[]? | select(.change.action
 ```
 A deploy should only change images, env and revisions. If any plan deletes or replaces a resource, stop and send the change through `/cloud-infra:infra-apply`. Show a compact per-unit summary (add/change/destroy, old → new image).
 
+**Mock values.** Count them in each plan: `terragrunt show -json tfplan | grep -ci mock` (mock outputs in this architecture contain `mock`; Terragrunt also logs `has no outputs, but mock outputs provided`). An empty `show` output means the plan is unchecked, not clean.
+- On a first rollout, the gateway's plan uses mock values, because the services it routes to don't exist yet. Mark the unit **deferred** in the preview, and plan it again in Step 5 right before applying it. If that new plan still has mock values, stop.
+- A migration or service unit with mock values means the platform isn't applied. Stop and send the user to `/cloud-infra:infra-apply {env}`.
+
 **Without `--apply`, stop here** with the preview report. That report covers which images would be built or imported, the plans, the current tags, and the migration jobs that would run.
 
 With `--apply`, ask: "Deploy `<tag>` to `{env}` (units: ...)? Type yes to continue." Anything other than yes stops the run. For `prod`, repeat the env name in the question.
@@ -85,13 +89,13 @@ Push or import the images from Step 2 first. Then:
    az containerapp job execution show -g "$RG" -n <job> --job-execution-name "$exec" --query properties.status -o tsv
    ```
    Poll every ~10 s until the status is `Succeeded`. `Failed`, `Stopped`, `Degraded`, or a timeout (about 20 min) means **stop**: the apps are untouched, so go to rollback for the job unit only. Point the user at Log Analytics (`ContainerAppConsoleLogs_CL`) for the job output.
-2. **Apps, gateway last.** For each app unit, run `terragrunt apply -input=false tfplan`, then wait for the new revision. Poll every ~10 s for up to ~10 min:
+2. **Apps, gateway last.** For each app unit, plan it again first if it was deferred in Step 4, and check that the new plan has no mock values and no deletes. Then run `terragrunt apply -input=false tfplan` and wait for the new revision. Poll every ~10 s for up to ~10 min:
    ```bash
    az containerapp show -g "$RG" -n <app> --query "[properties.latestRevisionName, properties.latestReadyRevisionName]" -o tsv
    az containerapp revision show -g "$RG" -n <app> --revision <latest> \
      --query "[properties.template.containers[0].image, properties.runningState, properties.healthState]" -o tsv
    ```
-   Healthy means: the latest revision runs `<tag>`, it equals `latestReadyRevisionName`, and `healthState` isn't `Unhealthy`. In dev, scale-to-zero can leave it at `None`, and the smoke test wakes it. A `runningState` of `Failed` or `Degraded`, or a timeout, triggers rollback. Stop before the next app.
+   Healthy means: the latest revision runs `<tag>`, it equals `latestReadyRevisionName`, and `healthState` isn't `Unhealthy`. In dev, scale-to-zero can leave it at `None`, and the smoke test wakes it. A `runningState` of `Failed`, `Degraded` or `ActivationFailed`, or a timeout, triggers rollback. Stop before the next app. `ActivationFailed` usually means the container exited on start: read `ContainerAppConsoleLogs_CL` in Log Analytics for the reason (a missing setting such as `Auth__Authority` shows up there).
 3. **Smoke test.** Get the gateway host with `fqdn=$(cd {UNITS_PATH}/{GATEWAY} && terragrunt output -raw fqdn)`.
    - `https://$fqdn/health/ready` must return 200. Retry for about 2 min, since dev cold starts are slow.
    - For each deployed service with a gateway route (`ReverseProxy.Routes` in the gateway's `appsettings.json`, e.g. `/api/orders`), an unauthenticated GET should return `401`. That shows the gateway reached the service. A 404, 502 or 503 means routing or the service is broken.

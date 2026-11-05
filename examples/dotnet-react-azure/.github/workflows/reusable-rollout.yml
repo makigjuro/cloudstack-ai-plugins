@@ -105,6 +105,21 @@ jobs:
           tg_out() { tg "$1" output -raw "$2" 2>/dev/null || true; }
           tag_of() { if [ -n "$1" ]; then echo "${1##*:}"; fi; }
 
+          # Plan one unit; fail on deletes/replacements. Prints the number of mock dependency values,
+          # which is non-zero when a dependency doesn't exist yet (first rollout: gateway before orders).
+          plan_unit() {
+            local unit=$1 json deletes
+            tg "$unit" plan -input=false -out=tfplan >&2
+            json=$(tg "$unit" show -json tfplan)
+            [ -n "$json" ] || { echo "::error::could not read the saved plan for $unit" >&2; return 1; }
+            deletes=$(jq '[.resource_changes[]? | select(.change.actions | index("delete"))] | length' <<<"$json")
+            if [ "$deletes" != "0" ]; then
+              echo "::error::$unit plan deletes or replaces $deletes resource(s). A deploy only changes images; run /cloud-infra:infra-apply to review." >&2
+              return 1
+            fi
+            grep -ci mock <<<"$json" || true
+          }
+
           # Start a Container Apps Job execution and wait for a terminal state.
           run_job() {
             local job=$1 exec status
@@ -139,7 +154,7 @@ jobs:
                 --query "[properties.template.containers[0].image, properties.runningState, properties.healthState]" -o tsv)
               echo "$app: revision=$latest ready=$ready tag=$(tag_of "$image") running=$running health=$health"
               case "$running" in
-                Failed|Degraded)
+                Failed|Degraded|ActivationFailed)
                   echo "$unit|$want|$latest|$running" >> "$STATE/revisions"
                   echo "::error::$app revision $latest is $running"; return 1 ;;
               esac
@@ -218,13 +233,13 @@ jobs:
           source "$RUNNER_TEMP/rollout.sh"
           for unit in $MIGRATION_UNITS $APP_UNITS; do
             echo "::group::plan $unit"
-            tg "$unit" plan -input=false -out=tfplan
+            mocks=$(plan_unit "$unit")
             echo "::endgroup::"
-            deletes=$(tg "$unit" show -json tfplan \
-              | jq '[.resource_changes[]? | select(.change.actions | index("delete"))] | length')
-            if [ "$deletes" != "0" ]; then
-              echo "::error::$unit plan deletes or replaces $deletes resource(s). A deploy only changes images; run /cloud-infra:infra-apply to review."
-              exit 1
+            if [ "$mocks" != "0" ]; then
+              # A dependency isn't deployed yet, so this plan holds placeholder values. It is
+              # planned again right before its apply, once the units before it exist.
+              echo "$unit" >> "$STATE/deferred"
+              echo "$unit: planned again before apply (a dependency doesn't exist yet)"
             fi
           done
 
@@ -241,6 +256,13 @@ jobs:
         run: |
           source "$RUNNER_TEMP/rollout.sh"
           for unit in $APP_UNITS; do
+            if grep -qx "$unit" "$STATE/deferred" 2>/dev/null; then
+              mocks=$(plan_unit "$unit")
+              if [ "$mocks" != "0" ]; then
+                echo "::error::$unit still plans with mock dependency values; apply the platform first (/cloud-infra:infra-apply)."
+                exit 1
+              fi
+            fi
             echo "$unit" >> "$STATE/applied"
             tg "$unit" apply -input=false tfplan
             wait_revision "$(tg_out "$unit" name)" "$IMAGE_TAG" "$unit"

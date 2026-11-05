@@ -1,6 +1,6 @@
 # Starter infrastructure (Azure Container Apps)
 
-Terraform modules + Terragrunt environments for the starter reference app. It follows the
+Terraform modules + Terragrunt environments for the Orders service, the gateway and the web app. It follows the
 "Cloud Infrastructure" design in [`docs/architecture.md`](../../../docs/architecture.md):
 immutable SHA-tagged images, only the gateway is public, no stored credentials, migrations
 before traffic, probes on every app, and environments promoted rather than rebuilt.
@@ -98,10 +98,11 @@ IMAGE_TAG=abc1234 terragrunt run --all validate --parallelism 1    # or one unit
 
 ```bash
 export ARM_SUBSCRIPTION_ID=<sub> ARM_TENANT_ID=<tenant>
-export IMAGE_TAG=$(git rev-parse --short=12 HEAD)   # must already be pushed to the env's ACR
+export IMAGE_TAG=$(git rev-parse --short=7 HEAD)    # must already be pushed to the env's ACR
+export KEY_VAULT_ALLOWED_IPS=$(curl -4 -s ifconfig.me)  # first apply from a laptop (see below)
 cd terragrunt/<env>
-terragrunt run --all plan -out=tfplan
-terragrunt run --all apply tfplan
+terragrunt run --all plan -- -input=false -out=tfplan   # Terraform flags go after `--`
+terragrunt run --all apply -- tfplan
 ```
 
 Terragrunt orders units from the dependency graph:
@@ -109,19 +110,67 @@ Terragrunt orders units from the dependency graph:
 `key-vault`, `container-registry`, `container-app-environment` → `postgresql` →
 `orders`, `orders-migrate` → `gateway`.
 
+### First apply of a new environment: apply in waves
+
+A unit whose dependency doesn't exist yet is planned with that dependency's `mock_outputs`
+(Terragrunt logs `has no outputs, but mock outputs provided`). On a new environment that is
+every unit except `resource-group`, and their saved plans point at resources like
+`starter-rg-mock-weu`, so applying them fails with 404. Every mock value in this repo contains
+`mock`, which makes them easy to spot. Apply wave by wave and make each wave's plans after the
+previous wave exists:
+
+```bash
+# For each wave, in each unit: plan, check, then apply exactly that plan
+#   1: resource-group
+#   2: networking managed-identity monitoring static-web-app
+#   3: key-vault container-registry container-app-environment
+#   4: postgresql
+#   (5: orders-migrate, orders, then gateway: these are rolled out by /cloud-infra:deploy)
+cd terragrunt/<env>/<unit>
+terragrunt plan -input=false -out=tfplan
+terragrunt show -json tfplan | grep -ci mock     # must print 0; otherwise a dependency isn't applied yet
+terragrunt apply -input=false tfplan
+```
+
+Once every unit exists, a single `run --all plan` / `apply` works, because each dependency then
+has real outputs.
+
 Notes:
 - `IMAGE_TAG` (or `TF_VAR_image_tag`) is required; the app/job modules reject empty values and `latest`.
 - On the very first apply the ACR is empty, so apply the platform units first, push the images,
-  then apply the app units:
-  `terragrunt run --all apply --queue-exclude-dir orders --queue-exclude-dir orders-migrate --queue-exclude-dir gateway`.
+  then roll out the app units with `/cloud-infra:deploy <env>` (or the deploy workflow), which plans
+  the gateway only after `orders` exists.
 - **Key Vault firewall:** Terraform writes the PostgreSQL secrets from wherever it runs, so the
-  runner's IP must be allowed. Put fixed operator/CI egress IPs in `key_vault_allowed_ip_addresses`
-  or, for GitHub-hosted runners, add the runner IP around the run
-  (`az keyvault network-rule add --name starter-kv-<env>-weu --ip-address <ip>` and remove it after).
-  Terraform ignores later `ip_rules` changes so it never strips these. Container Apps resolve
-  secrets over the ACA subnet's KeyVault service endpoint. If your setup can't resolve references
-  through the firewall, set `network_default_action = "Allow"` for that env's key-vault unit and
-  document the exception.
+  runner's IPv4 must be allowed. Put fixed operator/CI egress IPs in `key_vault_allowed_ip_addresses`.
+  For a laptop or a hosted runner, export `KEY_VAULT_ALLOWED_IPS` (comma-separated IPv4, e.g.
+  `$(curl -4 -s ifconfig.me)`) for the first apply instead of committing the IP. Key Vault rules
+  are IPv4 only, so use `curl -4`. Terraform ignores later `ip_rules` changes, so it never strips
+  rules added afterwards; to allow a new IP later, use
+  `az keyvault network-rule add --name starter-kv-<env>-weu --ip-address <ip>`. Container Apps
+  resolve secrets over the ACA subnet's KeyVault service endpoint. If your setup can't resolve
+  references through the firewall, set `network_default_action = "Allow"` for that env's key-vault
+  unit and document the exception.
+- **Destroy:** in dev (no purge protection) destroying the key-vault unit also purges the vault,
+  so the next apply starts clean. With purge protection (staging, prod) the vault stays
+  soft-deleted and is recovered by the next apply.
+
+### Authentication
+
+The services validate JWTs and refuse to start without `Auth:Authority` and `Auth:Audience`.
+Both come from `env.hcl`:
+- `auth_authority`: leave it empty to use the tenant you deploy with
+  (`https://login.microsoftonline.com/<ARM_TENANT_ID>/v2.0`), or set another issuer.
+- `auth_audience`: the Application ID URI of the API's app registration, `api://starter-api-<env>`
+  by default.
+
+With these set, the API starts and answers 401 to requests without a valid token, which is what
+the deploy smoke test checks. To call it with real tokens, register the API once per environment:
+
+```bash
+az ad app create --display-name starter-api-<env> --identifier-uris api://starter-api-<env>
+```
+
+Then add an app role or scope for your clients (and the SPA's app registration).
 
 ## 4. How a deploy rolls a new revision
 
