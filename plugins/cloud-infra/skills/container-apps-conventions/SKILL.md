@@ -26,7 +26,7 @@ Applies when `infrastructure.runtime` is `container-apps` (the default). For AKS
 
 ## Secrets
 - Secrets are Key Vault references (`secret { key_vault_secret_id, identity }`) surfaced via `secret_name` env vars — secret values never enter Terraform state, tfvars, or plain `env` blocks.
-- Plain `env_vars` carry only non-secret config (`ASPNETCORE_ENVIRONMENT`, `OTEL_SERVICE_NAME`, `AZURE_CLIENT_ID`).
+- Plain `env_vars` carry only non-secret config (`ASPNETCORE_ENVIRONMENT`, `OTEL_SERVICE_NAME`, `AZURE_CLIENT_ID`, and `Auth__Authority`/`Auth__Audience` from `env.hcl` for every service that validates tokens).
 
 ## Health and Scaling
 - Liveness probe on `/health/live` and readiness on `/health/ready`, both on `target_port` — readiness gates traffic to a new revision; liveness restarts a hung replica.

@@ -3,6 +3,13 @@
 locals {
   env         = read_terragrunt_config(find_in_parent_folders("env.hcl")).locals
   modules_dir = "${dirname(find_in_parent_folders("root.hcl"))}/../terraform/modules"
+
+  # Firewall IPs = env.hcl list + KEY_VAULT_ALLOWED_IPS (comma-separated IPv4), so an operator's or
+  # runner's IP never has to be committed: KEY_VAULT_ALLOWED_IPS=$(curl -4 -s ifconfig.me)
+  allowed_ip_addresses = distinct(concat(
+    local.env.key_vault_allowed_ip_addresses,
+    compact([for ip in split(",", get_env("KEY_VAULT_ALLOWED_IPS", "")) : trimspace(ip)]),
+  ))
 }
 
 terraform {
@@ -50,6 +57,6 @@ inputs = {
   resource_group_name       = dependency.resource_group.outputs.name
   secrets_user_principal_id = dependency.managed_identity.outputs.principal_id
   allowed_subnet_ids        = [dependency.networking.outputs.aca_subnet_id]
-  allowed_ip_addresses      = local.env.key_vault_allowed_ip_addresses
+  allowed_ip_addresses      = local.allowed_ip_addresses
   purge_protection_enabled  = local.env.key_vault_purge_protection_enabled
 }

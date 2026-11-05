@@ -6,6 +6,17 @@ After a release, run `/plugin marketplace update cloud-app-blueprint`, then upda
 
 ## [Unreleased]
 
+### Fixed
+Found by deploying the starter to a real Azure subscription. It now deploys end to end: platform, migration job, Orders and gateway revisions healthy, smoke test passing.
+- First apply of a new environment: units whose dependencies don't exist yet were planned with mock outputs, and applying those saved plans failed with 404s. `/cloud-infra:infra-apply` and the infra README now apply in waves, with a fresh plan per wave, and refuse plans that contain mock values. `/cloud-infra:deploy` and the CI rollout plan the gateway again after the services it routes to exist.
+- `terragrunt run --all plan -out=tfplan` fails on Terragrunt 0.93. Terraform flags now go after `--` everywhere.
+- Orders exited on start in Azure (`Auth:Authority and Auth:Audience must be configured`). Each `env.hcl` now sets `auth_authority` (empty = the deploy tenant) and `auth_audience`, and the Orders unit passes them. `add-container-app` adds them for new services, and the infra README documents the app registration.
+- The Dockerfiles crashed in `dotnet restore` when building `linux/amd64` on Apple Silicon. The SDK stage now runs on `$BUILDPLATFORM` and cross-compiles with `-a $TARGETARCH`.
+- `deploy` and the CI rollout treat a revision in `ActivationFailed` as failed instead of waiting for it.
+- The Key Vault firewall accepts `KEY_VAULT_ALLOWED_IPS` (IPv4) at run time, so an operator's IP doesn't have to be committed.
+- Destroying dev now purges its Key Vault (no purge protection there), so the next apply doesn't recover the old vault and its secrets.
+- `new-project` no longer prints git's detached-HEAD notices. The infra README uses the same 7-character image tags as the deploy skill and CI.
+
 ## [0.4.0] - 2026-11-03
 
 ### Renamed

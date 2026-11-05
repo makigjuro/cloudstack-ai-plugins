@@ -41,7 +41,7 @@ If `RUNTIME` is `aks`, stop: say this project deploys to Kubernetes and point to
 
 ### 2. `_envcommon/{unit}.hcl`
 
-Copy the reference unit's structure block for block. Keep the header comment style, the `locals` (`env`, `modules_dir`, `otel_env`), `terraform.source = "${local.modules_dir}/container-app"`, and every `dependency` with its `mock_outputs` and `mock_outputs_allowed_terraform_commands = ["validate", "plan", "init"]` copied verbatim. The mocks must keep matching the modules' outputs, or offline validation breaks.
+Copy the reference unit's structure block for block. Keep the header comment style, the `locals` (`env`, `modules_dir`, `otel_env`, `auth_authority`), `terraform.source = "${local.modules_dir}/container-app"`, and every `dependency` with its `mock_outputs` and `mock_outputs_allowed_terraform_commands = ["validate", "plan", "init"]` copied verbatim. The mocks must keep matching the modules' outputs, or offline validation breaks.
 
 Dependencies: `resource_group`, `managed_identity`, `container_registry`, `container_app_environment`, plus `postgresql` only when the service has a `dbContext`.
 
@@ -73,9 +73,12 @@ inputs = {
     ASPNETCORE_ENVIRONMENT = local.env.aspnetcore_environment
     OTEL_SERVICE_NAME      = "{unit}"
     AZURE_CLIENT_ID        = dependency.managed_identity.outputs.client_id
+    Auth__Authority        = local.auth_authority          # services refuse to start without these two
+    Auth__Audience         = local.env.auth_audience
   }, local.otel_env)
 }
 ```
+- `Auth__Authority` and `Auth__Audience` come from `env.hcl` (`auth_authority`, `auth_audience`); copy the `auth_authority` local from the reference unit. Leave them out only for an app that doesn't authenticate (the gateway forwards the `Authorization` header and validates nothing itself). A service that authenticates and doesn't get them exits on start, and its revision ends `ActivationFailed`.
 - `{Name}` is the key the service passes to `GetConnectionString(...)`. Grep its Infrastructure project to find it.
 - The starter's `postgresql` unit writes one connection-string secret for the shared database, and each service owns its own schema there. Reusing that secret ID under a service-named Container App secret is the intended pattern. A dedicated database or login per service means extending the postgresql module, so flag it to the user instead of inventing secrets.
 - Image tags, probes (`/health/live`, `/health/ready` on `target_port`), `revision_mode = "Single"` and the registry identity are module defaults. Don't override them.
@@ -98,7 +101,7 @@ include "envcommon" {
 ### 4. Dockerfile (only if `{path}/Dockerfile` is missing)
 
 Mirror an existing service Dockerfile, e.g. `src/Orders/Dockerfile`:
-- Multi-stage: `mcr.microsoft.com/dotnet/sdk:{dotnetVersion}` restores from the copied `*.csproj` files first (layer cache), then publishes `{path}/{projectPrefix}.Host` with `--no-restore /p:UseAppHost=false`.
+- Multi-stage: `FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:{dotnetVersion} AS build` with `ARG TARGETARCH` and `-a $TARGETARCH` on both `restore` and `publish`, so the SDK runs natively and cross-compiles (under amd64 emulation on Apple Silicon `dotnet restore` crashes). It restores from the copied `*.csproj` files first (layer cache), then publishes `{path}/{projectPrefix}.Host` with `--no-restore /p:UseAppHost=false`.
 - Copy `global.json Directory.Build.props Directory.Packages.props .editorconfig`, the shared projects from `backend.sharedPaths`, and the service's own projects.
 - Runtime stage `mcr.microsoft.com/dotnet/aspnet:{dotnetVersion}`, `ENV ASPNETCORE_HTTP_PORTS={port}`, `COPY --chown=$APP_UID`, `USER $APP_UID` (non-root), `EXPOSE {port}`, `ENTRYPOINT ["dotnet", "{projectPrefix}.Host.dll"]`.
 - Header comment with the build command: the context is the repository root, `docker build -f {path}/Dockerfile -t {project}-{unit} .`.

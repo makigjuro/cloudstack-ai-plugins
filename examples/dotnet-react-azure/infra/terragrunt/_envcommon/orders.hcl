@@ -9,6 +9,9 @@ locals {
   otel_env = local.env.otel_exporter_otlp_endpoint == "" ? {} : {
     OTEL_EXPORTER_OTLP_ENDPOINT = local.env.otel_exporter_otlp_endpoint
   }
+
+  # The service refuses to start without both. An empty auth_authority means the deploy tenant.
+  auth_authority = local.env.auth_authority != "" ? local.env.auth_authority : "https://login.microsoftonline.com/${get_env("ARM_TENANT_ID", "00000000-0000-0000-0000-000000000000")}/v2.0"
 }
 
 terraform {
@@ -101,5 +104,7 @@ inputs = {
     ASPNETCORE_ENVIRONMENT = local.env.aspnetcore_environment
     OTEL_SERVICE_NAME      = "orders"
     AZURE_CLIENT_ID        = dependency.managed_identity.outputs.client_id
+    Auth__Authority        = local.auth_authority
+    Auth__Audience         = local.env.auth_audience
   }, local.otel_env)
 }

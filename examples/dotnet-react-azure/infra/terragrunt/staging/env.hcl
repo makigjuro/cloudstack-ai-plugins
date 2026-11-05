@@ -4,6 +4,12 @@ locals {
   environment            = "staging"
   aspnetcore_environment = "Staging"
 
+  # JWT validation for the APIs (Auth:Authority, Auth:Audience). An empty authority means the
+  # Entra tenant you deploy with (ARM_TENANT_ID). The audience is the Application ID URI of the
+  # API app registration (see infra/README.md, "Authentication").
+  auth_authority = ""
+  auth_audience  = "api://starter-api-staging"
+
   # Container Apps scaling (applies to orders and gateway)
   min_replicas = 1
   max_replicas = 3
@@ -29,7 +35,8 @@ locals {
 
   # Key Vault
   key_vault_purge_protection_enabled = true
-  # Public IPs/CIDRs (operators, CI egress) allowed through the KV firewall.
+  # Public IPs/CIDRs (fixed operator/CI egress) allowed through the KV firewall. For a laptop or a
+  # hosted runner, pass KEY_VAULT_ALLOWED_IPS at run time instead of committing the IP.
   key_vault_allowed_ip_addresses = []
 
   # Monitoring, frontend, registry, environment

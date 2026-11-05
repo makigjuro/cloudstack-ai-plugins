@@ -85,8 +85,10 @@ generate "provider" {
       storage_use_azuread = true
 
       features {
+        # Without purge protection (dev), destroy purges the vault, so the next apply creates a
+        # clean one instead of recovering the soft-deleted vault with its old secrets.
         key_vault {
-          purge_soft_delete_on_destroy    = false
+          purge_soft_delete_on_destroy    = ${local.env_vars.locals.key_vault_purge_protection_enabled ? "false" : "true"}
           recover_soft_deleted_key_vaults = true
         }
         resource_group {

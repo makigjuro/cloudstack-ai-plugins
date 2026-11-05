@@ -107,8 +107,13 @@ else
     fi
   fi
   echo "Downloading the starter ($REF) from $REPO_URL ..." >&2
-  git clone --quiet --depth 1 --filter=blob:none --sparse --branch "$REF" "$REPO_URL" "$WORK/repo" >&2
-  git -C "$WORK/repo" sparse-checkout set examples/dotnet-react-azure >&2
+  # git prints detached-HEAD advice and tag notices on a tag checkout; keep them out unless it fails.
+  if ! git -c advice.detachedHead=false clone --quiet --depth 1 --filter=blob:none --sparse --branch "$REF" "$REPO_URL" "$WORK/repo" >"$WORK/git.log" 2>&1 \
+    || ! git -C "$WORK/repo" sparse-checkout set examples/dotnet-react-azure >>"$WORK/git.log" 2>&1; then
+    cat "$WORK/git.log" >&2
+    echo "Could not download the starter ($REF) from $REPO_URL." >&2
+    exit 1
+  fi
   SOURCE="$WORK/repo/examples/dotnet-react-azure"
   ORIGIN="$REPO_URL ($REF, $(git -C "$WORK/repo" rev-parse --short HEAD))"
 fi
